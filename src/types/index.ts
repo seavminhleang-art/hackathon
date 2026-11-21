@@ -18,7 +18,13 @@ export interface LatLng {
 
 // ---------- Users & auth ----------
 
-export type Role = "CITIZEN" | "OFFICER" | "ADMIN";
+/**
+ * CITIZEN: residents. OFFICER: local government staff (one city/khan).
+ * ADMIN: platform admins. ORGANIZATION: staff of an emergency organization
+ * (police, hospital, fire...). REPORTER: verified news reporter.
+ * DEPARTMENT_STAFF: staff of a city department that fixes civic reports (feature 3).
+ */
+export type Role = "CITIZEN" | "OFFICER" | "ADMIN" | "ORGANIZATION" | "REPORTER" | "DEPARTMENT_STAFF";
 
 export interface User {
   id: string;
@@ -26,6 +32,10 @@ export interface User {
   phone: string; // Cambodian format, e.g. "012345678"
   email?: string;
   role: Role;
+  /** Set for ORGANIZATION and REPORTER accounts. */
+  organizationId?: string;
+  /** Set for DEPARTMENT_STAFF accounts. */
+  departmentId?: string;
   provinceId: string;
   cityId: string;
   sangkat?: string;
@@ -75,89 +85,23 @@ export interface City {
   center: LatLng;
 }
 
-// ---------- Reports (government reporting + emergency) ----------
-
-export type ReportCategory =
-  | "DRAIN_BLOCKED"
-  | "FLOODING"
-  | "WASTE_OVERFLOW"
-  | "ILLEGAL_DUMPING"
-  | "POTHOLE"
-  | "STREETLIGHT"
-  | "TRAFFIC_JAM"
-  | "ROAD_CRASH"
-  | "NEED_POLICE"
-  | "OTHER";
-
-export type Urgency = "LOW" | "MEDIUM" | "HIGH";
-
-export type ReportStatus = "REPORTED" | "ASSIGNED" | "IN_PROGRESS" | "FIXED" | "REJECTED";
-
-export interface CategoryMeta {
-  id: ReportCategory;
-  label: I18nText;
-  icon: string; // emoji placeholder until real icons exist
-  defaultUrgency: Urgency;
-  /** Agency that normally handles it (shown to admins). */
-  agency: I18nText;
-  /** HIGH-urgency categories show the emergency call screen first. */
-  emergency: boolean;
-}
-
-export interface StatusChange {
-  from: ReportStatus | null;
-  to: ReportStatus;
-  changedBy: string; // user id
-  note?: string;
-  at: ISODateString;
-}
-
-export interface Report {
-  id: string;
-  reporterId: string;
-  category: ReportCategory;
-  urgency: Urgency;
-  title: string;
-  description: string;
-  location: LatLng;
-  cityId: string;
-  addressHint?: string;
-  photoUrl?: string;
-  status: ReportStatus;
-  assignedTo?: string; // officer user id
-  upvotes: number;
-  history: StatusChange[];
-  createdAt: ISODateString;
-  updatedAt: ISODateString;
-}
-
-/** What anyone can see on the public map: no reporter identity. */
-export type PublicReport = Omit<Report, "reporterId" | "assignedTo" | "history"> & {
-  history: Omit<StatusChange, "changedBy">[];
-};
-
-export interface CreateReportInput {
-  category: ReportCategory;
-  urgency: Urgency;
-  title: string;
-  description: string;
-  location: LatLng;
-  cityId: string;
-  addressHint?: string;
-  photoUrl?: string;
-}
-
-export interface ReportFilter {
-  status?: ReportStatus[];
-  category?: ReportCategory[];
-  cityId?: string;
-  urgency?: Urgency[];
-}
+// Civic reports (feature 3): see ./gov-reporting.ts.
 
 // ---------- Notifications ----------
 
 export type NotificationType =
-  | "REPORT_STATUS"
+  | "GR_SUBMITTED"
+  | "GR_APPROVED"
+  | "GR_REJECTED"
+  | "GR_INFO_REQUESTED"
+  | "GR_ASSIGNED"
+  | "GR_NEW_TASK"
+  | "GR_WORK_STARTED"
+  | "GR_RESOLVED"
+  | "GR_CLOSED"
+  | "GR_REOPENED"
+  | "GR_DUPLICATE"
+  | "GR_COMMENT"
   | "LF_CLAIM_RECEIVED"
   | "LF_CLAIM_APPROVED"
   | "LF_CLAIM_REJECTED"
@@ -167,7 +111,21 @@ export type NotificationType =
   | "LF_SIGHTING"
   | "LF_MATCH"
   | "LF_POST_HIDDEN"
-  | "LF_EXPIRING";
+  | "LF_EXPIRING"
+  | "CS_ALERT"
+  | "CS_ANNOUNCEMENT"
+  | "CS_COMMENT"
+  | "CS_REPLY"
+  | "CS_ANSWER_ACCEPTED"
+  | "CS_EVENT_REMINDER"
+  | "CS_GROUP_POST"
+  | "CS_EDIT_REVIEWED"
+  | "CS_CONTENT_HIDDEN"
+  | "EM_STATUS"
+  | "EM_NEW_INCIDENT"
+  | "EM_SOS_CONTACT"
+  | "EM_VERIFIED"
+  | "EM_NEWS_RELEASE";
 
 export interface AppNotification {
   id: string;
@@ -176,51 +134,33 @@ export interface AppNotification {
   reportId?: string;
   postId?: string;
   claimId?: string;
+  // Community & Services targets
+  csPostId?: string;
+  announcementId?: string;
+  groupId?: string;
+  placeId?: string;
+  guideId?: string;
+  // Emergency targets
+  incidentId?: string;
   message: I18nText;
   read: boolean;
   createdAt: ISODateString;
 }
 
-// Lost & Found types live in their own file.
+// Feature types live in their own files.
 export * from "./lost-found";
+export * from "./community";
+export * from "./emergency";
+export * from "./gov-reporting";
 
-// ---------- Emergency & community ----------
+// ---------- Emergency ----------
 
-export interface EmergencyContact {
+/** Public hotline numbers (117, 118, 119). Not the user's trusted contacts. */
+export interface EmergencyHotline {
   id: string;
   name: I18nText;
   number: string;
   icon: string;
 }
 
-export type ServiceType = "WASTE_SCHEDULE" | "WATER" | "ELECTRICITY" | "HOSPITAL" | "POLICE_POST" | "SANGKAT_OFFICE";
-
-export interface CityService {
-  id: string;
-  type: ServiceType;
-  name: I18nText;
-  cityId: string;
-  location?: LatLng;
-  phone?: string;
-  hours?: string;
-  note?: I18nText;
-}
-
-export interface Announcement {
-  id: string;
-  title: I18nText;
-  body: I18nText;
-  cityId?: string; // undefined = city-wide
-  level: "INFO" | "WARNING" | "ALERT";
-  createdAt: ISODateString;
-}
-
-// ---------- Stats (public dashboard) ----------
-
-export interface StatsSummary {
-  total: number;
-  byStatus: Record<ReportStatus, number>;
-  byCategory: Partial<Record<ReportCategory, number>>;
-  byCity: Record<string, number>;
-  avgHoursToFixed: number | null;
-}
+// Civic services and announcements: see ./community.ts (Community & Services).

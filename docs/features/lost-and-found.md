@@ -15,6 +15,7 @@ Claim → Approve → Returned.
 | Types | `src/types/lost-found.ts` |
 | Seed data | `src/lib/mock/lost-found.ts`, `src/lib/mock/locations.ts` |
 | Mock API | `src/lib/api/lost-found-api.ts` (used as `api.lf.*`) |
+| Tests | `scripts/test/lost-found.test.mjs` (`npm run test:mock lost-found`) |
 
 ---
 

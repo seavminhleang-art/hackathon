@@ -2,12 +2,39 @@
 // Saved to localStorage in the browser so data survives a reload.
 // Call resetMockDb() to go back to the seed data.
 
-import type { AppNotification, AuthSession, LfClaim, LfComment, LfPost, Report, Role, User, UserRecord } from "@/types";
+import type {
+  AppNotification,
+  AuthSession,
+  CsAnnouncement,
+  CsComment,
+  CsEditSuggestion,
+  CsGroup,
+  CsGuide,
+  CsMember,
+  CsPlace,
+  CsPost,
+  CsWasteSchedule,
+  EmDispatch,
+  EmIncident,
+  EmNewsRelease,
+  EmTrustedContact,
+  LfClaim,
+  LfComment,
+  LfPost,
+  GrComment,
+  GrReport,
+  Role,
+  User,
+  UserRecord,
+} from "@/types";
 import * as seed from "@/lib/mock/data";
 import * as lfSeed from "@/lib/mock/lost-found";
+import * as csSeed from "@/lib/mock/community";
+import * as emSeed from "@/lib/mock/emergency";
+import * as grSeed from "@/lib/mock/gov-reporting";
 
 // Bump the version when the seed shape changes so old browser data is dropped.
-const STORAGE_KEY = "cityvoice.mockdb.v2";
+const STORAGE_KEY = "cityvoice.mockdb.v5";
 const SESSION_KEY = "cityvoice.session.v1";
 const LATENCY_MS = 300;
 
@@ -25,22 +52,53 @@ export class ApiError extends Error {
 
 export interface MockDb {
   users: UserRecord[];
-  reports: Report[];
+  // Government reporting (feature 3)
+  grReports: GrReport[];
+  grComments: GrComment[];
   notifications: AppNotification[];
   lfPosts: LfPost[];
   lfClaims: LfClaim[];
   lfComments: LfComment[];
+  // Community & Services
+  csPlaces: CsPlace[];
+  csWaste: CsWasteSchedule[];
+  csEdits: CsEditSuggestion[];
+  csGuides: CsGuide[];
+  csAnnouncements: CsAnnouncement[];
+  csGroups: CsGroup[];
+  csMembers: CsMember[];
+  csPosts: CsPost[];
+  csComments: CsComment[];
+  // Emergency (organizations and incident types are static seed data)
+  emIncidents: EmIncident[];
+  emDispatches: EmDispatch[];
+  emContacts: EmTrustedContact[];
+  emNews: EmNewsRelease[];
   seq: number;
 }
 
 function freshDb(): MockDb {
   return structuredClone({
     users: seed.USERS,
-    reports: seed.REPORTS,
-    notifications: [...seed.NOTIFICATIONS, ...lfSeed.LF_NOTIFICATIONS],
+    grReports: grSeed.GR_REPORTS,
+    grComments: grSeed.GR_COMMENTS,
+    notifications: [...grSeed.GR_NOTIFICATIONS, ...lfSeed.LF_NOTIFICATIONS, ...csSeed.CS_NOTIFICATIONS, ...emSeed.EM_NOTIFICATIONS],
     lfPosts: lfSeed.LF_POSTS,
     lfClaims: lfSeed.LF_CLAIMS,
     lfComments: lfSeed.LF_COMMENTS,
+    csPlaces: csSeed.CS_PLACES,
+    csWaste: csSeed.CS_WASTE_SCHEDULES,
+    csEdits: csSeed.CS_EDITS,
+    csGuides: csSeed.CS_GUIDES,
+    csAnnouncements: csSeed.CS_ANNOUNCEMENTS,
+    csGroups: [...csSeed.CS_AREA_GROUPS, ...csSeed.CS_INTEREST_GROUPS],
+    csMembers: csSeed.CS_MEMBERS,
+    csPosts: csSeed.CS_POSTS,
+    csComments: csSeed.CS_COMMENTS,
+    emIncidents: emSeed.EM_INCIDENTS,
+    emDispatches: emSeed.EM_DISPATCHES,
+    emContacts: emSeed.EM_TRUSTED_CONTACTS,
+    emNews: emSeed.EM_NEWS_RELEASES,
     seq: 5000,
   });
 }
