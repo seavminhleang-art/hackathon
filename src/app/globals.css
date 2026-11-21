@@ -1,26 +1,66 @@
 @import "tailwindcss";
 
+/*
+ * CityVoice "Royal Angkor" palette.
+ * - primary: Cambodian flag blue (trust, government)
+ * - gold: Angkor gold, decoration only (too light for text on white)
+ * - danger: emergency / SOS / HIGH urgency only
+ * - status colors are always paired with an icon and a label
+ * All text pairs meet WCAG AA (4.5:1) on white or sand.
+ */
+@theme {
+  --color-primary: #032ea1;
+  --color-primary-hover: #1e47b5;
+  --color-primary-tint: #eaf0fc;
+
+  --color-gold: #c99a2e;
+  --color-gold-ink: #8a6512;
+  --color-gold-tint: #fbf4e2;
+
+  --color-danger: #c8102e;
+  --color-danger-ink: #8f0b21;
+  --color-danger-tint: #fdecee;
+
+  --color-reported: #c2410c;
+  --color-reported-ink: #9a3412;
+  --color-reported-tint: #fdebe1;
+
+  --color-progress: #f2b01e;
+  --color-progress-ink: #8a4a05;
+  --color-progress-tint: #fef3d6;
+
+  --color-fixed: #157347;
+  --color-fixed-ink: #0f5434;
+  --color-fixed-tint: #e7f4ec;
+
+  --color-rejected: #7a7468;
+
+  --color-sand: #faf8f4;
+  --color-surface: #ffffff;
+  --color-line: #e6e0d6;
+  --color-ink: #1c1a17;
+  --color-ink-muted: #6b6457;
+
+  --font-sans: var(--font-khmer), var(--font-latin), system-ui, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-sand);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  /* Khmer has stacked subscript consonants: give lines more room. */
+  line-height: 1.7;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
 }
