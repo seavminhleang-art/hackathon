@@ -35,7 +35,10 @@ Student team; each main feature has a different owner.
 | 2. Emergency response | Foundation done | src/features/emergency/AGENTS.md |
 | 3. Government reporting | Foundation done | src/features/gov-reporting/AGENTS.md |
 | 4. Community & Services | Foundation done | src/features/community/AGENTS.md |
-| Screens / UI | **Not started.** The team asked for foundation only: don't build screens unless asked | docs/FEATURES.md (screen list) |
+| UI kit (Button, Card, ListRow, Section, fields, Sheet, StatusChip…) | Done. Live demo at `/design` (dev only) | src/components/ui/ |
+| App shell (sidebar on desktop, header + bottom tabs + SOS on phone) | Done | src/components/layout/AppShell.tsx, src/app/(app)/layout.tsx |
+| Home `/` dashboard | Done | src/features/home/ |
+| Other screens | **Not started.** Build only when the team asks | docs/FEATURES.md (screen list) |
 | Spring Boot backend | Not started | — |
 
 ## Commands
@@ -70,13 +73,22 @@ src/features/<feature>/         UI for each feature (to build) + AGENTS.md / CLA
 docs/                           FEATURES.md (index) + features/*.md (one human spec per main feature)
 ```
 
+## Building screens (read before any UI work)
+- **Routes** for citizen screens go in `src/app/(app)/<route>/page.tsx`: the `(app)` layout adds the shell (nav + SOS) for free. Full-screen flows that should hide nav (login, SOS steps) go outside `(app)`.
+- **Start every screen** with `<PageContainer>` + `<PageHeader>` (see the copy-paste skeleton on `/design`).
+- **Use the kit**, import from `@/components/ui`. Don't hand-roll buttons, cards or chips. If you need a new shared piece, add it to the kit and to `/design`.
+- **Style:** "refined civic". Rounded (12px controls, 16px cards), `shadow-card` instead of heavy borders, white cards on sand background. No marketing hero sections: the app opens straight on tools.
+- **Feature accents** (`IconTile accent`): reporting = `primary`, Lost & Found = `gold`, services = `fixed`, community = `reported`, emergency = `danger`.
+- **Touch targets** ≥ 48px (`Button size="sm"` = 40px, dense rows only). One primary button per screen.
+- **SOS:** call `useSos().openSos()` to open the call-first sheet from anywhere.
+
 ## Rules to follow
 1. **Pattern for feature code:** `src/types/<feature>.ts` → `src/lib/mock/<feature>.ts` → `src/lib/api/<feature>-api.ts` → add namespace in `src/lib/api/index.ts` → `scripts/test/<feature>.test.mjs` → `docs/features/<feature>.md` → `src/features/<feature>/AGENTS.md` (+ `CLAUDE.md` with `@AGENTS.md`). Feature UI components go in `src/features/<feature>/`, routes in `src/app/`.
 2. **Prefixes:** types `Lf*` / `Em*` / `Gr*` / `Cs*`; notification types `LF_*` / `EM_*` / `GR_*` / `CS_*`; seed ids `lf-`, `em-`, `gr-`, `cp-`, `pl-`…
 3. **Mock DB shape changes:** add the collection to `MockDb` + `freshDb()` in `mock-db.ts` and **bump `STORAGE_KEY`** (`cityvoice.mockdb.vN`) so browsers drop old data.
 4. **API functions** are `async`, return `delay(value)`, throw `ApiError(code, message, field?)`. Check permissions with `requireUser([...roles])`. Public views must strip private fields (see `toPublic*` / `*View` helpers).
 5. **Privacy is a feature requirement:** never expose phone numbers, National ID numbers, document photos, reporter identity or exact locations in public views. Emergency data goes to news only with consent + admin verification.
-6. **Bilingual data:** user-facing seed text uses `I18nText { km, en }`. UI strings go in `src/lib/i18n/dictionary.ts` (both languages).
+6. **Bilingual data:** user-facing seed text uses `I18nText { km, en }`. UI strings go in `src/lib/i18n/dictionary.ts` (both languages). Show **one language at a time** (`t` / `tx`), never Khmer stacked over English; the user switches with `LanguageToggle`. Use `fmt()` for `{placeholders}` and `formatDateParts()` for dates (browsers often lack Khmer locale data). Status = `<StatusChip>` (src/components/ui).
 7. **Colors:** use tokens (`bg-primary`, `text-danger`…). Red (`danger`) is for emergencies only. Status always shows icon + label.
 8. **Next.js 16** differs from older versions. Read the docs in `node_modules/next/dist/docs/` before using a Next API you aren't sure about. Client components that use hooks or `localStorage` need `"use client"`.
 9. Don't use real phone numbers in seed data, except the hotlines 117 / 118 / 119.

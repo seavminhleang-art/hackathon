@@ -41,7 +41,15 @@
   --color-ink: #1c1a17;
   --color-ink-muted: #6b6457;
 
+  --color-line-strong: #d6cfc2;
+  --color-sand-deep: #f3efe7;
+
   --font-sans: var(--font-khmer), var(--font-latin), system-ui, sans-serif;
+
+  /* Elevation: soft, warm shadows instead of heavy borders. */
+  --shadow-card: 0 1px 2px rgb(28 26 23 / 0.05), 0 1px 3px rgb(28 26 23 / 0.07);
+  --shadow-raised: 0 4px 12px rgb(28 26 23 / 0.08), 0 1px 3px rgb(28 26 23 / 0.06);
+  --shadow-sos: 0 6px 16px rgb(200 16 46 / 0.35);
 }
 
 :root {
@@ -58,6 +66,16 @@ body {
   font-family: var(--font-sans);
   /* Khmer has stacked subscript consonants: give lines more room. */
   line-height: 1.7;
+}
+
+/* Respect users who turn motion off. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 :focus-visible {
