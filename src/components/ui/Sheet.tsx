@@ -45,7 +45,7 @@ export function Sheet({
       >
         <div className="mx-auto -mt-2 h-1.5 w-10 rounded-full bg-line-strong lg:hidden" aria-hidden />
         <div className="flex items-center justify-between gap-2">
-          <h2 className={`flex items-center gap-2 text-xl font-bold ${tone === "danger" ? "text-danger" : "text-ink"}`}>
+          <h2 className={`flex items-center gap-2 text-title font-bold ${tone === "danger" ? "text-danger" : "text-ink"}`}>
             {icon}
             {title}
           </h2>

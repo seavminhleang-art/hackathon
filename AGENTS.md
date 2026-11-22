@@ -36,7 +36,7 @@ Student team; each main feature has a different owner.
 | 3. Government reporting | Foundation done | src/features/gov-reporting/AGENTS.md |
 | 4. Community & Services | Foundation done | src/features/community/AGENTS.md |
 | UI kit (Button, Card, ListRow, Section, fields, Sheet, StatusChip…) | Done. Live demo at `/design` (dev only) | src/components/ui/ |
-| App shell (sidebar on desktop, header + bottom tabs + SOS on phone) | Done | src/components/layout/AppShell.tsx, src/app/(app)/layout.tsx |
+| App shell (blue navbar on all sizes; bottom tabs + floating SOS on phone; feature links + SOS in navbar on desktop) | Done | src/components/layout/AppShell.tsx, src/app/(app)/layout.tsx |
 | Home `/` dashboard | Done | src/features/home/ |
 | Other screens | **Not started.** Build only when the team asks | docs/FEATURES.md (screen list) |
 | Spring Boot backend | Not started | — |
@@ -79,7 +79,9 @@ docs/                           FEATURES.md (index) + features/*.md (one human s
 - **Use the kit**, import from `@/components/ui`. Don't hand-roll buttons, cards or chips. If you need a new shared piece, add it to the kit and to `/design`.
 - **Style:** "refined civic". Rounded (12px controls, 16px cards), `shadow-card` instead of heavy borders, white cards on sand background. No marketing hero sections: the app opens straight on tools.
 - **Feature accents** (`IconTile accent`): reporting = `primary`, Lost & Found = `gold`, services = `fixed`, community = `reported`, emergency = `danger`.
+- **Text sizes:** use the type scale tokens, never `text-xs`/`text-[13px]`: `text-page` (30px, `lg:text-display` 36px) page title · `text-title` (22px) section heading · `text-row` (18px) card/row title · `text-body` (17px) paragraphs, buttons, inputs · `text-meta` (15px) subtitles, hints · `text-caption` (13px, the minimum) tab labels, timestamps.
 - **Touch targets** ≥ 48px (`Button size="sm"` = 40px, dense rows only). One primary button per screen.
+- **Navbar stays minimal:** logo, the 4 feature links (desktop), language, bell, avatar, SOS. Don't add items to it; link to sub-pages from the feature's own screen. UI kit lives at `/design` (not in the nav).
 - **SOS:** call `useSos().openSos()` to open the call-first sheet from anywhere.
 
 ## Rules to follow

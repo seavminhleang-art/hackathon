@@ -77,12 +77,12 @@ export function HomeScreen() {
 
   return (
     <PageContainer>
-      <div className="flex flex-col gap-6 lg:gap-8">
-        <Greeting visitor={visitor} />
+      <div className="flex flex-col gap-6 lg:gap-10">
+        <Greeting />
         {data?.alert && <AlertBanner alert={data.alert} />}
         <QuickActions visitor={visitor} />
 
-        <div className="grid gap-6 lg:grid-cols-3 lg:gap-8">
+        <div className="grid gap-6 lg:grid-cols-3 lg:gap-10">
           <div className="flex flex-col gap-6 lg:col-span-2 lg:gap-8">
             {user && (
               <MyActivity
@@ -114,37 +114,20 @@ export function HomeScreen() {
 
 // ---------- Top ----------
 
-function Greeting({ visitor }: { visitor: boolean }) {
+function Greeting() {
   const { t, tx } = useLocale();
   const { user } = useAuth();
   const city = useUserCity();
 
-  if (visitor) {
-    return (
-      <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <IconTile icon={Lock} accent="primary" />
-          <p className="text-[15px] font-semibold">{t.visitorStrip}</p>
-        </div>
-        <div className="flex gap-2">
-          <LinkButton href="/login" variant="secondary" size="sm" className="flex-1 sm:flex-none">
-            {t.login}
-          </LinkButton>
-          <LinkButton href="/register" size="sm" className="flex-1 sm:flex-none">
-            {t.register}
-          </LinkButton>
-        </div>
-      </Card>
-    );
-  }
-  if (!user) return <div className="h-14" aria-hidden />;
+  // Visitors: the navbar already has Log in, so no second prompt here.
+  if (!user) return null;
 
   return (
     <div>
-      <h1 className="text-2xl leading-snug font-bold lg:text-[28px]">{fmt(t.hello, { name: user.fullName })}</h1>
+      <h1 className="text-page leading-snug font-bold lg:text-display">{fmt(t.hello, { name: user.fullName })}</h1>
       <Link
         href="/me"
-        className="mt-1 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-surface px-3 text-[13px] font-medium text-ink-muted shadow-card hover:text-ink"
+        className="mt-1 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-surface px-3 text-meta font-medium text-ink-muted shadow-card hover:text-ink"
       >
         <MapPin aria-hidden size={14} className="text-primary" />
         {city ? [user.sangkat, tx(city.name)].filter(Boolean).join(", ") : t.chooseArea}
@@ -165,9 +148,9 @@ function AlertBanner({ alert }: { alert: CsAnnouncementView }) {
         <TriangleAlert aria-hidden size={22} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[15px] leading-snug font-bold">{tx(alert.title)}</p>
-        <p className="mt-0.5 text-[13px] leading-snug text-white/90">{tx(alert.body)}</p>
-        <p className="mt-1.5 text-xs text-white/80">
+        <p className="text-row leading-snug font-bold">{tx(alert.title)}</p>
+        <p className="mt-0.5 text-meta leading-snug text-white/90">{tx(alert.body)}</p>
+        <p className="mt-1.5 text-meta text-white/80">
           {t.alertSource} · {time}
         </p>
       </div>
@@ -186,22 +169,22 @@ function QuickActions({ visitor }: { visitor: boolean }) {
     { key: "em", icon: Phone, accent: "danger", title: "tileEmergency", hint: "117 · 118 · 119", onClick: openSos },
   ];
   const tileCls =
-    "flex min-h-28 flex-col items-start gap-2.5 rounded-2xl bg-surface p-3.5 text-left shadow-card transition-shadow hover:shadow-raised";
+    "flex min-h-24 flex-col items-start gap-3 rounded-2xl bg-surface p-4 text-left sm:min-h-32 shadow-card transition-shadow hover:shadow-raised";
 
   return (
     <section aria-label={t.whatToDo} className="grid grid-cols-3 gap-3 lg:grid-cols-5">
       <Link
         href={visitor ? "/login?next=/report/new" : "/report/new"}
-        className="col-span-3 flex min-h-24 items-center gap-4 rounded-2xl bg-primary p-4 text-white shadow-raised transition-colors hover:bg-primary-hover lg:col-span-2 lg:min-h-28"
+        className="col-span-3 flex min-h-28 items-center gap-4 rounded-2xl bg-primary p-5 text-white shadow-raised transition-colors hover:bg-primary-hover lg:col-span-2 lg:min-h-28"
       >
-        <span className="flex size-12 flex-none items-center justify-center rounded-xl bg-white/15">
-          <Megaphone aria-hidden size={24} />
+        <span className="flex size-14 flex-none items-center justify-center rounded-2xl bg-white/15">
+          <Megaphone aria-hidden size={28} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-lg leading-snug font-bold">{t.reportProblem}</span>
-          <span className="block text-[13px] leading-snug text-white/85">{t.reportProblemHint}</span>
+          <span className="block text-title leading-snug font-bold">{t.reportProblem}</span>
+          <span className="block text-meta leading-snug text-white/85">{t.reportProblemHint}</span>
           {visitor && (
-            <span className="mt-1 flex items-center gap-1 text-xs text-white/85">
+            <span className="mt-1 flex items-center gap-1 text-meta text-white/85">
               <Lock aria-hidden size={12} />
               {t.accountNeeded}
             </span>
@@ -214,8 +197,8 @@ function QuickActions({ visitor }: { visitor: boolean }) {
           <>
             <IconTile icon={x.icon} accent={x.accent} />
             <span>
-              <span className="block text-[15px] leading-snug font-bold">{t[x.title]}</span>
-              <span className="mt-0.5 block text-xs leading-snug text-ink-muted">{x.hint}</span>
+              <span className="block text-row leading-snug font-bold">{t[x.title]}</span>
+              <span className="mt-1 hidden text-meta leading-snug text-ink-muted sm:block">{x.hint}</span>
             </span>
           </>
         );
@@ -308,7 +291,7 @@ function MyActivity({ items, onChange }: { items?: ActivityItem[]; onChange: (r:
                 meta={
                   <>
                     <StatusChip status={a.report.status as ChipStatus} />
-                    <span className="text-xs text-ink-muted">
+                    <span className="text-meta text-ink-muted">
                       {reportLine(a.report, t, a.report.departmentName ? tx(a.report.departmentName) : "—")}
                     </span>
                   </>
@@ -316,7 +299,7 @@ function MyActivity({ items, onChange }: { items?: ActivityItem[]; onChange: (r:
               >
                 {a.report.status === "RESOLVED" &&
                   (confirmed.includes(a.report.id) ? (
-                    <p className="flex items-center gap-1.5 text-[13px] font-semibold text-fixed-ink">
+                    <p className="flex items-center gap-1.5 text-meta font-semibold text-fixed-ink">
                       <Check aria-hidden size={16} />
                       {t.confirmedThanks}
                     </p>
@@ -338,7 +321,7 @@ function MyActivity({ items, onChange }: { items?: ActivityItem[]; onChange: (r:
                 meta={
                   <>
                     <StatusChip status={a.claim.status} />
-                    <span className="text-xs text-ink-muted">{claimLine(a.claim, t)}</span>
+                    <span className="text-meta text-ink-muted">{claimLine(a.claim, t)}</span>
                   </>
                 }
               />
@@ -412,13 +395,13 @@ function NearYou({ data, visitor, setData }: { data: HomeData | null; visitor: b
               <Link href={`/reports/${r.code}`} className="flex items-start gap-3">
                 <IconTile icon={CATEGORY_ICON[r.category]} accent="primary" />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] leading-snug font-semibold">{r.title}</span>
-                  {r.addressHint && <span className="mt-0.5 block text-[13px] text-ink-muted">{r.addressHint}</span>}
+                  <span className="block text-row leading-snug font-semibold">{r.title}</span>
+                  {r.addressHint && <span className="mt-0.5 block text-meta text-ink-muted">{r.addressHint}</span>}
                 </span>
               </Link>
               <div className="flex flex-wrap items-center gap-2">
                 <StatusChip status={r.status as ChipStatus} />
-                <span className="text-xs text-ink-muted">{fmt(t.supports, { n: r.supportCount })}</span>
+                <span className="text-meta text-ink-muted">{fmt(t.supports, { n: r.supportCount })}</span>
               </div>
               <div className="mt-auto">
                 {visitor ? (
@@ -445,8 +428,8 @@ function NearYou({ data, visitor, setData }: { data: HomeData | null; visitor: b
               <Link href={`/lost-found/${f.id}`} className="flex items-start gap-3">
                 <IconTile icon={KeyRound} accent="gold" />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] leading-snug font-semibold">{f.title}</span>
-                  <span className="mt-0.5 block text-[13px] text-ink-muted">{fmt(t.foundAt, { place: f.place })}</span>
+                  <span className="block text-row leading-snug font-semibold">{f.title}</span>
+                  <span className="mt-0.5 block text-meta text-ink-muted">{fmt(t.foundAt, { place: f.place })}</span>
                 </span>
               </Link>
               <div>
@@ -463,15 +446,15 @@ function NearYou({ data, visitor, setData }: { data: HomeData | null; visitor: b
           {e?.event && when && (
             <Card className="flex gap-3 sm:col-span-2">
               <div className="flex w-14 flex-none flex-col items-center self-start rounded-xl bg-reported-tint py-1.5 text-reported-ink">
-                <span className="text-[11px] leading-normal font-semibold">{when.weekday}</span>
-                <span className="text-2xl leading-tight font-extrabold">{when.day}</span>
-                <span className="max-w-full truncate px-1 text-[11px] leading-normal">{when.month}</span>
+                <span className="text-caption leading-normal font-semibold">{when.weekday}</span>
+                <span className="text-page leading-tight font-extrabold">{when.day}</span>
+                <span className="max-w-full truncate px-1 text-caption leading-normal">{when.month}</span>
               </div>
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <Link href={`/community/posts/${e.id}`} className="text-[15px] leading-snug font-semibold">
+                <Link href={`/community/posts/${e.id}`} className="text-row leading-snug font-semibold">
                   {e.title}
                 </Link>
-                <p className="text-[13px] text-ink-muted">
+                <p className="text-meta text-ink-muted">
                   {when.time} · {e.event.place} · {fmt(t.going, { n: e.event.goingCount })}
                 </p>
                 <div className="mt-1">
@@ -520,8 +503,8 @@ function ServicesNear({ place, loading }: { place: CsPlaceView | null; loading: 
           <Link href={`/services/${place.id}`} className="flex items-start gap-3">
             <IconTile icon={Landmark} accent="fixed" />
             <span className="min-w-0 flex-1">
-              <span className="block text-[15px] leading-snug font-semibold">{tx(place.name)}</span>
-              <span className="mt-0.5 block text-[13px] text-ink-muted">{[place.address, distance].filter(Boolean).join(" · ")}</span>
+              <span className="block text-row leading-snug font-semibold">{tx(place.name)}</span>
+              <span className="mt-0.5 block text-meta text-ink-muted">{[place.address, distance].filter(Boolean).join(" · ")}</span>
             </span>
           </Link>
           <div>
@@ -565,10 +548,10 @@ function Hotlines() {
           <a
             key={h.id}
             href={`tel:${h.number}`}
-            className="group flex min-h-18 flex-col justify-center rounded-2xl bg-danger-tint px-3 py-2 ring-1 ring-danger/20 ring-inset hover:bg-danger hover:text-white"
+            className="group flex min-h-20 flex-col justify-center rounded-2xl bg-danger-tint px-3 py-2 ring-1 ring-danger/20 ring-inset hover:bg-danger hover:text-white"
           >
-            <span className="text-xl leading-tight font-extrabold text-danger tabular-nums group-hover:text-white">{h.number}</span>
-            <span className="truncate text-xs font-semibold">{tx(h.name)}</span>
+            <span className="text-page leading-tight font-extrabold text-danger tabular-nums group-hover:text-white">{h.number}</span>
+            <span className="truncate text-meta font-semibold">{tx(h.name)}</span>
           </a>
         ))}
       </div>
@@ -596,7 +579,7 @@ function Guides({ guides }: { guides?: CsGuideView[] }) {
 function StaffLink() {
   const { t } = useLocale();
   return (
-    <Link href="/login?staff=1" className="flex min-h-11 items-center gap-1.5 self-start text-[13px] font-semibold text-ink-muted hover:text-ink">
+    <Link href="/login?staff=1" className="flex min-h-11 items-center gap-1.5 self-start text-meta font-semibold text-ink-muted hover:text-ink">
       <Shield aria-hidden size={16} />
       {t.staffSignIn}
     </Link>

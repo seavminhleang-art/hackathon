@@ -15,7 +15,7 @@ export function Card({
   padded?: boolean;
   as?: "div" | "section" | "article" | "li" | "ul";
 }) {
-  return <Tag className={`rounded-2xl bg-surface shadow-card ${padded ? "p-4" : ""} ${className}`}>{children}</Tag>;
+  return <Tag className={`rounded-2xl bg-surface shadow-card ${padded ? "p-4 lg:p-5" : ""} ${className}`}>{children}</Tag>;
 }
 
 /**
@@ -35,8 +35,8 @@ const ACCENT: Record<Accent, string> = {
 
 /** Rounded square with an icon. Use at the start of list rows and feature tiles. */
 export function IconTile({ icon: Icon, accent = "neutral", size = "md" }: { icon: LucideIcon; accent?: Accent; size?: "sm" | "md" | "lg" }) {
-  const box = size === "lg" ? "size-12 rounded-xl" : size === "sm" ? "size-8 rounded-lg" : "size-10 rounded-xl";
-  const icon = size === "lg" ? 24 : size === "sm" ? 16 : 20;
+  const box = size === "lg" ? "size-14 rounded-2xl" : size === "sm" ? "size-9 rounded-lg" : "size-11 rounded-xl";
+  const icon = size === "lg" ? 28 : size === "sm" ? 18 : 22;
   return (
     <span className={`flex flex-none items-center justify-center ${box} ${ACCENT[accent]}`}>
       <Icon aria-hidden size={icon} />
@@ -72,24 +72,24 @@ export function ListRow({
   const head = (
     <>
       {icon && <IconTile icon={icon} accent={accent} />}
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-[15px] leading-snug font-semibold text-ink">{title}</span>
-        {subtitle && <span className="text-[13px] leading-snug text-ink-muted">{subtitle}</span>}
+      <span className="flex min-w-0 flex-1 flex-col gap-1 pt-0.5">
+        <span className="text-row leading-snug font-semibold text-ink">{title}</span>
+        {subtitle && <span className="text-meta leading-snug text-ink-muted">{subtitle}</span>}
       </span>
-      {trailing ?? (href && <ChevronRight aria-hidden size={18} className="mt-1 flex-none text-ink-muted" />)}
+      {trailing ?? (href && <ChevronRight aria-hidden size={20} className="mt-2.5 flex-none text-ink-muted" />)}
     </>
   );
   return (
-    <li className="list-none border-b border-line px-4 py-3.5 last:border-b-0">
+    <li className="list-none border-b border-line px-4 py-4 last:border-b-0 lg:px-5">
       {href ? (
-        <Link href={href} className="-m-1 flex items-start gap-3 rounded-lg p-1 hover:bg-sand">
+        <Link href={href} className="-m-1 flex items-start gap-3 rounded-xl p-1 hover:bg-sand">
           {head}
         </Link>
       ) : (
         <div className="flex items-start gap-3">{head}</div>
       )}
       {(meta || children) && (
-        <div className={`mt-2 flex flex-col gap-2.5 ${icon ? "pl-[52px]" : ""}`}>
+        <div className={`mt-2.5 flex flex-col gap-3 ${icon ? "pl-14" : ""}`}>
           {meta && <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">{meta}</div>}
           {children}
         </div>

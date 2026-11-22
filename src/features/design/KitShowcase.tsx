@@ -41,7 +41,7 @@ import {
 } from "@/components/ui";
 
 // Internal page for the team (English only). Shows every kit component with the
-// rules for using it. Source: src/components/ui. Linked from the sidebar in dev.
+// rules for using it. Source: src/components/ui. Not linked from the nav: open /design directly.
 
 const COLORS: { name: string; cls: string; use: string }[] = [
   { name: "primary", cls: "bg-primary", use: "Main actions, links, active nav" },
@@ -112,21 +112,22 @@ export function KitShowcase() {
               <div key={c.name} className="flex items-center gap-3">
                 <span className={`size-10 flex-none rounded-xl ${c.cls}`} />
                 <span className="min-w-0">
-                  <span className="block font-mono text-xs font-semibold">{c.name}</span>
-                  <span className="block text-xs text-ink-muted">{c.use}</span>
+                  <span className="block font-mono text-meta font-semibold">{c.name}</span>
+                  <span className="block text-meta text-ink-muted">{c.use}</span>
                 </span>
               </div>
             ))}
           </div>
         </Demo>
 
-        <Demo title="Type & shape" rule="Kantumruy Pro + Inter. Radii: 12px controls, 16px cards, full for chips. Shadows: shadow-card, shadow-raised.">
+        <Demo title="Type & shape" rule="Kantumruy Pro + Inter. Use the scale tokens below, never text-xs or px sizes. 13px is the minimum. Radii: 12px controls, 16px cards.">
           <div className="flex flex-col gap-1">
-            <p className="text-2xl font-bold lg:text-[28px]">Page title · ចំណងជើងទំព័រ (PageHeader)</p>
-            <p className="text-lg font-bold">Section title · ផ្នែក (Section)</p>
-            <p className="text-[15px] font-semibold">Row / card title (15px semibold)</p>
-            <p className="text-[13px] text-ink-muted">Secondary text (13px ink-muted)</p>
-            <p className="text-xs text-ink-muted">Meta / caption (12px)</p>
+            <p className="text-page font-bold lg:text-display">text-page / lg:text-display · ចំណងជើងទំព័រ</p>
+            <p className="text-title font-bold">text-title (22px) · section heading · ចំណងជើងផ្នែក</p>
+            <p className="text-row font-semibold">text-row (18px) · card / row title · ចំណងជើងកាត</p>
+            <p className="text-body">text-body (17px) · paragraphs, buttons, inputs · អត្ថបទ</p>
+            <p className="text-meta text-ink-muted">text-meta (15px) · subtitles, hints · ព័ត៌មានបន្ថែម</p>
+            <p className="text-caption text-ink-muted">text-caption (13px, minimum) · tab labels, times · ម៉ោង</p>
           </div>
         </Demo>
 
@@ -166,8 +167,8 @@ export function KitShowcase() {
               <div key={a.accent} className="flex items-center gap-2.5">
                 <IconTile icon={a.icon} accent={a.accent} />
                 <span>
-                  <span className="block font-mono text-xs font-semibold">{a.accent}</span>
-                  <span className="block text-xs text-ink-muted">{a.feature}</span>
+                  <span className="block font-mono text-meta font-semibold">{a.accent}</span>
+                  <span className="block text-meta text-ink-muted">{a.feature}</span>
                 </span>
               </div>
             ))}
@@ -185,7 +186,7 @@ export function KitShowcase() {
               meta={
                 <>
                   <StatusChip status="IN_PROGRESS" />
-                  <span className="text-xs text-ink-muted">Road Maintenance is fixing it</span>
+                  <span className="text-meta text-ink-muted">Road Maintenance is fixing it</span>
                 </>
               }
             />
@@ -214,7 +215,7 @@ export function KitShowcase() {
             </div>
           </div>
           <div>
-            <p className="mb-2 text-sm font-semibold">ChoiceCard (radio)</p>
+            <p className="mb-2 text-body font-semibold">ChoiceCard (radio)</p>
             <div className="grid gap-2 sm:grid-cols-3">
               <ChoiceCard name="cat" defaultChecked label="Roads & traffic" description="Potholes, lights" icon={<IconTile icon={TrafficCone} accent="primary" size="sm" />} />
               <ChoiceCard name="cat" label="Drains & flooding" icon={<IconTile icon={Waves} accent="primary" size="sm" />} />
@@ -250,7 +251,7 @@ export function KitShowcase() {
         </Demo>
 
         <Demo title="Page skeleton for a new feature screen" rule="Copy this into src/app/(app)/<route>/page.tsx.">
-          <pre className="overflow-x-auto rounded-xl bg-ink p-4 text-xs leading-relaxed text-white">{`"use client";
+          <pre className="overflow-x-auto rounded-xl bg-ink p-4 text-meta leading-relaxed text-white">{`"use client";
 import { PageContainer } from "@/components/layout/AppShell";
 import { PageHeader, Section, Card, ListRow, LinkButton } from "@/components/ui";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -272,7 +273,7 @@ export default function LostFoundPage() {
 
       {sheet && (
         <Sheet title="Confirm it's fixed?" onClose={() => setSheet(false)}>
-          <p className="text-sm text-ink-muted">The department marked this report resolved. Is the problem gone?</p>
+          <p className="text-body text-ink-muted">The department marked this report resolved. Is the problem gone?</p>
           <div className="grid grid-cols-2 gap-2">
             <Button variant="secondary" onClick={() => setSheet(false)}>
               Not yet

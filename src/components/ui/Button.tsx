@@ -10,7 +10,7 @@ import type { LucideIcon } from "lucide-react";
  * - secondary: other actions (white, blue outline)
  * - ghost:     low-emphasis text actions ("See all")
  * - danger:    emergency only (SOS, call 117/118/119)
- * All sizes keep a 48px minimum touch target except `sm` (40px, use in dense rows).
+ * All sizes keep a 48px minimum touch target except `sm` (44px, use in dense rows).
  */
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
@@ -23,9 +23,9 @@ const VARIANT: Record<ButtonVariant, string> = {
 };
 
 const SIZE: Record<ButtonSize, string> = {
-  sm: "min-h-10 px-3 text-[13px] gap-1.5 rounded-lg",
-  md: "min-h-12 px-4 text-sm gap-2 rounded-xl",
-  lg: "min-h-14 px-5 text-base gap-2 rounded-xl",
+  sm: "min-h-11 px-3.5 text-meta gap-1.5 rounded-xl",
+  md: "min-h-12 px-5 text-body gap-2 rounded-xl",
+  lg: "min-h-14 px-6 text-row gap-2.5 rounded-xl",
 };
 
 const BASE =
@@ -50,7 +50,7 @@ type ButtonProps = CommonProps & Omit<ComponentProps<"button">, "className" | "c
 type LinkButtonProps = CommonProps & { href: string } & Omit<ComponentProps<typeof Link>, "className" | "children" | "href">;
 
 function Inner({ icon: Icon, trailingIcon: Trailing, children, size }: CommonProps) {
-  const s = size === "lg" ? 20 : size === "sm" ? 16 : 18;
+  const s = size === "lg" ? 22 : size === "sm" ? 18 : 20;
   return (
     <>
       {Icon && <Icon aria-hidden size={s} className="flex-none" />}

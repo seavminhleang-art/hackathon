@@ -86,9 +86,9 @@ export function StatusChip({ status }: { status: ChipStatus }) {
   const Icon = m.icon;
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs leading-relaxed font-semibold whitespace-nowrap ring-1 ring-inset ${TONE[m.tone]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-meta leading-relaxed font-semibold whitespace-nowrap ring-1 ring-inset ${TONE[m.tone]}`}
     >
-      <Icon aria-hidden size={13} strokeWidth={2.5} />
+      <Icon aria-hidden size={15} strokeWidth={2.5} />
       {t[m.label]}
     </span>
   );

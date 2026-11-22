@@ -27,18 +27,18 @@ function Wrap({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-semibold text-ink">
+      <label htmlFor={id} className="text-body font-semibold text-ink">
         {label}
         {optional && <span className="ml-1.5 font-normal text-ink-muted">({optional})</span>}
       </label>
       {children}
       {error ? (
-        <p id={`${id}-msg`} className="text-[13px] font-medium text-danger">
+        <p id={`${id}-msg`} className="text-meta font-medium text-danger">
           {error}
         </p>
       ) : (
         hint && (
-          <p id={`${id}-msg`} className="text-[13px] text-ink-muted">
+          <p id={`${id}-msg`} className="text-meta text-ink-muted">
             {hint}
           </p>
         )
@@ -105,8 +105,8 @@ export function ChoiceCard({
       <input type="radio" className="sr-only" {...rest} />
       {icon}
       <span className="min-w-0">
-        <span className="block text-sm font-semibold text-ink">{label}</span>
-        {description && <span className="block text-xs text-ink-muted">{description}</span>}
+        <span className="block text-body font-semibold text-ink">{label}</span>
+        {description && <span className="block text-meta text-ink-muted">{description}</span>}
       </span>
     </label>
   );

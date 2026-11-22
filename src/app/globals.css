@@ -46,6 +46,26 @@
 
   --font-sans: var(--font-khmer), var(--font-latin), system-ui, sans-serif;
 
+  /*
+   * Type scale (rem, so it follows the phone's font-size setting).
+   * Khmer glyphs are small for their box, so sizes sit 1-2px above typical Latin apps.
+   * Nothing smaller than `caption` (13px) anywhere.
+   */
+  --text-caption: 0.8125rem; /* 13px: tab labels, timestamps */
+  --text-caption--line-height: 1.45;
+  --text-meta: 0.9375rem; /* 15px: subtitles, hints, chips' companions */
+  --text-meta--line-height: 1.5;
+  --text-body: 1.0625rem; /* 17px: paragraphs, buttons, form text */
+  --text-body--line-height: 1.6;
+  --text-row: 1.125rem; /* 18px: card and list-row titles */
+  --text-row--line-height: 1.45;
+  --text-title: 1.375rem; /* 22px: section headings, hero card title */
+  --text-title--line-height: 1.35;
+  --text-page: 1.875rem; /* 30px: page title on phones */
+  --text-page--line-height: 1.25;
+  --text-display: 2.25rem; /* 36px: page title on desktop */
+  --text-display--line-height: 1.2;
+
   /* Elevation: soft, warm shadows instead of heavy borders. */
   --shadow-card: 0 1px 2px rgb(28 26 23 / 0.05), 0 1px 3px rgb(28 26 23 / 0.07);
   --shadow-raised: 0 4px 12px rgb(28 26 23 / 0.08), 0 1px 3px rgb(28 26 23 / 0.06);
@@ -65,6 +85,7 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   /* Khmer has stacked subscript consonants: give lines more room. */
+  font-size: var(--text-body);
   line-height: 1.7;
 }
 

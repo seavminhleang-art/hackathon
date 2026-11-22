@@ -27,7 +27,7 @@ const km = {
   chooseArea: "ជ្រើសតំបន់",
   notifications: "ដំណឹង",
   navHome: "ទំព័រដើម",
-  navReports: "របាយការណ៍",
+  navReports: "រាយការណ៍",
   navLostFound: "របស់បាត់",
   navCommunity: "សហគមន៍",
   navMe: "ខ្ញុំ",
@@ -43,7 +43,6 @@ const km = {
   // Home
   homeVisitorPitch: "កន្លែងតែមួយ សម្រាប់រាយការណ៍បញ្ហា រករបស់បាត់ និងទាក់ទងអាជ្ញាធរមូលដ្ឋាន",
   registerFree: "ចុះឈ្មោះ ឥតគិតថ្លៃ",
-  visitorStrip: "ចូលគណនី ដើម្បីរាយការណ៍ និងតាមដានបញ្ហា",
   whatToDo: "តើអ្នកចង់ធ្វើអ្វី?",
   alertSource: "ប្រកាសផ្លូវការ",
   alertDetails: "ព័ត៌មានលម្អិត",
@@ -162,7 +161,6 @@ const en: Dictionary = {
 
   homeVisitorPitch: "One place to report city problems, find lost items and reach your local authorities.",
   registerFree: "Register, free",
-  visitorStrip: "Log in to report problems and track them",
   whatToDo: "What do you need today?",
   alertSource: "Official alert",
   alertDetails: "Details",

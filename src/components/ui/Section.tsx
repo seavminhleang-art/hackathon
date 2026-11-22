@@ -25,16 +25,16 @@ export function Section({
   const { t } = useLocale();
   return (
     <section className={className}>
-      <div className="mb-2.5 flex items-end justify-between gap-3">
+      <div className="mb-3 flex items-end justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-lg leading-snug font-bold text-ink">{title}</h2>
-          {hint && <p className="mt-0.5 text-[13px] leading-snug text-ink-muted">{hint}</p>}
+          <h2 className="text-title leading-snug font-bold text-ink">{title}</h2>
+          {hint && <p className="mt-0.5 text-meta leading-snug text-ink-muted">{hint}</p>}
         </div>
         {action ??
           (href && (
             <Link
               href={href}
-              className="-mr-2 flex min-h-10 flex-none items-center gap-0.5 rounded-lg px-2 text-[13px] font-semibold text-primary hover:bg-primary-tint"
+              className="-mr-2 flex min-h-11 flex-none items-center gap-0.5 rounded-lg px-2 text-meta font-semibold text-primary hover:bg-primary-tint"
             >
               {t.seeAll}
               <ChevronRight aria-hidden size={16} />
@@ -69,8 +69,8 @@ export function PageHeader({
             <ArrowLeft aria-hidden size={20} />
           </Link>
         )}
-        <h1 className="text-2xl leading-snug font-bold text-ink lg:text-[28px]">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>}
+        <h1 className="text-page leading-snug font-bold text-ink lg:text-display">{title}</h1>
+        {subtitle && <p className="mt-1 text-body text-ink-muted">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-none flex-wrap gap-2">{actions}</div>}
     </header>
@@ -84,8 +84,8 @@ export function EmptyState({ icon: Icon, title, body, action }: { icon: LucideIc
       <span className="mb-1 flex size-12 items-center justify-center rounded-full bg-sand-deep text-ink-muted">
         <Icon aria-hidden size={24} />
       </span>
-      <p className="text-[15px] font-semibold text-ink">{title}</p>
-      {body && <p className="max-w-sm text-[13px] text-ink-muted">{body}</p>}
+      <p className="text-row font-semibold text-ink">{title}</p>
+      {body && <p className="max-w-sm text-meta text-ink-muted">{body}</p>}
       {action && <div className="mt-2">{action}</div>}
     </div>
   );
@@ -113,7 +113,7 @@ export function CountBadge({ count, tone = "danger" }: { count: number; tone?: "
   if (count <= 0) return null;
   return (
     <span
-      className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] leading-none font-bold text-white ${tone === "danger" ? "bg-danger" : "bg-primary"}`}
+      className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-caption leading-none font-bold text-white ${tone === "danger" ? "bg-danger" : "bg-primary"}`}
     >
       {count > 99 ? "99+" : count}
     </span>

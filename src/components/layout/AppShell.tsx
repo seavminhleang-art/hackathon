@@ -5,15 +5,12 @@ import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import {
   Bell,
-  Building2,
   ChevronRight,
   FileText,
   House,
   KeyRound,
   Languages,
   LogIn,
-  MapPin,
-  Palette,
   Siren,
   User as UserIcon,
   Users,
@@ -47,23 +44,12 @@ const TABS: NavItem[] = [
   { href: "/me", icon: UserIcon, label: "navMe" },
 ];
 
-/** Desktop sidebar: room for every feature. */
-const SIDEBAR: NavItem[] = [
-  { href: "/", icon: House, label: "navHome" },
-  { href: "/reports", icon: FileText, label: "navReports" },
-  { href: "/lost-found", icon: KeyRound, label: "navLostFound" },
-  { href: "/services", icon: Building2, label: "navServices" },
-  { href: "/community", icon: Users, label: "navCommunity" },
-  { href: "/notifications", icon: Bell, label: "notifications" },
-  { href: "/me", icon: UserIcon, label: "navMe" },
-];
-
 const isActive = (pathname: string, href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
 /**
  * Layout for every citizen screen (wired in src/app/(app)/layout.tsx):
- * - phone: compact blue header, bottom tabs, floating SOS
- * - desktop (lg+): left sidebar with all features and SOS, content beside it
+ * - phone: blue navbar (logo, language, bell), bottom tabs, floating SOS
+ * - desktop (lg+): same navbar plus 4 feature links, avatar and SOS; no bottom tabs
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const [sosOpen, setSosOpen] = useState(false);
@@ -83,14 +69,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <SosContext.Provider value={{ openSos }}>
-      <div className="flex min-h-dvh flex-1">
-        <Sidebar onSos={openSos} unread={user ? unread : 0} />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <MobileHeader unread={user ? unread : 0} />
-          {/* Bottom padding keeps content clear of the fixed tabs + SOS on phones. */}
-          <div className="flex-1 pb-36 lg:pb-12">{children}</div>
-        </div>
-      </div>
+      <Navbar onSos={openSos} unread={user ? unread : 0} />
+      {/* Bottom padding keeps content clear of the fixed tabs + SOS on phones. */}
+      <div className="flex-1 pb-36 lg:pb-16">{children}</div>
       <BottomTabs onSos={openSos} />
       {sosOpen && <SosSheet onClose={closeSos} />}
     </SosContext.Provider>
@@ -99,7 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 /** Max-width content column. Use as the root of every screen. */
 export function PageContainer({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <main className={`mx-auto w-full max-w-6xl px-4 pt-5 lg:px-10 lg:pt-10 ${className}`}>{children}</main>;
+  return <main className={`mx-auto w-full max-w-[1440px] px-4 pt-5 sm:px-6 lg:px-12 lg:pt-10 2xl:px-16 ${className}`}>{children}</main>;
 }
 
 // ---------- Language toggle: one language at a time ----------
@@ -112,7 +93,7 @@ export function LanguageToggle({ variant = "light", compact = false }: { variant
       type="button"
       onClick={() => setLocale(next)}
       lang={next}
-      className={`flex min-h-11 items-center gap-1.5 rounded-xl px-2.5 text-[13px] font-semibold ${
+      className={`flex min-h-11 items-center gap-1.5 rounded-xl px-2.5 text-meta font-semibold ${
         variant === "dark" ? "text-white hover:bg-white/10" : "text-ink hover:bg-sand-deep"
       }`}
     >
@@ -127,136 +108,98 @@ function Logo({ dark = false }: { dark?: boolean }) {
   return (
     <Link href="/" className="flex items-center gap-2.5" aria-label={t.appName}>
       <span
-        className={`flex size-9 flex-none items-center justify-center rounded-xl text-[13px] font-extrabold ${
+        className={`flex size-9 flex-none items-center justify-center rounded-xl text-meta font-extrabold ${
           dark ? "bg-white text-primary" : "bg-primary text-white"
         }`}
       >
         CV
       </span>
-      <span className={`text-[17px] font-bold ${dark ? "text-white" : "text-ink"}`}>{t.appName}</span>
+      <span className={`text-row font-bold ${dark ? "text-white" : "text-ink"}`}>{t.appName}</span>
     </Link>
   );
 }
 
-// ---------- Phone header ----------
+// ---------- Navbar (phone + desktop) ----------
 
-function MobileHeader({ unread }: { unread: number }) {
+/**
+ * One blue bar for every screen size. Kept deliberately short:
+ * phone = logo · language · bell; desktop adds the 4 feature links, avatar and SOS.
+ * Everything else (services, settings, notifications list) lives on its own page.
+ */
+function Navbar({ onSos, unread }: { onSos: () => void; unread: number }) {
   const { t } = useLocale();
   const { user, ready } = useAuth();
+  const pathname = usePathname();
+
   return (
-    <header className="sticky top-0 z-30 bg-primary text-white shadow-raised lg:hidden">
-      <div className="flex min-h-14 items-center gap-1 py-1.5 pr-2 pl-4">
-        <div className="flex-1">
-          <Logo dark />
-        </div>
+    <header className="sticky top-0 z-30 bg-primary text-white shadow-raised">
+      <div className="mx-auto flex min-h-14 max-w-[1440px] items-center gap-1 py-1.5 pr-2 pl-4 sm:px-6 lg:min-h-16 lg:gap-2 lg:px-12 2xl:px-16">
+        <Logo dark />
+
+        <nav className="ml-8 hidden h-16 items-stretch gap-1 lg:flex" aria-label={t.appName}>
+          {TABS.slice(0, 4).map((n) => {
+            const active = isActive(pathname, n.href);
+            return (
+              <Link
+                key={n.href}
+                href={n.href}
+                aria-current={active ? "page" : undefined}
+                className={`relative flex items-center px-3.5 text-body font-semibold transition-colors ${
+                  active ? "text-white" : "text-white/75 hover:text-white"
+                }`}
+              >
+                {t[n.label]}
+                {active && <span className="absolute inset-x-3.5 bottom-0 h-[3px] rounded-t-full bg-gold" aria-hidden />}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex-1" />
+
         <LanguageToggle variant="dark" compact />
+
         {ready && user && (
-          <Link
-            href="/notifications"
-            className="relative flex size-11 items-center justify-center rounded-xl hover:bg-white/10"
-            aria-label={`${t.notifications} (${unread})`}
-          >
-            <Bell aria-hidden size={22} />
-            <span className="absolute top-1 right-0.5">
-              <CountBadge count={unread} />
-            </span>
-          </Link>
+          <>
+            <Link
+              href="/notifications"
+              className="relative flex size-11 items-center justify-center rounded-xl hover:bg-white/10"
+              aria-label={`${t.notifications} (${unread})`}
+            >
+              <Bell aria-hidden size={22} />
+              <span className="absolute top-1 right-0.5">
+                <CountBadge count={unread} />
+              </span>
+            </Link>
+            <Link
+              href="/me"
+              aria-label={t.navMe}
+              className="ml-1 hidden size-10 items-center justify-center rounded-full bg-white text-body font-bold text-primary ring-2 ring-white/30 lg:flex"
+            >
+              {user.fullName.slice(0, 1)}
+            </Link>
+          </>
         )}
         {ready && !user && (
-          <Link href="/login" className="flex min-h-10 items-center gap-1.5 rounded-xl bg-white px-3 text-[13px] font-semibold text-primary">
-            <LogIn aria-hidden size={16} />
+          <Link
+            href="/login"
+            className="flex min-h-10 items-center gap-1.5 rounded-xl bg-white px-3.5 text-meta font-semibold text-primary hover:bg-primary-tint"
+          >
+            <LogIn aria-hidden size={18} />
             {t.login}
           </Link>
         )}
-      </div>
-    </header>
-  );
-}
 
-// ---------- Desktop sidebar ----------
-
-function Sidebar({ onSos, unread }: { onSos: () => void; unread: number }) {
-  const { t, tx } = useLocale();
-  const { user, ready } = useAuth();
-  const pathname = usePathname();
-  const city = useUserCity();
-
-  return (
-    <aside className="sticky top-0 hidden h-dvh w-64 flex-none flex-col border-r border-line bg-surface lg:flex">
-      <div className="px-5 pt-6 pb-5">
-        <Logo />
-      </div>
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3" aria-label={t.appName}>
-        {SIDEBAR.map((n) => {
-          const active = isActive(pathname, n.href);
-          const Icon = n.icon;
-          return (
-            <Link
-              key={n.href}
-              href={n.href}
-              aria-current={active ? "page" : undefined}
-              className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-semibold ${
-                active ? "bg-primary-tint text-primary" : "text-ink hover:bg-sand"
-              }`}
-            >
-              <Icon aria-hidden size={20} className={active ? "" : "text-ink-muted"} />
-              <span className="flex-1">{t[n.label]}</span>
-              {n.href === "/notifications" && <CountBadge count={unread} />}
-            </Link>
-          );
-        })}
-        {process.env.NODE_ENV !== "production" && (
-          <Link
-            href="/design"
-            className={`mt-2 flex min-h-11 items-center gap-3 rounded-xl px-3 text-[13px] font-semibold ${
-              isActive(pathname, "/design") ? "bg-primary-tint text-primary" : "text-ink-muted hover:bg-sand"
-            }`}
-          >
-            <Palette aria-hidden size={18} />
-            UI kit
-          </Link>
-        )}
-      </nav>
-
-      <div className="flex flex-col gap-3 border-t border-line p-4">
         <button
           type="button"
           onClick={onSos}
-          className="flex min-h-13 items-center justify-center gap-2 rounded-xl bg-danger font-bold text-white shadow-sos hover:bg-danger-ink"
+          className="ml-2 hidden min-h-11 items-center gap-2 rounded-xl bg-danger px-4 text-body font-bold text-white shadow-sos ring-2 ring-white/90 hover:bg-danger-ink lg:flex"
         >
           <Siren aria-hidden size={20} />
-          SOS · {t.tileEmergency}
+          SOS
         </button>
-        <LanguageToggle />
-        {ready && user ? (
-          <Link href="/me" className="flex items-center gap-3 rounded-xl p-2 hover:bg-sand">
-            <span className="flex size-9 flex-none items-center justify-center rounded-full bg-primary-tint text-sm font-bold text-primary">
-              {user.fullName.slice(0, 1)}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold">{user.fullName}</span>
-              {city && (
-                <span className="flex items-center gap-1 truncate text-xs text-ink-muted">
-                  <MapPin aria-hidden size={12} />
-                  {tx(city.name)}
-                </span>
-              )}
-            </span>
-            <ChevronRight aria-hidden size={16} className="text-ink-muted" />
-          </Link>
-        ) : (
-          ready && (
-            <Link
-              href="/login"
-              className="flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-semibold text-primary ring-1 ring-primary/35 ring-inset hover:bg-primary-tint"
-            >
-              <LogIn aria-hidden size={16} />
-              {t.login}
-            </Link>
-          )
-        )}
       </div>
-    </aside>
+    </header>
   );
 }
 
@@ -292,8 +235,8 @@ function BottomTabs({ onSos }: { onSos: () => void }) {
         >
           <Siren aria-hidden size={20} />
           <span className="flex flex-col items-start">
-            <span className="text-base leading-tight font-extrabold">SOS</span>
-            {locale === "km" && <span className="text-[11px] leading-tight font-semibold">{t.sos}</span>}
+            <span className="text-row leading-tight font-extrabold">SOS</span>
+            {locale === "km" && <span className="text-caption leading-tight font-semibold">{t.sos}</span>}
           </span>
         </button>
       </div>
@@ -309,12 +252,12 @@ function BottomTabs({ onSos }: { onSos: () => void }) {
               key={n.href}
               href={n.href}
               aria-current={active ? "page" : undefined}
-              className={`flex h-16 flex-col items-center justify-center gap-1 ${active ? "text-primary" : "text-ink-muted"}`}
+              className={`flex h-[68px] flex-col items-center justify-center gap-1 ${active ? "text-primary" : "text-ink-muted"}`}
             >
-              <span className={`flex h-7 w-12 items-center justify-center rounded-full ${active ? "bg-primary-tint" : ""}`}>
-                <Icon aria-hidden size={20} strokeWidth={active ? 2.4 : 2} />
+              <span className={`flex h-8 w-14 items-center justify-center rounded-full ${active ? "bg-primary-tint" : ""}`}>
+                <Icon aria-hidden size={22} strokeWidth={active ? 2.4 : 2} />
               </span>
-              <span className="max-w-full truncate px-0.5 text-[11px] leading-tight font-semibold">{t[n.label]}</span>
+              <span className="max-w-full truncate px-0.5 text-caption leading-tight font-semibold">{t[n.label]}</span>
             </Link>
           );
         })}
@@ -335,8 +278,8 @@ function SosSheet({ onClose }: { onClose: () => void }) {
   return (
     <Sheet title={t.sosTitle} tone="danger" icon={<Siren aria-hidden size={22} />} onClose={onClose}>
       <div>
-        <p className="text-lg font-bold">{t.sosCallFirst}</p>
-        <p className="text-sm text-ink-muted">{t.sosCallFirstHint}</p>
+        <p className="text-title font-bold">{t.sosCallFirst}</p>
+        <p className="text-body text-ink-muted">{t.sosCallFirstHint}</p>
       </div>
       <div className="flex flex-col gap-2.5">
         {hotlines.map((h) => (
@@ -345,8 +288,8 @@ function SosSheet({ onClose }: { onClose: () => void }) {
             href={`tel:${h.number}`}
             className="flex min-h-20 items-center gap-4 rounded-2xl bg-danger px-5 text-white shadow-card hover:bg-danger-ink"
           >
-            <span className="text-3xl font-extrabold tabular-nums">{h.number}</span>
-            <span className="text-lg font-semibold">{tx(h.name)}</span>
+            <span className="text-display font-extrabold tabular-nums">{h.number}</span>
+            <span className="text-title font-semibold">{tx(h.name)}</span>
           </a>
         ))}
       </div>
@@ -357,7 +300,7 @@ function SosSheet({ onClose }: { onClose: () => void }) {
       >
         <span>
           <span className="block font-bold">{t.sosSendInApp}</span>
-          <span className="block text-xs text-ink-muted">{t.sosSendInAppHint}</span>
+          <span className="block text-meta text-ink-muted">{t.sosSendInAppHint}</span>
         </span>
         <ChevronRight aria-hidden size={20} />
       </Link>
