@@ -35,7 +35,7 @@ Student team; each main feature has a different owner.
 | 2. Emergency response | Foundation done | src/features/emergency/AGENTS.md |
 | 3. Government reporting | Foundation done | src/features/gov-reporting/AGENTS.md |
 | 4. Community & Services | Foundation done | src/features/community/AGENTS.md |
-| Screens / UI | **Not started.** The team asked for foundation only: don't build screens unless asked | docs/FEATURES.md (screen list) |
+| Screens / UI | Government Reporting citizen form, location picker, duplicate check, submission confirmation, My Reports, report detail, and public feed are static responsive UI; map-only, admin, and staff screens remain | `src/app/report/`, `src/app/me/reports/`, `src/app/reports/` |
 | Spring Boot backend | Not started | — |
 
 ## Commands
