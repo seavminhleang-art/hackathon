@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  Suspense,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   Bell,
   ChevronRight,
@@ -44,7 +52,24 @@ const TABS: NavItem[] = [
   { href: "/me", icon: UserIcon, label: "navMe" },
 ];
 
-const isActive = (pathname: string, href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+/**
+ * Renders with the current path. On routes whose URL is only known at request time
+ * (e.g. /community/posts/[id]) the path isn't available while prerendering, so the
+ * fallback renders with no active item and the real one streams in.
+ */
+function WithPath({ render }: { render: (pathname: string) => ReactNode }) {
+  return (
+    <Suspense fallback={render("")}>
+      <PathReader render={render} />
+    </Suspense>
+  );
+}
+function PathReader({ render }: { render: (pathname: string) => ReactNode }) {
+  return render(usePathname());
+}
+
+const isActive = (pathname: string, href: string) =>
+  href === "/" ? pathname === "/" : pathname.startsWith(href);
 
 /**
  * Layout for every citizen screen (wired in src/app/(app)/layout.tsx):
@@ -79,13 +104,31 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 /** Max-width content column. Use as the root of every screen. */
-export function PageContainer({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <main className={`mx-auto w-full max-w-[1440px] px-4 pt-5 sm:px-6 lg:px-12 lg:pt-10 2xl:px-16 ${className}`}>{children}</main>;
+export function PageContainer({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <main
+      className={`mx-auto w-full max-w-[1440px] px-4 pt-5 sm:px-6 lg:px-12 lg:pt-10 2xl:px-16 ${className}`}
+    >
+      {children}
+    </main>
+  );
 }
 
 // ---------- Language toggle: one language at a time ----------
 
-export function LanguageToggle({ variant = "light", compact = false }: { variant?: "light" | "dark"; compact?: boolean }) {
+export function LanguageToggle({
+  variant = "light",
+  compact = false,
+}: {
+  variant?: "light" | "dark";
+  compact?: boolean;
+}) {
   const { t, locale, setLocale } = useLocale();
   const next = locale === "km" ? "en" : "km";
   return (
@@ -94,7 +137,9 @@ export function LanguageToggle({ variant = "light", compact = false }: { variant
       onClick={() => setLocale(next)}
       lang={next}
       className={`flex min-h-11 items-center gap-1.5 rounded-xl px-2.5 text-meta font-semibold ${
-        variant === "dark" ? "text-white hover:bg-white/10" : "text-ink hover:bg-sand-deep"
+        variant === "dark"
+          ? "text-white hover:bg-white/10"
+          : "text-ink hover:bg-sand-deep"
       }`}
     >
       <Languages aria-hidden size={18} />
@@ -114,7 +159,11 @@ function Logo({ dark = false }: { dark?: boolean }) {
       >
         CV
       </span>
-      <span className={`text-row font-bold ${dark ? "text-white" : "text-ink"}`}>{t.appName}</span>
+      <span
+        className={`text-row font-bold ${dark ? "text-white" : "text-ink"}`}
+      >
+        {t.appName}
+      </span>
     </Link>
   );
 }
@@ -129,30 +178,41 @@ function Logo({ dark = false }: { dark?: boolean }) {
 function Navbar({ onSos, unread }: { onSos: () => void; unread: number }) {
   const { t } = useLocale();
   const { user, ready } = useAuth();
-  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-30 bg-primary text-white shadow-raised">
       <div className="mx-auto flex min-h-14 max-w-[1440px] items-center gap-1 py-1.5 pr-2 pl-4 sm:px-6 lg:min-h-16 lg:gap-2 lg:px-12 2xl:px-16">
         <Logo dark />
 
-        <nav className="ml-8 hidden h-16 items-stretch gap-1 lg:flex" aria-label={t.appName}>
-          {TABS.slice(0, 4).map((n) => {
-            const active = isActive(pathname, n.href);
-            return (
-              <Link
-                key={n.href}
-                href={n.href}
-                aria-current={active ? "page" : undefined}
-                className={`relative flex items-center px-3.5 text-body font-semibold transition-colors ${
-                  active ? "text-white" : "text-white/75 hover:text-white"
-                }`}
-              >
-                {t[n.label]}
-                {active && <span className="absolute inset-x-3.5 bottom-0 h-[3px] rounded-t-full bg-gold" aria-hidden />}
-              </Link>
-            );
-          })}
+        <nav
+          className="ml-8 hidden h-16 items-stretch gap-1 lg:flex"
+          aria-label={t.appName}
+        >
+          <WithPath
+            render={(pathname) =>
+              TABS.slice(0, 4).map((n) => {
+                const active = isActive(pathname, n.href);
+                return (
+                  <Link
+                    key={n.href}
+                    href={n.href}
+                    aria-current={active ? "page" : undefined}
+                    className={`relative flex items-center px-3.5 text-body font-semibold transition-colors ${
+                      active ? "text-white" : "text-white/75 hover:text-white"
+                    }`}
+                  >
+                    {t[n.label]}
+                    {active && (
+                      <span
+                        className="absolute inset-x-3.5 bottom-0 h-[3px] rounded-t-full bg-gold"
+                        aria-hidden
+                      />
+                    )}
+                  </Link>
+                );
+              })
+            }
+          />
         </nav>
 
         <div className="flex-1" />
@@ -210,7 +270,11 @@ export function useUserCity(): City | null {
   useEffect(() => {
     if (!user) return;
     let alive = true;
-    api.getCities(user.provinceId).then((cs) => alive && setCity(cs.find((c) => c.id === user.cityId) ?? null));
+    api
+      .getCities(user.provinceId)
+      .then(
+        (cs) => alive && setCity(cs.find((c) => c.id === user.cityId) ?? null),
+      );
     return () => {
       alive = false;
     };
@@ -222,7 +286,6 @@ export function useUserCity(): City | null {
 
 function BottomTabs({ onSos }: { onSos: () => void }) {
   const { t, locale } = useLocale();
-  const pathname = usePathname();
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 lg:hidden">
       {/* SOS floats bottom-right in the thumb zone, outside the tab row. */}
@@ -236,7 +299,11 @@ function BottomTabs({ onSos }: { onSos: () => void }) {
           <Siren aria-hidden size={20} />
           <span className="flex flex-col items-start">
             <span className="text-row leading-tight font-extrabold">SOS</span>
-            {locale === "km" && <span className="text-caption leading-tight font-semibold">{t.sos}</span>}
+            {locale === "km" && (
+              <span className="text-caption leading-tight font-semibold">
+                {t.sos}
+              </span>
+            )}
           </span>
         </button>
       </div>
@@ -244,23 +311,35 @@ function BottomTabs({ onSos }: { onSos: () => void }) {
         className="grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
         aria-label={t.appName}
       >
-        {TABS.map((n) => {
-          const active = isActive(pathname, n.href);
-          const Icon = n.icon;
-          return (
-            <Link
-              key={n.href}
-              href={n.href}
-              aria-current={active ? "page" : undefined}
-              className={`flex h-[68px] flex-col items-center justify-center gap-1 ${active ? "text-primary" : "text-ink-muted"}`}
-            >
-              <span className={`flex h-8 w-14 items-center justify-center rounded-full ${active ? "bg-primary-tint" : ""}`}>
-                <Icon aria-hidden size={22} strokeWidth={active ? 2.4 : 2} />
-              </span>
-              <span className="max-w-full truncate px-0.5 text-caption leading-tight font-semibold">{t[n.label]}</span>
-            </Link>
-          );
-        })}
+        <WithPath
+          render={(pathname) =>
+            TABS.map((n) => {
+              const active = isActive(pathname, n.href);
+              const Icon = n.icon;
+              return (
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex h-[68px] flex-col items-center justify-center gap-1 ${active ? "text-primary" : "text-ink-muted"}`}
+                >
+                  <span
+                    className={`flex h-8 w-14 items-center justify-center rounded-full ${active ? "bg-primary-tint" : ""}`}
+                  >
+                    <Icon
+                      aria-hidden
+                      size={22}
+                      strokeWidth={active ? 2.4 : 2}
+                    />
+                  </span>
+                  <span className="max-w-full truncate px-0.5 text-caption leading-tight font-semibold">
+                    {t[n.label]}
+                  </span>
+                </Link>
+              );
+            })
+          }
+        />
       </nav>
     </div>
   );
@@ -276,7 +355,12 @@ function SosSheet({ onClose }: { onClose: () => void }) {
   }, []);
 
   return (
-    <Sheet title={t.sosTitle} tone="danger" icon={<Siren aria-hidden size={22} />} onClose={onClose}>
+    <Sheet
+      title={t.sosTitle}
+      tone="danger"
+      icon={<Siren aria-hidden size={22} />}
+      onClose={onClose}
+    >
       <div>
         <p className="text-title font-bold">{t.sosCallFirst}</p>
         <p className="text-body text-ink-muted">{t.sosCallFirstHint}</p>
@@ -288,7 +372,9 @@ function SosSheet({ onClose }: { onClose: () => void }) {
             href={`tel:${h.number}`}
             className="flex min-h-20 items-center gap-4 rounded-2xl bg-danger px-5 text-white shadow-card hover:bg-danger-ink"
           >
-            <span className="text-display font-extrabold tabular-nums">{h.number}</span>
+            <span className="text-display font-extrabold tabular-nums">
+              {h.number}
+            </span>
             <span className="text-title font-semibold">{tx(h.name)}</span>
           </a>
         ))}
@@ -300,7 +386,9 @@ function SosSheet({ onClose }: { onClose: () => void }) {
       >
         <span>
           <span className="block font-bold">{t.sosSendInApp}</span>
-          <span className="block text-meta text-ink-muted">{t.sosSendInAppHint}</span>
+          <span className="block text-meta text-ink-muted">
+            {t.sosSendInAppHint}
+          </span>
         </span>
         <ChevronRight aria-hidden size={20} />
       </Link>

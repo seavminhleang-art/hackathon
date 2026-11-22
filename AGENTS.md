@@ -34,11 +34,11 @@ Student team; each main feature has a different owner.
 | 1. Lost & Found | Foundation done (types, mock, API, tests) | src/features/lost-found/AGENTS.md |
 | 2. Emergency response | Foundation done | src/features/emergency/AGENTS.md |
 | 3. Government reporting | Foundation done | src/features/gov-reporting/AGENTS.md |
-| 4. Community & Services | Foundation done | src/features/community/AGENTS.md |
+| 4. Community & Services | P0 screens built (Board, posts, News, Services, Guides) | src/features/community/AGENTS.md |
 | UI kit (Button, Card, ListRow, Section, fields, Sheet, StatusChip…) | Done. Live demo at `/design` (dev only) | src/components/ui/ |
 | App shell (blue navbar on all sizes; bottom tabs + floating SOS on phone; feature links + SOS in navbar on desktop) | Done | src/components/layout/AppShell.tsx, src/app/(app)/layout.tsx |
 | Home `/` dashboard | Done | src/features/home/ |
-| Other screens | **Not started.** Build only when the team asks | docs/FEATURES.md (screen list) |
+| Other screens | **Not started** for features 1–3, login/register, notifications, me. Build only when the team asks | docs/FEATURES.md (screen list) |
 | Spring Boot backend | Not started | — |
 
 ## Commands

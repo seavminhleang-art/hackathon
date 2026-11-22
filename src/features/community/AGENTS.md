@@ -16,7 +16,9 @@ Five parts:
 | Part | Status |
 |---|---|
 | Types, mock data, mock API, tests | Done |
-| Screens (this folder) | Not started — build only when the team asks |
+| P0 screens (Board, post detail, new post, News, Services, Guides) | Built on mock API, from `docs/design` Community wireframes |
+| Groups | Read-only list at `/community/groups`; group page, join/leave not built (P1) |
+| Admin: announcements form, directory edits queue | Not built (P1) |
 | P2 items (group post notifications, event reminders, follow an area, ownership transfer) | Not built |
 
 ## Files
@@ -26,7 +28,9 @@ Five parts:
 | Seed (12 places, waste schedules, 6 guides, 7 announcements, 42 groups, 8 posts, comments) | `src/lib/mock/community.ts` |
 | Mock API (`api.cs.*`) | `src/lib/api/community-api.ts` |
 | Tests | `scripts/test/community.test.mjs` → `npm run test:mock community` |
-| UI (to build) | `src/features/community/`, routes in `src/app/services/`, `src/app/guides/`, `src/app/announcements/`, `src/app/community/` |
+| UI | `src/features/community/`: `BoardScreen`, `PostScreen`, `PostCard`, `NewPostScreen`, `NewsScreens` (news list/detail + groups list), `ServicesScreens`, `GuidesScreens`, `Comments` (threads + reactions), `shared` (login gate, report sheet, area names) |
+| UI strings | `src/features/community/i18n.ts` → `const { c } = useCs()` (km + en, kept out of the shared dictionary) |
+| Routes | `src/app/(app)/community/…`, `announcements/…`, `services/…`, `guides/…` (inside `(app)` so they get the shell). `[id]` pages wrap the screen in `<Suspense>` (needed with `cacheComponents`) |
 
 ## API cheat sheet
 | Part | Calls |
@@ -52,7 +56,7 @@ Five parts:
 - Guide steps and fees in the seed are **illustrative**; fees are `null` with "check at the office". Always show `lastVerified` and the source.
 - Opening hours are evaluated in Cambodia time (UTC+7).
 
-## Screens to build
+## Screens (P0 built, P1 left)
 | Route | Who | Priority |
 |---|---|---|
 | Alert banner (in shared layout, from `activeAlerts()`) | all | P0 |
@@ -62,6 +66,8 @@ Five parts:
 | `/community` (feed), `/community/posts/[id]`, `/community/new` | all / citizen | P0 |
 | `/community/groups`, `/community/groups/[id]` | all / citizen | P1 |
 | `/admin/announcements`, `/admin/directory-edits` | officer / admin | P1 |
+
+UI patterns to reuse here: `useLoginGate()` (visitors read everything; actions open a login sheet titled with the action), `<ReportButton>` on every post/comment, `<CommentThread>` for posts, guides and announcements, `openStatus(hours)` for "Closed · opens 07:30 tomorrow".
 
 ## Demo accounts (password `demo1234`)
 012000001 citizen Tuol Kouk (sees rain alert, owns parents group, voted in poll) · 012000002 officer Tuol Kouk ·
