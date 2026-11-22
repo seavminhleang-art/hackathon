@@ -29,3 +29,16 @@ export function formatDateParts(iso: string, locale: Locale) {
     time: `${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}`,
   };
 }
+
+const WEEKDAY_INDEX = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 } as const;
+
+/** Short weekday name for "mon" | "tue" | … */
+export function weekdayLabel(day: keyof typeof WEEKDAY_INDEX, locale: Locale): string {
+  return (locale === "km" ? KM_DAYS : EN_DAYS)[WEEKDAY_INDEX[day]];
+}
+
+/** "22 Nov" / "22 វិច្ឆិកា" in Cambodia time. */
+export function shortDate(iso: string, locale: Locale): string {
+  const p = formatDateParts(iso, locale);
+  return `${p.day} ${p.month}`;
+}
