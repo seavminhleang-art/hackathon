@@ -7,3 +7,4 @@ export { Sheet } from "./Sheet";
 export { StatusChip, type ChipStatus } from "./StatusChip";
 export { Marquee } from "./Marquee";
 export { Carousel } from "./Carousel";
+export { FilterChips, SubNav, Toggle } from "./Chips";
