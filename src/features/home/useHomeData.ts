@@ -23,6 +23,8 @@ export interface HomeData {
   events: CsPostView[];
   board: CsPostView[];
   announcements: CsAnnouncementView[];
+  /** Every active announcement, alerts first: feeds the news ticker and hero. */
+  news: CsAnnouncementView[];
   waste: CsWasteSchedule | null;
   place: CsPlaceView | null;
   guides: CsGuideView[];
@@ -97,6 +99,7 @@ async function loadHome(user: User | null): Promise<HomeData> {
     events: events.slice(0, 3),
     board: board.slice(0, 3),
     announcements: announcements.filter((x) => x.id !== alerts[0]?.id).slice(0, 3),
+    news: announcements,
     waste: waste[0] ?? null,
     place: places.find((p) => user?.sangkat && p.sangkat === user.sangkat) ?? places[0] ?? null,
     guides: guides.slice(0, 4),

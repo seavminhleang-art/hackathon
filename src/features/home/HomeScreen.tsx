@@ -64,6 +64,7 @@ import type { EmergencyHotline } from "@/types";
 import type { GrCategory, GrReportView } from "@/types/gov-reporting";
 import type { LfClaimForClaimant, LfPublicPost } from "@/types/lost-found";
 import type { CsAnnouncementView, CsGuideView, CsPlaceView, CsPostView, CsWasteSchedule } from "@/types/community";
+import { HomeHero, NewsTicker } from "./HomeHero";
 import { useHomeData, type ActivityItem, type HomeData } from "./useHomeData";
 
 export const CATEGORY_ICON: Record<GrCategory, LucideIcon> = {
@@ -86,10 +87,12 @@ export function HomeScreen() {
   const visitor = ready && !user;
 
   return (
-    <PageContainer>
-      <div className="flex flex-col gap-6 lg:gap-10">
-        <Greeting />
-        {data?.alert && <AlertBanner alert={data.alert} />}
+    <>
+      <NewsTicker news={data?.news} />
+      <PageContainer>
+        <div className="flex flex-col gap-6 lg:gap-10">
+          <Greeting />
+          <HomeHero news={data?.news} events={data?.events} />
         <QuickActions visitor={visitor} />
         <StatsStrip stats={data?.stats} />
 
@@ -127,6 +130,7 @@ export function HomeScreen() {
         </div>
       </div>
     </PageContainer>
+    </>
   );
 }
 
@@ -151,29 +155,6 @@ function Greeting() {
         {city ? [user.sangkat, tx(city.name)].filter(Boolean).join(", ") : t.chooseArea}
       </Link>
     </div>
-  );
-}
-
-function AlertBanner({ alert }: { alert: CsAnnouncementView }) {
-  const { t, tx, locale } = useLocale();
-  const { time } = formatDateParts(alert.validFrom, locale);
-  return (
-    <Link
-      href={`/announcements/${alert.id}`}
-      className="flex items-start gap-3 rounded-2xl bg-danger p-4 text-white shadow-card hover:bg-danger-ink"
-    >
-      <span className="flex size-10 flex-none items-center justify-center rounded-xl bg-white/15">
-        <TriangleAlert aria-hidden size={22} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-row leading-snug font-bold">{tx(alert.title)}</p>
-        <p className="mt-0.5 text-meta leading-snug text-white/90">{tx(alert.body)}</p>
-        <p className="mt-1.5 text-meta text-white/80">
-          {t.alertSource} · {time}
-        </p>
-      </div>
-      <ChevronRight aria-hidden size={20} className="mt-2.5 flex-none" />
-    </Link>
   );
 }
 
