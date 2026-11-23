@@ -18,9 +18,18 @@ import {
   Users,
   Waves,
 } from "lucide-react";
+import thumbUp from "react-useanimations/lib/thumbUp";
+import send from "react-useanimations/lib/send";
+import check from "react-useanimations/lib/check";
+import notification from "react-useanimations/lib/notification";
+import alertTriangle from "react-useanimations/lib/alertTriangle";
+import loading from "react-useanimations/lib/loading";
 import { PageContainer } from "@/components/layout/AppShell";
 import {
+  AnimatedIcon,
   Button,
+  PageSkeleton,
+  Skeleton,
   Card,
   ChoiceCard,
   CountBadge,
@@ -84,6 +93,32 @@ const ACCENTS: { accent: Accent; icon: typeof FileText; feature: string }[] = [
   { accent: "danger", icon: Siren, feature: "Emergency" },
   { accent: "neutral", icon: FileText, feature: "Generic" },
 ];
+
+function LoadingButtonDemo() {
+  const [busy, setBusy] = useState(false);
+  return (
+    <Button
+      icon={send}
+      loading={busy}
+      className="self-start"
+      onClick={() => {
+        setBusy(true);
+        setTimeout(() => setBusy(false), 1500);
+      }}
+    >
+      Send report
+    </Button>
+  );
+}
+
+function AnimatedThumbDemo() {
+  const [on, setOn] = useState(false);
+  return (
+    <Button icon={thumbUp} iconActive={on} variant={on ? "secondary" : "primary"} onClick={() => setOn(!on)}>
+      {on ? "Supported" : "Support"}
+    </Button>
+  );
+}
 
 function Demo({ title, rule, children }: { title: string; rule: string; children: React.ReactNode }) {
   return (
@@ -152,6 +187,19 @@ export function KitShowcase() {
             <LinkButton href="/" variant="secondary" size="sm">
               LinkButton (next/link)
             </LinkButton>
+          </div>
+        </Demo>
+
+        <Demo title="Animated icons" rule="react-useanimations (MIT, Feather style like lucide). Pass one as Button icon; it plays on hover/click of the whole button. Use for feedback and status only; keep SOS and category icons static.">
+          <div className="flex flex-wrap gap-3">
+            <AnimatedThumbDemo />
+            <Button variant="secondary" icon={send}>Send</Button>
+            <Button variant="secondary" icon={check}>Going</Button>
+          </div>
+          <div className="flex items-center gap-5 text-ink-muted">
+            <AnimatedIcon animation={notification} interaction="hover-replay" size={22} label="Notifications" />
+            <span className="text-danger"><AnimatedIcon animation={alertTriangle} size={22} label="Alert" /></span>
+            <AnimatedIcon animation={loading} size={22} label="Loading" />
           </div>
         </Demo>
 
@@ -256,6 +304,25 @@ export function KitShowcase() {
           </Section>
         </div>
 
+        <Demo
+          title="Skeletons & loading states"
+          rule="Never a blank screen or a lone spinner. Whole screen (loading.tsx, Suspense, auth redirect): <PageSkeleton> in <PageContainer>, variant='detail' for photo pages. Lists: <SkeletonRows>. Custom shapes: <Skeleton className='h-4 w-2/3'>. Buttons: loading={busy} keeps the label, shows a spinner and disables. Pulses only when motion is allowed."
+        >
+          <div className="grid gap-6 lg:grid-cols-2">
+            <PageSkeleton variant="detail" rows={1} />
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <Skeleton className="size-12 rounded-full" />
+                <div className="flex flex-1 flex-col gap-2">
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-3 w-1/3 opacity-70" />
+                </div>
+              </div>
+              <LoadingButtonDemo />
+            </div>
+          </div>
+        </Demo>
+
         <Demo title="Sheet" rule="Bottom sheet on phones, dialog on desktop. Use for confirmations and short pickers.">
           <div>
             <Button variant="secondary" onClick={() => setSheet(true)}>
@@ -265,7 +332,7 @@ export function KitShowcase() {
         </Demo>
 
         <Demo title="Page skeleton for a new feature screen" rule="Copy this into src/app/(app)/<route>/page.tsx.">
-          <pre className="overflow-x-auto rounded-xl bg-ink p-4 text-meta leading-relaxed text-white">{`"use client";
+          <pre className="overflow-x-auto rounded-xl bg-night p-4 text-meta leading-relaxed text-white">{`"use client";
 import { PageContainer } from "@/components/layout/AppShell";
 import { PageHeader, Section, Card, ListRow, LinkButton } from "@/components/ui";
 import { useLocale } from "@/lib/i18n/LocaleProvider";

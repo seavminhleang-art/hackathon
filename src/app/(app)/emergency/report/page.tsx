@@ -251,7 +251,7 @@ export default function IncidentReportPage() {
                   {locale === "km"
                     ? "កូដបណ្តោះអាសន្ន៖ "
                     : "Temporary Queued Code: "}
-                  <span className="font-mono text-primary">{queuedIncidentCode}</span>
+                  <span className="font-mono text-primary-ink">{queuedIncidentCode}</span>
                 </p>
                 <div className="flex flex-wrap gap-2.5 pt-1">
                   <Button
@@ -294,7 +294,7 @@ export default function IncidentReportPage() {
             <Card className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-row font-bold text-ink flex items-center gap-2">
-                  <ShieldAlert size={18} className="text-primary" />
+                  <ShieldAlert size={18} className="text-primary-ink" />
                   <span>{locale === "km" ? "១. ប្រភេទគ្រោះអាសន្ន (តម្រូវឱ្យជ្រើសរើស)" : "1. Emergency Category (Required)"}</span>
                 </h3>
                 <span className="text-caption font-bold text-danger uppercase">* {locale === "km" ? "តម្រូវ" : "Required"}</span>
@@ -313,7 +313,7 @@ export default function IncidentReportPage() {
                       }}
                       className={`flex flex-col items-start gap-1 rounded-xl border p-3 text-left transition-all ${
                         isSelected
-                          ? "border-primary bg-primary-tint font-bold text-primary ring-2 ring-primary/30"
+                          ? "border-primary bg-primary-tint font-bold text-primary-ink ring-2 ring-primary/30"
                           : "border-line bg-surface hover:border-ink-muted text-ink"
                       }`}
                     >
@@ -328,7 +328,7 @@ export default function IncidentReportPage() {
               <div className="mt-4 rounded-xl border border-line bg-sand p-3.5">
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <span className="text-caption font-bold text-ink flex items-center gap-1.5">
-                    <Building2 size={15} className="text-primary" />
+                    <Building2 size={15} className="text-primary-ink" />
                     <span>{t.suggestedRecipients}</span>
                   </span>
                   <span className="text-caption text-ink-muted">
@@ -368,7 +368,7 @@ export default function IncidentReportPage() {
                   size="sm"
                   onClick={requestGpsLocation}
                   disabled={isGpsLoading}
-                  className="gap-1 text-caption text-primary hover:bg-primary-tint"
+                  className="gap-1 text-caption text-primary-ink hover:bg-primary-tint"
                 >
                   <RefreshCw size={13} className={isGpsLoading ? "animate-spin" : ""} />
                   <span>{locale === "km" ? "ពិនិត្យ GPS" : "Refresh GPS"}</span>
@@ -514,7 +514,7 @@ export default function IncidentReportPage() {
             <Card className="p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-row font-bold text-ink flex items-center gap-2">
-                  <Camera size={18} className="text-primary" />
+                  <Camera size={18} className="text-primary-ink" />
                   <span>{t.photoUploadLabel}</span>
                 </h3>
                 <span className="text-caption text-ink-muted">{photoUrls.length}/4</span>
@@ -574,11 +574,11 @@ export default function IncidentReportPage() {
                         <button
                           type="button"
                           onClick={() => removePhoto(idx)}
-                          className="absolute top-1.5 right-1.5 rounded-full bg-ink p-1 text-white hover:bg-danger transition-colors"
+                          className="absolute top-1.5 right-1.5 rounded-full bg-night p-1 text-white hover:bg-danger transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
-                        <span className="absolute bottom-1 left-1 rounded bg-ink px-1.5 py-0.5 text-caption font-mono text-white">
+                        <span className="absolute bottom-1 left-1 rounded bg-night px-1.5 py-0.5 text-caption font-mono text-white">
                           Clean EXIF
                         </span>
                       </div>
@@ -591,7 +591,7 @@ export default function IncidentReportPage() {
             {/* 5. CONSENT TOGGLES (Stored in consents, off by default except sending to orgs) */}
             <Card className="p-5 space-y-4">
               <h3 className="text-row font-bold text-ink flex items-center gap-2">
-                <Shield size={18} className="text-primary" />
+                <Shield size={18} className="text-primary-ink" />
                 <span>{locale === "km" ? "៥. ការយល់ព្រមចែករំលែកទិន្នន័យ" : "5. Privacy & Consents"}</span>
               </h3>
 
@@ -602,7 +602,7 @@ export default function IncidentReportPage() {
                     type="checkbox"
                     checked={consents.shareWithOrganizations}
                     onChange={(e) => setConsents({ ...consents, shareWithOrganizations: e.target.checked })}
-                    className="mt-0.5 size-4 rounded border-line text-primary focus:ring-primary"
+                    className="mt-0.5 size-4 rounded border-line text-primary-ink focus:ring-primary"
                   />
                   <div className="text-caption">
                     <span className="font-bold text-ink block">{t.consentShareOrgs}</span>
@@ -621,7 +621,7 @@ export default function IncidentReportPage() {
                     checked={consents.allowCallback}
                     onChange={(e) => setConsents({ ...consents, allowCallback: e.target.checked })}
                     disabled={consents.anonymous}
-                    className="mt-0.5 size-4 rounded border-line text-primary focus:ring-primary"
+                    className="mt-0.5 size-4 rounded border-line text-primary-ink focus:ring-primary"
                   />
                   <div className="text-caption">
                     <span className="font-bold text-ink block">{t.consentAllowCallback}</span>
@@ -635,7 +635,7 @@ export default function IncidentReportPage() {
                     type="checkbox"
                     checked={consents.shareWithMedia}
                     onChange={(e) => setConsents({ ...consents, shareWithMedia: e.target.checked })}
-                    className="mt-0.5 size-4 rounded border-line text-primary focus:ring-primary"
+                    className="mt-0.5 size-4 rounded border-line text-primary-ink focus:ring-primary"
                   />
                   <div className="text-caption">
                     <span className="font-bold text-ink block">{t.consentShareMedia}</span>
@@ -660,7 +660,7 @@ export default function IncidentReportPage() {
                         allowCallback: anon ? false : consents.allowCallback,
                       });
                     }}
-                    className="mt-0.5 size-4 rounded border-line text-primary focus:ring-primary"
+                    className="mt-0.5 size-4 rounded border-line text-primary-ink focus:ring-primary"
                   />
                   <div className="text-caption">
                     <span className="font-bold text-ink block">{t.consentAnonymous}</span>

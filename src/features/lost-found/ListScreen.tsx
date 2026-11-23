@@ -16,6 +16,7 @@ import { PageContainer } from "@/components/layout/AppShell";
 import { Card, EmptyState, FilterChips, IconTile, Section, SkeletonRows, StatusChip, Thumb } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useRequireAuth } from "@/lib/auth/useRequireAuth";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { shortDate } from "@/lib/i18n/format";
 import type { City, Province } from "@/types";
@@ -29,6 +30,7 @@ export function ListScreen() {
   const router = useRouter();
   const { t, tx, locale } = useLocale();
   const { user, ready } = useAuth();
+  const requireAuth = useRequireAuth();
   const [posts, setPosts] = useState<LfPublicPost[] | null>(null);
   const [categories, setCategories] = useState<LfCategoryMeta[]>([]);
   const [provinces, setProvinces] = useState<Province[]>([]);
@@ -46,12 +48,8 @@ export function ListScreen() {
   const [reportKind, setReportKind] = useState<LfKind | null>(null);
 
   function openReport(kind: LfKind) {
-    if (!user) {
-      const returnPath = "/lost-found";
-      router.push(`/login?next=${encodeURIComponent(`${returnPath}?report=${kind}`)}`);
-      return;
-    }
-    setReportKind(kind);
+    // Guests come back with ?report=<kind> and the form opens after login.
+    requireAuth(() => setReportKind(kind), `${window.location.pathname}?report=${kind}`);
   }
 
   useEffect(() => {
@@ -186,7 +184,7 @@ export function ListScreen() {
           >
             <IconTile icon={KeyRound} accent="gold" />
             <span className="min-w-0 flex-1"><span className="block text-row font-bold">{t.lfFoundAction}</span><span className="mt-1 block text-meta text-ink-muted">{t.lfFoundActionHint}</span></span>
-            <ArrowRight aria-hidden size={19} className="text-primary" />
+            <ArrowRight aria-hidden size={19} className="text-primary-ink" />
           </button>
         </section>
 
@@ -195,7 +193,7 @@ export function ListScreen() {
             <Section title={t.lfYourDashboard} hint={t.lfPersonalHint}>
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 {[
-                  { value: myPosts?.length ?? 0, label: t.lfYourPosts, tone: "bg-primary-tint text-primary" },
+                  { value: myPosts?.length ?? 0, label: t.lfYourPosts, tone: "bg-primary-tint text-primary-ink" },
                   { value: myMatches?.reduce((total, entry) => total + entry.matches.length, 0) ?? 0, label: t.lfPossibleMatches, tone: "bg-gold-tint text-gold-ink" },
                   { value: myPosts?.filter((post) => post.status === "POSTED" || post.status === "CLAIM_PENDING" || post.status === "APPROVED").length ?? 0, label: t.lfOpenPosts, tone: "bg-fixed-tint text-fixed-ink" },
                   { value: myPosts?.filter((post) => post.status === "RETURNED").length ?? 0, label: t.lfYourReturns, tone: "bg-reported-tint text-reported-ink" },
@@ -248,7 +246,7 @@ export function ListScreen() {
           <Section title={t.lfCommunityHighlights} hint={t.lfCommunityHint}>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {[
-                { value: openPosts.length, label: t.lfItemsListed, tone: "bg-primary-tint text-primary" },
+                { value: openPosts.length, label: t.lfItemsListed, tone: "bg-primary-tint text-primary-ink" },
                 { value: counts.LOST, label: t.lfLookingForOwner, tone: "bg-fixed-tint text-fixed-ink" },
                 { value: counts.FOUND, label: t.lfFoundItems, tone: "bg-gold-tint text-gold-ink" },
                 { value: posts?.filter((post) => post.status === "RETURNED").length ?? 0, label: t.lfReturnedItems, tone: "bg-reported-tint text-reported-ink" },
@@ -292,7 +290,7 @@ export function ListScreen() {
                     </select>
                   </label>
                   <label className="flex min-h-12 items-center gap-3 rounded-xl bg-surface px-3.5 ring-1 ring-line-strong ring-inset">
-                    <MapPin aria-hidden size={17} className="flex-none text-primary" />
+                    <MapPin aria-hidden size={17} className="flex-none text-primary-ink" />
                     <span className="text-meta font-semibold text-ink-muted">{t.province}</span>
                     <select value={province} onChange={(event) => setProvince(event.target.value)} className="min-w-0 flex-1 bg-transparent text-body text-ink outline-none">
                       <option value="ALL">{t.lfAllProvinces}</option>
@@ -329,7 +327,7 @@ export function ListScreen() {
                         <p className="mt-3 line-clamp-2 text-meta leading-relaxed text-ink-muted">{post.description}</p>
                         <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-4">
                           <div className="min-w-0">
-                            <p className="flex items-start gap-1.5 text-meta leading-snug text-ink"><MapPin aria-hidden size={15} className="mt-0.5 flex-none text-primary" /><span>{post.place}{city ? ` · ${tx(city.name)}` : ""}{provinceName ? `, ${tx(provinceName.name)}` : ""}</span></p>
+                            <p className="flex items-start gap-1.5 text-meta leading-snug text-ink"><MapPin aria-hidden size={15} className="mt-0.5 flex-none text-primary-ink" /><span>{post.place}{city ? ` · ${tx(city.name)}` : ""}{provinceName ? `, ${tx(provinceName.name)}` : ""}</span></p>
                             <p className="mt-1 pl-[21px] text-caption text-ink-muted">{shortDate(post.createdAt, locale)}{post.commentCount > 0 ? ` · ${post.commentCount} ${t.lfComments}` : ""}</p>
                           </div>
                           {post.status === "CLAIM_PENDING" && <StatusChip status="PENDING" />}
@@ -353,7 +351,7 @@ export function ListScreen() {
                   ["4", t.lfStepReturn, t.lfStepReturnHint],
                 ].map(([number, title, hint]) => (
                   <li key={number} className="flex gap-3 border-b border-line px-4 py-3.5 last:border-b-0 lg:px-5">
-                    <span className="flex size-8 flex-none items-center justify-center rounded-full bg-primary-tint text-meta font-bold text-primary">{number}</span>
+                    <span className="flex size-8 flex-none items-center justify-center rounded-full bg-primary-tint text-meta font-bold text-primary-ink">{number}</span>
                     <span className="min-w-0"><strong className="block text-body text-ink">{title}</strong><span className="mt-0.5 block text-meta leading-snug text-ink-muted">{hint}</span></span>
                   </li>
                 ))}

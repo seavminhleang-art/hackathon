@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft, CalendarDays, ChartColumn, CircleCheck, MapPin, Navigation, Share2, ShieldAlert, Users } from "lucide-react";
 import { api } from "@/lib/api";
+import { useRequireAuth } from "@/lib/auth/useRequireAuth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { PageContainer } from "@/components/layout/AppShell";
 import { Button, Card, EmptyState, IconTile, LinkButton, SkeletonRows, buttonClass } from "@/components/ui";
@@ -14,7 +15,7 @@ import type { CsPostView, CsReaction } from "@/types/community";
 import { CommentThread, ReactionButtons } from "./Comments";
 import { useCs } from "./i18n";
 import { POST_ICON, RsvpButtons, eventWhen, typeLabel } from "./PostCard";
-import { OfficialBadge, ReportButton, mapsUrl, scopeLabel, timeAgo, useAreas, useCommunityHref, useLoginGate } from "./shared";
+import { OfficialBadge, ReportButton, mapsUrl, scopeLabel, timeAgo, useAreas, useCommunityHref } from "./shared";
 
 /** /community/posts/[id] · Event, Poll, Question or Discussion (wireframes 4a–4i). */
 export function PostScreen() {
@@ -23,7 +24,7 @@ export function PostScreen() {
   const href = useCommunityHref();
   const { user, ready } = useAuth();
   const areas = useAreas();
-  const { gate, sheet } = useLoginGate();
+  const requireAuth = useRequireAuth();
   const [post, setPost] = useState<CsPostView | null>(null);
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -70,7 +71,7 @@ export function PostScreen() {
   const ev = post.event;
 
   const react = (r: CsReaction) =>
-    gate(c.actReact, async () => {
+    requireAuth(async () => {
       const res = await api.cs.toggleReaction("POST", post.id, r);
       setPost({ ...post, reactionCounts: res.counts, myReactions: res.mine });
     });
@@ -177,7 +178,6 @@ export function PostScreen() {
 
         {ev && <aside className="hidden lg:block">{eventCard}</aside>}
       </div>
-      {sheet}
     </PageContainer>
   );
 }
@@ -196,7 +196,7 @@ function BackLink() {
 /** Poll: radio cards → Vote; after voting (or when closed) bars with % and counts. */
 function PollBlock({ post, onChange }: { post: CsPostView; onChange: (p: CsPostView) => void }) {
   const { c, locale } = useCs();
-  const { gate, sheet } = useLoginGate();
+  const requireAuth = useRequireAuth();
   const [pick, setPick] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const poll = post.poll!;
@@ -204,7 +204,7 @@ function PollBlock({ post, onChange }: { post: CsPostView; onChange: (p: CsPostV
   const total = poll.totalVotes ?? 0;
 
   const vote = () =>
-    gate(c.actVote, async () => {
+    requireAuth(async () => {
       if (!pick) return;
       setBusy(true);
       try {
@@ -234,7 +234,7 @@ function PollBlock({ post, onChange }: { post: CsPostView; onChange: (p: CsPostV
                   <span className="font-semibold">
                     {o.label}
                     {mine && (
-                      <span className="ml-2 inline-flex items-center gap-1 text-meta text-primary">
+                      <span className="ml-2 inline-flex items-center gap-1 text-meta text-primary-ink">
                         <CircleCheck aria-hidden size={15} />
                         {c.yourChoice}
                       </span>
@@ -262,7 +262,7 @@ function PollBlock({ post, onChange }: { post: CsPostView; onChange: (p: CsPostV
                 aria-checked={pick === o.id}
                 onClick={() => setPick(o.id)}
                 className={`flex min-h-14 items-center gap-3 rounded-xl px-4 text-left text-body font-semibold ring-inset ${
-                  pick === o.id ? "bg-primary-tint text-primary ring-2 ring-primary" : "bg-surface ring-1 ring-line-strong"
+                  pick === o.id ? "bg-primary-tint text-primary-ink ring-2 ring-primary" : "bg-surface ring-1 ring-line-strong"
                 }`}
               >
                 <span className={`flex size-5 flex-none items-center justify-center rounded-full ring-2 ${pick === o.id ? "ring-primary" : "ring-line-strong"}`}>
@@ -278,7 +278,6 @@ function PollBlock({ post, onChange }: { post: CsPostView; onChange: (p: CsPostV
           </Button>
         </>
       )}
-      {sheet}
     </Card>
   );
 }

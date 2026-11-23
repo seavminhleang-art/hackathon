@@ -4,11 +4,14 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { ArrowLeft, CalendarDays, Check, Flag, KeyRound, MapPin, MessageCircle, Phone, Search, ShieldAlert, ShieldCheck, X } from "lucide-react";
+import check from "react-useanimations/lib/check";
+import send from "react-useanimations/lib/send";
 import { toast } from "react-toastify";
 import { PageContainer } from "@/components/layout/AppShell";
 import { Button, Card, EmptyState, IconTile, LinkButton, Photo, SkeletonRows, StatusChip, TextArea, TextField, type ChipStatus } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useRequireAuth } from "@/lib/auth/useRequireAuth";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { fmt } from "@/lib/i18n/dictionary";
 import { shortDate } from "@/lib/i18n/format";
@@ -145,7 +148,7 @@ function ContactCard({ title, contact }: { title: string; contact: LfContact }) 
       <p className="text-meta font-semibold text-fixed-ink">{title}</p>
       <p className="text-body font-semibold text-ink">{contact.fullName}</p>
       {contact.phone && (
-        <a href={`tel:${contact.phone}`} className="mt-1 inline-flex min-h-11 items-center gap-2 text-body font-semibold text-primary">
+        <a href={`tel:${contact.phone}`} className="mt-1 inline-flex min-h-11 items-center gap-2 text-body font-semibold text-primary-ink">
           <Phone aria-hidden size={18} />
           {contact.phone}
         </a>
@@ -161,6 +164,7 @@ const errText = (e: unknown, fallback: string) => (e instanceof ApiError ? e.mes
 function ClaimBox({ post }: { post: LfPublicPost }) {
   const { t } = useLocale();
   const { user } = useAuth();
+  const requireAuth = useRequireAuth();
   const [mine, setMine] = useState<LfClaimForClaimant | null | undefined>(undefined);
   const [description, setDescription] = useState("");
   const [answer, setAnswer] = useState("");
@@ -181,9 +185,9 @@ function ClaimBox({ post }: { post: LfPublicPost }) {
 
   if (!user)
     return (
-      <LinkButton href={`/login?next=/lost-found/${post.id}`} size="lg" icon={Check} block>
-        {t.lfLoginToClaim}
-      </LinkButton>
+      <Button size="lg" icon={check} onClick={() => requireAuth()} block>
+        {t.lfClaimTitle}
+      </Button>
     );
   if (mine === undefined) return <SkeletonRows rows={1} />;
 
@@ -231,7 +235,7 @@ function ClaimBox({ post }: { post: LfPublicPost }) {
             {error}
           </p>
         )}
-        <Button type="submit" size="lg" icon={Check} disabled={busy} block>
+        <Button type="submit" size="lg" icon={send} loading={busy} block>
           {busy ? t.submitting : t.lfSendClaim}
         </Button>
       </form>
@@ -325,6 +329,7 @@ function OwnerClaims({ post, onChange }: { post: LfPublicPost; onChange: (p: LfP
 function Comments({ post }: { post: LfPublicPost }) {
   const { t, locale } = useLocale();
   const { user } = useAuth();
+  const requireAuth = useRequireAuth();
   const [comments, setComments] = useState<LfPublicComment[] | null>(null);
   const [body, setBody] = useState("");
   const [sighting, setSighting] = useState(false);
@@ -402,14 +407,14 @@ function Comments({ post }: { post: LfPublicPost }) {
                 {error}
               </p>
             )}
-            <Button type="submit" variant="secondary" disabled={busy || !body.trim()} className="self-start">
+            <Button type="submit" variant="secondary" loading={busy} disabled={busy || !body.trim()} className="self-start">
               {t.send}
             </Button>
           </form>
         ) : (
-          <LinkButton href={`/login?next=/lost-found/${post.id}`} variant="secondary" size="sm" className="self-start">
-            {t.lfLoginToComment}
-          </LinkButton>
+          <Button variant="secondary" icon={MessageCircle} onClick={() => requireAuth()} className="self-start">
+            {t.lfWriteComment}
+          </Button>
         )}
       </Card>
     </section>

@@ -56,16 +56,17 @@ export function NewsTicker({ news }: { news?: CsAnnouncementView[] }) {
 
 type Theme = { bg: string; icon: LucideIcon };
 
+// Hero gradients are fixed (theme-independent) like photos: text on them is always white.
 const CATEGORY_THEME: Partial<Record<CsAnnouncementCategory, Theme>> = {
-  FLOOD: { bg: "from-[#0b3a8c] via-primary to-[#0a6fa8]", icon: CloudRain },
-  FIRE: { bg: "from-danger-ink via-danger to-reported", icon: Flame },
-  ROAD_CLOSURE: { bg: "from-ink via-[#3a3328] to-progress-ink", icon: Construction },
-  WASTE: { bg: "from-fixed-ink via-fixed to-[#2f8f5f]", icon: Trash2 },
-  HEALTH: { bg: "from-fixed-ink via-[#11695a] to-[#1d8a7a]", icon: HeartPulse },
-  UTILITY_OUTAGE: { bg: "from-ink via-[#2b2a3a] to-primary", icon: Zap },
+  FLOOD: { bg: "from-[#0b3a8c] via-[#032ea1] to-[#0a6fa8]", icon: CloudRain },
+  FIRE: { bg: "from-[#8f0b21] via-[#c8102e] to-[#c2410c]", icon: Flame },
+  ROAD_CLOSURE: { bg: "from-[#1c1a17] via-[#3a3328] to-[#8a4a05]", icon: Construction },
+  WASTE: { bg: "from-[#0f5434] via-[#157347] to-[#2f8f5f]", icon: Trash2 },
+  HEALTH: { bg: "from-[#0f5434] via-[#11695a] to-[#1d8a7a]", icon: HeartPulse },
+  UTILITY_OUTAGE: { bg: "from-[#1c1a17] via-[#2b2a3a] to-[#032ea1]", icon: Zap },
 };
-const DEFAULT_THEME: Theme = { bg: "from-primary via-primary-hover to-[#0b1f6b]", icon: Info };
-const EVENT_THEME: Theme = { bg: "from-reported-ink via-reported to-gold", icon: CalendarDays };
+const DEFAULT_THEME: Theme = { bg: "from-[#032ea1] via-[#1e47b5] to-[#0b1f6b]", icon: Info };
+const EVENT_THEME: Theme = { bg: "from-[#9a3412] via-[#c2410c] to-[#c99a2e]", icon: CalendarDays };
 
 interface Slide {
   id: string;

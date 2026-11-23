@@ -8,7 +8,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { PageContainer } from "@/components/layout/AppShell";
-import { Button, Card, CountBadge, PageHeader, Section, SelectField, Sheet, TextField } from "@/components/ui";
+import { SkeletonRows, Button, Card, CountBadge, PageHeader, Section, SelectField, Sheet, TextField } from "@/components/ui";
 import type { EmOrgType, EmServiceFilter, EmServiceView } from "@/types";
 
 export default function EmergencyDirectoryPage() {
@@ -213,7 +213,7 @@ export default function EmergencyDirectoryPage() {
         {/* QUICK LINK TO NEARBY GPS VIEW */}
         <div className="flex items-center justify-between rounded-2xl border border-primary/30 bg-primary/5 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary-tint text-primary">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary-tint text-primary-ink">
               <Navigation size={20} />
             </div>
             <div>
@@ -314,7 +314,7 @@ export default function EmergencyDirectoryPage() {
           action={<CountBadge count={filteredServices.length} />}
         >
           {loading ? (
-            <div className="py-12 text-center text-ink-muted">{t.submitting}</div>
+            <SkeletonRows rows={4} />
           ) : filteredServices.length === 0 ? (
             <Card className="py-12 text-center text-ink-muted">
               {locale === "km" ? "រកមិនឃើញសេវាសង្គ្រោះបន្ទាន់ទេ" : "No emergency services found"}
@@ -350,7 +350,7 @@ export default function EmergencyDirectoryPage() {
 
                       {/* Address */}
                       <p className="mt-3 flex items-start gap-1.5 text-meta text-ink-muted">
-                        <MapPin size={15} className="mt-0.5 flex-none text-primary" />
+                        <MapPin size={15} className="mt-0.5 flex-none text-primary-ink" />
                         <span>{s.address}</span>
                       </p>
 
@@ -401,7 +401,7 @@ export default function EmergencyDirectoryPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleOpenEdit(s)}
-                              className="text-primary hover:bg-primary-tint px-2"
+                              className="text-primary-ink hover:bg-primary-tint px-2"
                               title={t.editService}
                             >
                               <Edit2 size={15} />
@@ -425,7 +425,7 @@ export default function EmergencyDirectoryPage() {
                       <div className="flex items-center gap-2">
                         <a
                           href={`tel:${s.phone}`}
-                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-danger py-2 text-meta font-bold text-white shadow-card hover:bg-danger-ink transition-colors"
+                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-danger py-2 text-meta font-bold text-white shadow-card hover:bg-danger-hover transition-colors"
                         >
                           <Phone size={15} />
                           <span>{t.callNow}</span>
@@ -437,7 +437,7 @@ export default function EmergencyDirectoryPage() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-2 text-meta font-bold text-ink hover:bg-sand transition-colors"
                         >
-                          <Compass size={15} className="text-primary" />
+                          <Compass size={15} className="text-primary-ink" />
                           <span>{t.directions}</span>
                         </a>
                       </div>

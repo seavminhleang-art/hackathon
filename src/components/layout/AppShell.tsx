@@ -14,7 +14,6 @@ import {
   type ReactNode,
 } from "react";
 import {
-  Bell,
   Check,
   ChevronDown,
   ChevronRight,
@@ -27,12 +26,13 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import notification from "react-useanimations/lib/notification";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import type { Dictionary } from "@/lib/i18n/dictionary";
-import { CountBadge, Sheet } from "@/components/ui";
+import { AnimatedIcon, CountBadge, Sheet } from "@/components/ui";
 import type { City, EmergencyHotline } from "@/types";
 
 // ---------- SOS sheet context: any screen can open it ----------
@@ -218,7 +218,7 @@ export function LanguageToggle({
             >
               <span aria-hidden>{option.flag}</span>
               <span className="flex-1">{option.label}</span>
-              {locale === option.value && <Check aria-hidden size={18} className="text-primary" />}
+              {locale === option.value && <Check aria-hidden size={18} className="text-primary-ink" />}
             </button>
           ))}
         </div>
@@ -287,7 +287,7 @@ function Navbar({ onSos, unread }: { onSos: () => void; unread: number }) {
               className="relative flex size-12 items-center justify-center rounded-xl hover:bg-white/10"
               aria-label={`${t.notifications} (${unread})`}
             >
-              <Bell aria-hidden size={22} />
+              <AnimatedIcon animation={notification} interaction="hover-replay" size={22} />
               <span className="absolute top-1 right-0.5">
                 <CountBadge count={unread} />
               </span>
@@ -304,7 +304,7 @@ function Navbar({ onSos, unread }: { onSos: () => void; unread: number }) {
         {ready && !user && (
           <Link
             href="/login"
-            className="flex min-h-10 items-center gap-1.5 rounded-xl bg-white px-3.5 text-meta font-semibold text-primary hover:bg-primary-tint"
+            className="flex min-h-10 items-center gap-1.5 rounded-xl bg-white px-3.5 text-meta font-semibold text-primary hover:bg-white/90"
           >
             <LogIn aria-hidden size={18} />
             {t.login}
@@ -314,7 +314,7 @@ function Navbar({ onSos, unread }: { onSos: () => void; unread: number }) {
         <button
           type="button"
           onClick={onSos}
-          className="ml-2 hidden min-h-11 items-center gap-2 rounded-xl bg-danger px-4 text-body font-bold text-white shadow-sos ring-2 ring-white/90 hover:bg-danger-ink lg:flex"
+          className="ml-2 hidden min-h-11 items-center gap-2 rounded-xl bg-danger px-4 text-body font-bold text-white shadow-sos ring-2 ring-white/90 hover:bg-danger-hover lg:flex"
         >
           <Siren aria-hidden size={20} />
           SOS
@@ -382,7 +382,7 @@ function BottomTabs({ onSos }: { onSos: () => void }) {
                   key={n.href}
                   href={n.href}
                   aria-current={active ? "page" : undefined}
-                  className={`flex h-[68px] flex-col items-center justify-center gap-1 ${active ? "text-primary" : "text-ink-muted"}`}
+                  className={`flex h-[68px] flex-col items-center justify-center gap-1 ${active ? "text-primary-ink" : "text-ink-muted"}`}
                 >
                   <span
                     className={`flex h-8 w-14 items-center justify-center rounded-full ${active ? "bg-primary-tint" : ""}`}
@@ -431,7 +431,7 @@ function SosSheet({ onClose }: { onClose: () => void }) {
           <a
             key={h.id}
             href={`tel:${h.number}`}
-            className="flex min-h-20 items-center gap-4 rounded-2xl bg-danger px-5 text-white shadow-card hover:bg-danger-ink"
+            className="flex min-h-20 items-center gap-4 rounded-2xl bg-danger px-5 text-white shadow-card hover:bg-danger-hover"
           >
             <span className="text-display font-extrabold tabular-nums">
               {h.number}
@@ -457,10 +457,10 @@ function SosSheet({ onClose }: { onClose: () => void }) {
       <Link
         href="/me/contacts"
         onClick={onClose}
-        className="flex min-h-14 items-center justify-between gap-2 rounded-2xl bg-surface px-4 text-primary shadow-card ring-1 ring-primary/20 ring-inset hover:bg-primary-tint"
+        className="flex min-h-14 items-center justify-between gap-2 rounded-2xl bg-surface px-4 text-primary-ink shadow-card ring-1 ring-primary/20 ring-inset hover:bg-primary-tint"
       >
         <span className="flex items-center gap-2.5">
-          <Users size={20} className="text-primary" />
+          <Users size={20} className="text-primary-ink" />
           <span className="font-bold">{t.emergencyContactsTitle}</span>
         </span>
         <ChevronRight aria-hidden size={20} />

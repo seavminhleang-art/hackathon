@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { useRequireAuth } from "@/lib/auth/useRequireAuth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { PageContainer } from "@/components/layout/AppShell";
 import {
@@ -40,7 +41,7 @@ import { fmt } from "@/lib/i18n/dictionary";
 import type { I18nText } from "@/types";
 import type { CsEditField, CsGuideView, CsPlaceType, CsPlaceTypeMeta, CsPlaceView, CsWasteSchedule, OpeningHours, Weekday } from "@/types/community";
 import { useCs, type CsDict } from "./i18n";
-import { distanceLabel, mapsUrl, useAreas, useCommunityHref, useLoginGate } from "./shared";
+import { distanceLabel, mapsUrl, useAreas, useCommunityHref } from "./shared";
 
 const WEEK: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const ORDER: Weekday[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -267,7 +268,7 @@ export function OfficeScreen() {
   const { c, tx } = useCs();
   const href = useCommunityHref();
   const { ready } = useAuth();
-  const { gate, sheet } = useLoginGate();
+  const requireAuth = useRequireAuth();
   const [p, setP] = useState<CsPlaceView | null>(null);
   const [guides, setGuides] = useState<CsGuideView[]>([]);
   const [error, setError] = useState(false);
@@ -408,7 +409,7 @@ export function OfficeScreen() {
           )}
 
           <div className="flex flex-col items-start gap-1">
-            <Button variant="secondary" icon={Pencil} onClick={() => gate(c.actSuggest, () => setEditOpen(true))}>
+            <Button variant="secondary" icon={Pencil} onClick={() => requireAuth(() => setEditOpen(true))}>
               {c.suggestEdit}
             </Button>
             <p className="text-meta text-ink-muted">{fmt(c.lastChecked, { date: p.updatedAt.slice(0, 10) })}</p>
@@ -417,7 +418,6 @@ export function OfficeScreen() {
       </div>
 
       {editOpen && <SuggestEditSheet placeId={p.id} onClose={() => setEditOpen(false)} />}
-      {sheet}
     </PageContainer>
   );
 }
@@ -467,7 +467,7 @@ function SuggestEditSheet({ placeId, onClose }: { placeId: string; onClose: () =
           <TextArea label={c.note} optional={c.optional} value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
           <p className="text-meta text-ink-muted">{c.suggestBody}</p>
           {error && <p className="text-meta font-medium text-danger">{error}</p>}
-          <Button type="submit" disabled={busy || (field !== "CLOSED" && !value.trim())} block>
+          <Button type="submit" loading={busy} disabled={busy || (field !== "CLOSED" && !value.trim())} block>
             {c.sendSuggestion}
           </Button>
         </form>

@@ -181,7 +181,7 @@ export function PostFormSheet({
         <TextField label={t.lfPlaceLabel} value={place} onChange={(event) => setPlace(event.target.value)} placeholder={t.lfPlacePlaceholder} maxLength={160} required />
         <TextField label={t.lfEventDate} type="date" value={eventDate} max={today} onChange={(event) => setEventDate(event.target.value)} required />
         <div>
-          <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-xl bg-surface px-3.5 text-meta font-semibold text-primary ring-1 ring-line-strong ring-inset hover:bg-primary-tint">
+          <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-xl bg-surface px-3.5 text-meta font-semibold text-primary-ink ring-1 ring-line-strong ring-inset hover:bg-primary-tint">
             <Camera aria-hidden size={18} />
             {t.lfChoosePhoto}
             <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(event) => void choosePhoto(event.target.files?.[0])} />
@@ -192,7 +192,7 @@ export function PostFormSheet({
         <Button type="button" variant="secondary" onClick={attachLocation} icon={Crosshair}>
           {approxLocation ? t.lfLocationAttached : t.lfUseCurrentLocation}
         </Button>
-        <Button type="submit" size="lg" block disabled={busy}>
+        <Button type="submit" size="lg" block loading={busy}>
           {busy ? t.lfPosting : t.lfSubmitPost}
         </Button>
       </form>

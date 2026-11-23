@@ -21,8 +21,8 @@ export function Marquee({
 }) {
   if (items.length === 0) return null;
 
-  const bg = tone === "danger" ? "bg-danger" : tone === "ink" ? "bg-ink" : "bg-primary";
-  const badge = tone === "danger" ? "bg-danger-ink" : tone === "ink" ? "bg-black" : "bg-primary-hover";
+  const bg = tone === "danger" ? "bg-danger" : tone === "ink" ? "bg-night" : "bg-primary";
+  const badge = tone === "danger" ? "bg-danger-hover" : tone === "ink" ? "bg-black" : "bg-primary-hover";
   const row = (hidden: boolean) => (
     <ul className="flex flex-none items-center" aria-hidden={hidden || undefined}>
       {items.map((it, i) => (

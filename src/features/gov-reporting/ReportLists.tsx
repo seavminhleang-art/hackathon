@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ClipboardList, LogIn, Megaphone, Plus, Search, ThumbsUp, TriangleAlert } from "lucide-react";
+import { ClipboardList, Megaphone, Plus, Search, TriangleAlert } from "lucide-react";
+import thumbUp from "react-useanimations/lib/thumbUp";
 import { api } from "@/lib/api";
+import { useGuestRedirect, useRequireAuth } from "@/lib/auth/useRequireAuth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { fmt } from "@/lib/i18n/dictionary";
 import { shortDate } from "@/lib/i18n/format";
 import { PageContainer } from "@/components/layout/AppShell";
-import { Button, Card, EmptyState, FilterChips, LinkButton, ListRow, PageHeader, SkeletonRows, StatusChip, type ChipStatus, Thumb } from "@/components/ui";
+import { PageSkeleton, Button, Card, EmptyState, FilterChips, LinkButton, ListRow, PageHeader, SkeletonRows, StatusChip, type ChipStatus, Thumb } from "@/components/ui";
 import type { GrCategory, GrCategoryMeta, GrReportView, GrStatus } from "@/types/gov-reporting";
 import { CATEGORY_ICON, coverPhoto, statusLine } from "./meta";
 
@@ -24,6 +26,7 @@ type MineFilter = "ALL" | "ACTIVE" | "DONE";
 export function MyReports() {
   const { t, tx, locale } = useLocale();
   const { user, ready } = useAuth();
+  const redirecting = useGuestRedirect();
   const [rows, setRows] = useState<GrReportView[] | null>(null);
   const [filter, setFilter] = useState<MineFilter>("ALL");
 
@@ -42,11 +45,10 @@ export function MyReports() {
   const shown = (rows ?? []).filter((r) => (filter === "ALL" ? true : filter === "ACTIVE" ? ACTIVE.includes(r.status) : !ACTIVE.includes(r.status)));
   const count = (f: (r: GrReportView) => boolean) => (rows ?? []).filter(f).length;
 
-  if (ready && !user) {
+  if (redirecting) {
     return (
-      <PageContainer className="max-w-4xl">
-        <PageHeader title={t.myReportsTitle} subtitle={t.myReportsSubtitle} />
-        <EmptyState icon={LogIn} title={t.accountNeeded} action={<LinkButton href="/login?next=/me/reports" icon={LogIn}>{t.login}</LinkButton>} />
+      <PageContainer className="max-w-5xl">
+        <PageSkeleton />
       </PageContainer>
     );
   }
@@ -140,6 +142,7 @@ export function MyReports() {
 export function PublicReports() {
   const { t, tx, locale } = useLocale();
   const { user, ready } = useAuth();
+  const requireAuth = useRequireAuth();
   const [cats, setCats] = useState<GrCategoryMeta[]>([]);
   const [cat, setCat] = useState<"ALL" | GrCategory>("ALL");
   const [q, setQ] = useState("");
@@ -231,21 +234,16 @@ export function PublicReports() {
                     <LinkButton href={`/reports/${r.code}`} variant="secondary" size="sm">
                       {t.viewReport}
                     </LinkButton>
-                    {user ? (
-                      <Button
-                        size="sm"
-                        variant={r.mySupport ? "secondary" : "primary"}
-                        icon={r.mySupport ? Check : ThumbsUp}
-                        disabled={busy === r.id || r.mySupport || !r.can.support}
-                        onClick={() => support(r)}
-                      >
-                        {r.mySupport ? t.supported : t.supportReport}
-                      </Button>
-                    ) : (
-                      <LinkButton href="/login?next=/reports" size="sm" icon={ThumbsUp}>
-                        {t.supportReport}
-                      </LinkButton>
-                    )}
+                    <Button
+                      size="sm"
+                      variant={r.mySupport ? "secondary" : "primary"}
+                      icon={thumbUp}
+                      iconActive={r.mySupport}
+                      disabled={busy === r.id || r.mySupport || (!!user && !r.can.support)}
+                      onClick={() => requireAuth(() => support(r))}
+                    >
+                      {r.mySupport ? t.supported : t.supportReport}
+                    </Button>
                   </div>
                 </Card>
               ))}

@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Clock, MapPin, Plus, RefreshCw, ShieldAlert } from "lucide-react";
+import { Clock, MapPin, Plus, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { IncidentIcon, useIncidentTypes } from "@/features/emergency/meta";
 import { api } from "@/lib/api";
 import { PageContainer } from "@/components/layout/AppShell";
-import { Button, Card, PageHeader } from "@/components/ui";
+import { SkeletonRows, Button, Card, PageHeader } from "@/components/ui";
 import type { EmIncidentForReporter } from "@/types";
 
 export default function MyEmergencyReportsPage() {
@@ -50,9 +50,7 @@ export default function MyEmergencyReportsPage() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20">
-            <RefreshCw className="size-8 animate-spin text-primary" />
-          </div>
+          <SkeletonRows rows={4} />
         ) : incidents.length === 0 ? (
           <Card className="p-12 text-center space-y-4">
             <ShieldAlert size={48} className="mx-auto text-ink-muted" />
@@ -80,7 +78,7 @@ export default function MyEmergencyReportsPage() {
                         <IncidentIcon type={inc.type} className="mt-0.5 flex-none text-danger" />
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-meta font-bold text-primary group-hover:underline">
+                            <span className="font-mono text-meta font-bold text-primary-ink group-hover:underline">
                               {inc.code || inc.id}
                             </span>
                             <span className="text-meta font-semibold text-ink">

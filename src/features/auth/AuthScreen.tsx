@@ -189,7 +189,7 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
                   onClick={() => chooseGoogle(g)}
                   className="flex min-h-16 w-full items-center gap-3 rounded-xl bg-surface px-4 text-left ring-1 ring-line-strong ring-inset hover:bg-primary-tint"
                 >
-                  <span aria-hidden className="flex size-10 flex-none items-center justify-center rounded-full bg-primary-tint text-body font-bold text-primary">
+                  <span aria-hidden className="flex size-10 flex-none items-center justify-center rounded-full bg-primary-tint text-body font-bold text-primary-ink">
                     {g.firstName.slice(0, 1)}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -281,7 +281,7 @@ function LoginFlow({ onGoogle }: { onGoogle: () => void }) {
               {t.authForgot}
             </TextButton>
           </div>
-          <Button type="submit" size="lg" block disabled={busy}>
+          <Button type="submit" size="lg" block loading={busy}>
             {busy ? t.submitting : t.login}
           </Button>
           <SwitchLine lead={t.authNew} href="/register" label={t.authCreateAccount} />
@@ -295,7 +295,7 @@ function LoginFlow({ onGoogle }: { onGoogle: () => void }) {
           <Banner text={banner} />
           {identifierField}
           <ChannelPicker id={id("channel")} telegram field={register("channel")} error={err.channel?.message} />
-          <Button type="submit" size="lg" block disabled={busy}>
+          <Button type="submit" size="lg" block loading={busy}>
             {busy ? t.submitting : t.authSendCode}
           </Button>
         </>
@@ -313,7 +313,7 @@ function LoginFlow({ onGoogle }: { onGoogle: () => void }) {
               <CodeBlock id={id("code")} sent={code.sent} resendLeft={code.resendLeft} busy={busy} onResend={sendCode} field={{ value, onChange, onBlur }} error={fieldState.error?.message} />
             )}
           />
-          <Button type="submit" size="lg" block disabled={busy}>
+          <Button type="submit" size="lg" block loading={busy}>
             {busy ? t.submitting : t.login}
           </Button>
         </>
@@ -520,7 +520,7 @@ function RegisterFlow({ google, onGoogle }: { google: GoogleProfile | null; onGo
               </option>
             ))}
           </SelectField>
-          <Button type="submit" size="lg" block disabled={busy}>
+          <Button type="submit" size="lg" block loading={busy}>
             {busy ? t.submitting : isGoogle ? t.authCreateAccount : t.authContinue}
           </Button>
         </>
@@ -540,7 +540,7 @@ function RegisterFlow({ google, onGoogle }: { google: GoogleProfile | null; onGo
               )}
             />
           )}
-          <Button type="submit" size="lg" block disabled={busy}>
+          <Button type="submit" size="lg" block loading={busy}>
             {busy ? t.submitting : code.sent ? t.authCreateAccount : t.authSendCode}
           </Button>
         </>
@@ -586,7 +586,7 @@ function PromisePanel() {
       <ul className="flex max-w-lg flex-col gap-6">
         {promises.map(([Icon, title, text]) => (
           <li key={title} className="flex items-start gap-4">
-            <span className="flex size-12 flex-none items-center justify-center rounded-xl bg-primary-tint text-primary">
+            <span className="flex size-12 flex-none items-center justify-center rounded-xl bg-primary-tint text-primary-ink">
               <Icon aria-hidden size={24} />
             </span>
             <span>
@@ -679,7 +679,7 @@ function ChannelPicker({ id, telegram, field, error }: { id: string; telegram: b
             }`}
           >
             <input type="radio" className="sr-only" value={value} disabled={disabled} {...field} />
-            <span className="flex size-10 flex-none items-center justify-center rounded-lg bg-primary-tint text-primary">
+            <span className="flex size-10 flex-none items-center justify-center rounded-lg bg-primary-tint text-primary-ink">
               <Icon aria-hidden size={20} />
             </span>
             <span className="min-w-0">
@@ -806,7 +806,7 @@ function Heading({ title, lead }: { title: string; lead?: string }) {
 function Progress({ step, label }: { step: number; label: string }) {
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-meta font-semibold text-primary">{label}</p>
+      <p className="text-meta font-semibold text-primary-ink">{label}</p>
       <div className="grid grid-cols-3 gap-2" aria-hidden>
         {[1, 2, 3].map((n) => (
           <span key={n} className={`h-1.5 rounded-full ${n <= step ? "bg-primary" : "bg-line"}`} />
@@ -826,7 +826,7 @@ function BackButton({ label, onClick }: { label: string; onClick: () => void }) 
 }
 
 function TextButton({ className = "", ...rest }: ComponentProps<"button">) {
-  return <button type="button" className={`-mx-2 min-h-11 rounded-lg px-2 text-meta font-bold text-primary hover:bg-primary-tint disabled:opacity-50 ${className}`} {...rest} />;
+  return <button type="button" className={`-mx-2 min-h-11 rounded-lg px-2 text-meta font-bold text-primary-ink hover:bg-primary-tint disabled:opacity-50 ${className}`} {...rest} />;
 }
 
 function Divider({ label }: { label: string }) {
@@ -843,7 +843,7 @@ function SwitchLine({ lead, href, label }: { lead: string; href: string; label: 
   return (
     <p className="text-center text-meta text-ink-muted">
       {lead}{" "}
-      <Link href={href} className="font-bold text-primary underline-offset-4 hover:underline">
+      <Link href={href} className="font-bold text-primary-ink underline-offset-4 hover:underline">
         {label}
       </Link>
     </p>

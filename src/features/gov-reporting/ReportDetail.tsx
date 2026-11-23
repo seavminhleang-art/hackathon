@@ -18,7 +18,9 @@ import {
   TriangleAlert,
   XCircle,
 } from "lucide-react";
+import thumbUp from "react-useanimations/lib/thumbUp";
 import { api } from "@/lib/api";
+import { useRequireAuth } from "@/lib/auth/useRequireAuth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { fmt, type Dictionary } from "@/lib/i18n/dictionary";
@@ -241,6 +243,7 @@ function Fact({ icon, label, value }: { icon: typeof MapPin; label: string; valu
 function Actions({ r, onChange }: { r: GrReportView; onChange: (r: GrReportView) => void }) {
   const { t } = useLocale();
   const { user } = useAuth();
+  const requireAuth = useRequireAuth();
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [reopen, setReopen] = useState(false);
@@ -255,15 +258,15 @@ function Actions({ r, onChange }: { r: GrReportView; onChange: (r: GrReportView)
 
   if (!user)
     return (
-      <LinkButton href={`/login?next=/reports/${r.code}`} size="lg" icon={ThumbsUp} block>
+      <Button size="lg" icon={thumbUp} onClick={() => requireAuth()} block>
         {t.supportThisReport}
-      </LinkButton>
+      </Button>
     );
 
   return (
     <div className="flex flex-col gap-2">
       {r.can.support && (
-        <Button size="lg" icon={r.mySupport ? Check : ThumbsUp} disabled={busy || r.mySupport} onClick={() => run(() => api.gr.supportReport(r.id))} block>
+        <Button size="lg" icon={thumbUp} iconActive={r.mySupport} disabled={busy || r.mySupport} onClick={() => run(() => api.gr.supportReport(r.id))} block>
           {r.mySupport ? t.supported : t.supportThisReport}
         </Button>
       )}
@@ -327,7 +330,7 @@ function ReplyBox({ label, onSend }: { label: string; onSend: (body: string) => 
       }}
     >
       <TextArea label={label} value={body} onChange={(e) => setBody(e.target.value)} rows={3} error={error ?? undefined} />
-      <Button type="submit" icon={Send} disabled={busy || !body.trim()} className="self-start">
+      <Button type="submit" icon={Send} loading={busy} disabled={busy || !body.trim()} className="self-start">
         {t.send}
       </Button>
     </form>

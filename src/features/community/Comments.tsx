@@ -1,13 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CircleCheck, Lightbulb, MessageCircle, Reply, Send, ThumbsUp } from "lucide-react";
+import { CircleCheck, Lightbulb, MessageCircle, Reply, ThumbsUp } from "lucide-react";
+import send from "react-useanimations/lib/send";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useRequireAuth } from "@/lib/auth/useRequireAuth";
 import { Button, Card, SkeletonRows } from "@/components/ui";
 import { fmt } from "@/lib/i18n/dictionary";
 import type { CsCommentTarget, CsCommentView, CsReaction } from "@/types/community";
 import { useCs } from "./i18n";
-import { Avatar, OfficialBadge, ReportButton, timeAgo, useLoginGate } from "./shared";
+import { Avatar, OfficialBadge, ReportButton, timeAgo } from "./shared";
 
 /** Like / Helpful with text labels. Counts sit beside the label, never as a headline. */
 export function ReactionButtons({
@@ -35,7 +38,7 @@ export function ReactionButtons({
             aria-pressed={on}
             onClick={() => onToggle(r)}
             className={`flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-meta font-semibold ${
-              on ? "bg-primary-tint text-primary" : "text-ink-muted hover:bg-sand-deep hover:text-ink"
+              on ? "bg-primary-tint text-primary-ink" : "text-ink-muted hover:bg-sand-deep hover:text-ink"
             }`}
           >
             <Icon aria-hidden size={16} />
@@ -89,7 +92,7 @@ function Composer({
           autoFocus={autoFocus}
           className="min-h-12 flex-1 resize-y rounded-xl bg-surface px-3.5 py-3 text-body ring-1 ring-line-strong ring-inset placeholder:text-ink-muted/70 focus:ring-2 focus:ring-primary focus:outline-none"
         />
-        <Button type="submit" icon={Send} disabled={busy || !body.trim()}>
+        <Button type="submit" icon={send} loading={busy} disabled={busy || !body.trim()}>
           {c.send}
         </Button>
       </div>
@@ -184,7 +187,7 @@ export function CommentThread({
   onCount?: (n: number) => void;
 }) {
   const { c } = useCs();
-  const { gate, sheet } = useLoginGate();
+  const requireAuth = useRequireAuth();
   const [items, setItems] = useState<CsCommentView[] | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [replyTo, setReplyTo] = useState<string | null>(null);
@@ -211,7 +214,7 @@ export function CommentThread({
   }, [target, targetId, onCount]);
 
   const react = (id: string, r: CsReaction) =>
-    gate(c.actReact, async () => {
+    requireAuth(async () => {
       await api.cs.toggleReaction("COMMENT", id, r);
       await load();
     });
@@ -261,7 +264,7 @@ export function CommentThread({
                 comment={cm}
                 onReact={react}
                 accept={accept}
-                onReply={enabled ? () => gate(c.actComment, () => setReplyTo(replyTo === cm.id ? null : cm.id)) : undefined}
+                onReply={enabled ? () => requireAuth(() => setReplyTo(replyTo === cm.id ? null : cm.id)) : undefined}
               />
               {(cm.replies.length > 0 || replyTo === cm.id) && (
                 <div className="ml-6 flex flex-col gap-4 border-l-2 border-line pl-4 sm:ml-12">
@@ -290,27 +293,23 @@ export function CommentThread({
           )}
         </Card>
       )}
-      {sheet}
     </section>
   );
 }
 
-/** Composer that asks visitors to log in instead of letting them type. */
+/** Composer for everyone: visitors see the same field and go to login when they tap it. */
 function GatedComposer({ placeholder, onSend }: { placeholder: string; onSend: (body: string) => Promise<void> }) {
-  const { c } = useCs();
-  const { gate, sheet, loggedIn } = useLoginGate();
-  if (!loggedIn) {
+  const { user } = useAuth();
+  const requireAuth = useRequireAuth();
+  if (!user) {
     return (
-      <>
-        <button
-          type="button"
-          onClick={() => gate(c.actComment, () => undefined)}
-          className="flex min-h-12 w-full items-center rounded-xl bg-surface px-3.5 text-left text-body text-ink-muted ring-1 ring-line-strong ring-inset"
-        >
-          {placeholder}
-        </button>
-        {sheet}
-      </>
+      <button
+        type="button"
+        onClick={() => requireAuth()}
+        className="flex min-h-12 w-full items-center rounded-xl bg-surface px-3.5 text-left text-body text-ink-muted ring-1 ring-line-strong ring-inset"
+      >
+        {placeholder}
+      </button>
     );
   }
   return <Composer placeholder={placeholder} onSend={onSend} />;

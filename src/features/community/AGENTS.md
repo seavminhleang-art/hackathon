@@ -67,7 +67,7 @@ Five parts:
 | `/community/groups`, `/community/groups/[id]` | all / citizen | P1 |
 | `/admin/announcements`, `/admin/directory-edits` | officer / admin | P1 |
 
-UI patterns to reuse here: `useLoginGate()` (visitors read everything; actions open a login sheet titled with the action), `<ReportButton>` on every post/comment, `<CommentThread>` for posts, guides and announcements, `openStatus(hours)` for "Closed · opens 07:30 tomorrow".
+UI patterns to reuse here: `useRequireAuth()` from `src/lib/auth/useRequireAuth.ts` (visitors read everything and see normal action buttons; tapping one goes to login and back), `<ReportButton>` on every post/comment, `<CommentThread>` for posts, guides and announcements, `openStatus(hours)` for "Closed · opens 07:30 tomorrow".
 
 ## Demo accounts (password `demo1234`)
 012000001 citizen Tuol Kouk (sees rain alert, owns parents group, voted in poll) · 012000002 officer Tuol Kouk ·

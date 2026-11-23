@@ -2,28 +2,15 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Camera, Check, ImagePlus, Info, LocateFixed, LogIn, MapPin, Send, ShieldCheck, Siren, ThumbsUp } from "lucide-react";
+import { ArrowLeft, Camera, Check, ImagePlus, Info, LocateFixed, MapPin, Send, ShieldCheck, Siren, ThumbsUp } from "lucide-react";
+import send from "react-useanimations/lib/send";
 import { api } from "@/lib/api";
+import { useGuestRedirect } from "@/lib/auth/useRequireAuth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { fmt } from "@/lib/i18n/dictionary";
 import { PageContainer, useSos } from "@/components/layout/AppShell";
-import {
-  Button,
-  Card,
-  ChoiceCard,
-  EmptyState,
-  IconTile,
-  LinkButton,
-  ListRow,
-  PageHeader,
-  SelectField,
-  StatusChip,
-  TextArea,
-  TextField,
-  buttonClass,
-  type ChipStatus,
-} from "@/components/ui";
+import { PageSkeleton, Button, Card, ChoiceCard, IconTile, LinkButton, ListRow, PageHeader, SelectField, StatusChip, TextArea, TextField, buttonClass, type ChipStatus } from "@/components/ui";
 import type { City, LatLng } from "@/types";
 import type { GrCategory, GrCategoryMeta, GrDuplicateCandidate } from "@/types/gov-reporting";
 import { CATEGORY_ICON, metres } from "./meta";
@@ -36,7 +23,8 @@ type Step = "form" | "duplicates";
  */
 export function ReportForm() {
   const { t, tx } = useLocale();
-  const { user, ready } = useAuth();
+  const { user } = useAuth();
+  const redirecting = useGuestRedirect();
   const router = useRouter();
   const { openSos } = useSos();
 
@@ -132,25 +120,10 @@ export function ReportForm() {
     }
   }
 
-  if (ready && !user) {
+  if (redirecting) {
     return (
       <PageContainer className="max-w-3xl">
-        <PageHeader title={t.newReport} subtitle={t.reportIntro} back="/" />
-        <EmptyState
-          icon={LogIn}
-          title={t.accountNeeded}
-          body={t.privacyHint}
-          action={
-            <div className="flex gap-2">
-              <LinkButton href="/login?next=/report/new" icon={LogIn}>
-                {t.login}
-              </LinkButton>
-              <LinkButton href="/register?next=/report/new" variant="secondary">
-                {t.register}
-              </LinkButton>
-            </div>
-          }
-        />
+        <PageSkeleton rows={3} />
       </PageContainer>
     );
   }
@@ -206,11 +179,11 @@ export function ReportForm() {
           })}
         </Card>
         <p className="mt-4 flex items-start gap-2 rounded-2xl bg-primary-tint p-4 text-meta">
-          <Info aria-hidden size={18} className="mt-0.5 flex-none text-primary" />
+          <Info aria-hidden size={18} className="mt-0.5 flex-none text-primary-ink" />
           {t.duplicateTip}
         </p>
         <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-          <Button size="lg" icon={Send} onClick={submit} disabled={busy}>
+          <Button size="lg" icon={send} onClick={submit} loading={busy}>
             {t.differentProblem}
           </Button>
           <Button size="lg" variant="secondary" onClick={() => setStep("form")}>
@@ -291,12 +264,12 @@ export function ReportForm() {
               ))}
               {photos < 5 && (
                 <>
-                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl bg-primary-tint text-center text-meta font-semibold border-2 border-dashed border-primary/40 text-primary hover:bg-primary-tint/70">
+                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl bg-primary-tint text-center text-meta font-semibold border-2 border-dashed border-primary/40 text-primary-ink hover:bg-primary-tint/70">
                     <ImagePlus aria-hidden size={24} />
                     {t.fromGallery}
                     <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={(e) => setPhotos((n) => Math.min(5, n + (e.target.files?.length ?? 0)))} />
                   </label>
-                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl text-center text-meta font-semibold text-primary ring-1 ring-primary/30 ring-inset hover:bg-primary-tint">
+                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl text-center text-meta font-semibold text-primary-ink ring-1 ring-primary/30 ring-inset hover:bg-primary-tint">
                     <Camera aria-hidden size={24} />
                     {t.takePhoto}
                     <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => setPhotos((n) => Math.min(5, n + (e.target.files?.length ?? 0)))} />
@@ -322,7 +295,7 @@ export function ReportForm() {
             </SelectField>
             <TextField label={t.landmark} hint={t.landmarkHint} optional={t.optional} value={landmark} onChange={(e) => setLandmark(e.target.value)} />
             <div className="flex items-start gap-3 rounded-xl bg-sand p-3">
-              <MapPin aria-hidden size={20} className="mt-0.5 flex-none text-primary" />
+              <MapPin aria-hidden size={20} className="mt-0.5 flex-none text-primary-ink" />
               <p className="text-meta">
                 {gpsState === "ok" ? t.usingGps : gpsState === "failed" ? t.gpsFailed : fmt(t.usingArea, { area: city ? tx(city.name) : "…" })}
               </p>
@@ -333,7 +306,7 @@ export function ReportForm() {
           </Card>
 
           <p className="flex items-start gap-2 rounded-2xl bg-primary-tint p-4 text-meta">
-            <ShieldCheck aria-hidden size={18} className="mt-0.5 flex-none text-primary" />
+            <ShieldCheck aria-hidden size={18} className="mt-0.5 flex-none text-primary-ink" />
             {t.privacyHint}
           </p>
 

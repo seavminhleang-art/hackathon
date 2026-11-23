@@ -385,7 +385,7 @@ export default function SosPage() {
                   size="sm"
                   onClick={requestGpsLocation}
                   disabled={isGpsLoading}
-                  className="gap-1 text-caption text-primary hover:bg-primary-tint"
+                  className="gap-1 text-caption text-primary-ink hover:bg-primary-tint"
                 >
                   <RefreshCw size={13} className={isGpsLoading ? "animate-spin" : ""} />
                   <span>{locale === "km" ? "ពិនិត្យ GPS" : "Refresh GPS"}</span>
@@ -684,7 +684,7 @@ export default function SosPage() {
                   <span className="text-caption font-semibold text-ink-muted">
                     {locale === "km" ? "លេខកូដករណីបន្ទាន់" : "Emergency Incident Code"}
                   </span>
-                  <h2 className="font-mono text-title font-black text-primary">
+                  <h2 className="font-mono text-title font-black text-primary-ink">
                     {activeIncident.code}
                   </h2>
                 </div>
@@ -718,7 +718,7 @@ export default function SosPage() {
                 </div>
               ) : (
                 <div className="mt-4 rounded-xl border border-line bg-sand p-3.5 text-caption text-ink-muted flex items-center gap-2">
-                  <Clock size={16} className="text-primary flex-none" />
+                  <Clock size={16} className="text-primary-ink flex-none" />
                   <span>
                     {locale === "km"
                       ? "សំណើត្រូវបានបញ្ជូនទៅកាន់ស្ថាប័នពាក់ព័ន្ធ។ កំពុងរង់ចាំការឆ្លើយតប..."
@@ -738,7 +738,7 @@ export default function SosPage() {
               {/* Dispatched Organizations */}
               <div className="mt-5">
                 <h4 className="text-meta font-bold text-ink mb-2.5 flex items-center gap-1.5">
-                  <Building2 size={16} className="text-primary" />
+                  <Building2 size={16} className="text-primary-ink" />
                   <span>{t.dispatchesLabel}</span>
                 </h4>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -751,7 +751,7 @@ export default function SosPage() {
                         <span className="font-semibold text-meta block">{tx(d.organizationName)}</span>
                         <span className="text-caption text-ink-muted">{d.organizationType}</span>
                         {d.responseInfo && (
-                          <span className="text-caption block text-primary font-medium mt-0.5">
+                          <span className="text-caption block text-primary-ink font-medium mt-0.5">
                             {d.responseInfo}
                           </span>
                         )}
@@ -771,7 +771,7 @@ export default function SosPage() {
               {/* Alerted Contacts */}
               <div className="mt-5">
                 <h4 className="text-meta font-bold text-ink mb-2 flex items-center gap-1.5">
-                  <Users size={16} className="text-primary" />
+                  <Users size={16} className="text-primary-ink" />
                   <span>{t.alertedContactsLabel}</span>
                 </h4>
                 {sosResult && (sosResult.notifiedInApp.length > 0 || sosResult.smsLinks.length > 0) ? (
