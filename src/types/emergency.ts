@@ -38,11 +38,18 @@ export interface EmOrganization {
   /** Cities this organization covers. Empty = its whole province. */
   coverageCityIds: string[];
   verified: boolean;
+  /** Last verified date for directory data accuracy (reset when pending review) */
+  lastVerified?: ISODateString;
+  /** Whether the service entry is active or deactivated by admin */
+  active: boolean;
+  /** Whether changes made by organization staff are pending admin review */
+  pendingReview?: boolean;
 }
 
 export interface EmServiceView extends EmOrganization {
   openNow: boolean;
   distanceKm?: number;
+  isStaleVerified?: boolean;
 }
 
 export interface EmServiceFilter {
@@ -54,6 +61,33 @@ export interface EmServiceFilter {
   /** With `near`: only services within this many km. */
   radiusKm?: number;
   openNow?: boolean;
+  includeDeactivated?: boolean;
+}
+
+export interface EmCreateServiceInput {
+  type: EmOrgType;
+  name: I18nText;
+  provinceId: string;
+  cityId: string;
+  address: string;
+  location: LatLng;
+  phone: string;
+  hotline?: string;
+  hours?: OpeningHours;
+  coverageCityIds?: string[];
+}
+
+export interface EmUpdateServiceInput {
+  name?: I18nText;
+  provinceId?: string;
+  cityId?: string;
+  address?: string;
+  location?: LatLng;
+  phone?: string;
+  hotline?: string;
+  hours?: OpeningHours;
+  coverageCityIds?: string[];
+  active?: boolean;
 }
 
 // ---------- Incident types and severity ----------
@@ -84,15 +118,46 @@ export interface EmIncidentTypeMeta {
 
 export type EmSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
-// ---------- Status ----------
+// ---------- Status & Multi-Dispatch Derivation ----------
 
 /**
- * Submitted -> Received -> Under review -> Acknowledged -> Responding -> Resolved.
- * Alternatives: Rejected (with reason), Cancelled (reporter is safe / false alarm),
- * Duplicate (linked to the original incident).
+ * MULTI-DISPATCH STATUS DERIVATION RULE:
+ * When an incident is routed to multiple organizations (e.g. Police + Ambulance),
+ * the overall incident status is derived from its active (non-DECLINED) dispatches:
+ * 1. If all active dispatches are RESOLVED -> incident is RESOLVED.
+ * 2. Else if any active dispatch is RESPONDING -> incident is RESPONDING.
+ * 3. Else if any active dispatch is ACKNOWLEDGED -> incident is ACKNOWLEDGED.
+ * 4. Else if any active dispatch is UNDER_REVIEW -> incident is UNDER_REVIEW.
+ * 5. Else if any active dispatch is RECEIVED -> incident is RECEIVED.
+ * 6. Else (all active are SENT) -> incident is SUBMITTED.
+ * Special cases:
+ * - If all dispatches are DECLINED -> incident stays SUBMITTED (awaiting admin reassignment).
+ * - REJECTED (admin), CANCELLED (reporter), and DUPLICATE (admin) are terminal overrides.
  *
- * Only organizations move an incident past SUBMITTED. The incident status is the
- * furthest status reached by any of its dispatches.
+ * PERMISSION TABLE FOR STATUS TRANSITIONS:
+ * - SUBMITTED -> RECEIVED: Assigned ORGANIZATION staff (on opening incident)
+ * - RECEIVED -> UNDER_REVIEW: Assigned ORGANIZATION staff
+ * - UNDER_REVIEW -> ACKNOWLEDGED: Assigned ORGANIZATION staff
+ * - ACKNOWLEDGED -> RESPONDING: Assigned ORGANIZATION staff
+ * - RESPONDING -> RESOLVED: Assigned ORGANIZATION staff or ADMIN
+ * - Any non-closed -> REJECTED: ADMIN only (reason required)
+ * - Any non-closed -> CANCELLED: Incident owner/reporter only (reason required)
+ * - Any non-closed -> DUPLICATE: ADMIN only (original incident ID required)
+ * - Dispatch -> DECLINED: Assigned ORGANIZATION staff only (reason required)
+ */
+/**
+ * Canonical Incident Status Model:
+ * - SUBMITTED: Created by citizen or SOS countdown, delivered into dispatch pipeline.
+ * - RECEIVED: At least one assigned organization has opened/viewed the dispatch console.
+ * - UNDER_REVIEW: Organization or admin is actively reviewing details/triaging unit availability.
+ * - ACKNOWLEDGED: Organization has formally accepted ownership and committed resources (prior to rollout).
+ * - RESPONDING: Field units (patrol/ambulance/fire) are actively en route with ETA. Unlocks "Help is on the way".
+ * - RESOLVED: Operations completed and formally resolved by organization staff or admin.
+ * - CLOSED_BY_USER: Citizen indicated they are safe and closed the incident (does not auto-resolve org dispatches).
+ * - CANCELLED: Citizen cancelled (mistake/false alarm with reason or accidental SOS).
+ * - REJECTED: Admin rejected report with mandatory explanation.
+ * - DUPLICATE: Merged with an existing primary incident.
+ * - FAILED_RETRYING: Stored locally in offline queue awaiting network retry.
  */
 export type EmIncidentStatus =
   | "SUBMITTED"
@@ -101,7 +166,9 @@ export type EmIncidentStatus =
   | "ACKNOWLEDGED"
   | "RESPONDING"
   | "RESOLVED"
+  | "CLOSED_BY_USER"
   | "REJECTED"
+  | "FAILED_RETRYING"
   | "CANCELLED"
   | "DUPLICATE";
 
@@ -109,11 +176,12 @@ export type EmIncidentStatus =
 export type EmDispatchStatus =
   | "SENT" // delivered to the channel; nobody has confirmed yet
   | "RECEIVED" // organization opened / confirmed receipt
-  | "UNDER_REVIEW"
-  | "ACKNOWLEDGED"
-  | "RESPONDING"
-  | "RESOLVED"
-  | "DECLINED"; // not theirs (wrong area/type) -> admin reassigns
+  | "UNDER_REVIEW" // organization reviewing details
+  | "ACKNOWLEDGED" // organization accepted ownership and preparing response
+  | "RESPONDING" // field responders actively en route
+  | "RESOLVED" // field operations completed
+  | "DECLINED" // not theirs (wrong area/type) -> admin reassigns
+  | "CANNOT_CONTINUE"; // unit en route encountered roadblock/incident -> returns for reassignment
 
 /** Only IN_APP exists in the mock. The others are the future plan. */
 export type EmChannel = "IN_APP" | "TELEGRAM" | "SMS" | "API";
@@ -153,29 +221,73 @@ export interface EmConsent {
   shareContactWithResponders: boolean;
   /** A redacted public version may be shared with news reporters after verification. */
   shareWithNews: boolean;
+  consentedAt?: ISODateString;
+}
+
+/** Specific granular consents for normal incident reporting (Core feature 4, Step 4) */
+export interface EmConsents {
+  /** Send to relevant emergency response organizations (default: true) */
+  shareWithOrganizations: boolean;
+  /** Allow responders to call reporter back for details (default: false) */
+  allowCallback: boolean;
+  /** Share with media in general area only, no names/faces (default: false) */
+  shareWithMedia: boolean;
+  /** Report anonymously without reporter identity (default: false) */
+  anonymous: boolean;
+}
+
+export interface EmIncidentAdditionalDetail {
+  text?: string;
+  photoUrls?: string[];
+  addedAt: ISODateString;
+  addedBy: string;
 }
 
 export interface EmIncident {
   id: string;
+  code: string;
   kind: EmIncidentKind;
+  submittedByUserId: string;
+  /** Alias for backwards-compatibility */
   reporterId: string;
   type: EmIncidentType;
+  /** Authoritative final severity (set by Organization or Admin) */
   severity: EmSeverity;
+  /** Suggested severity selected by user on submission */
+  suggestedSeverity?: EmSeverity;
   description: string;
   photoUrls: string[];
   location: LatLng;
   locationSource: EmLocationSource;
+  /** False if GPS was denied or failed and report relies on landmark/manual pin */
+  locationConfirmed: boolean;
+  locationStatus: "CONFIRMED" | "UNCONFIRMED" | "NOT_SHARED";
+  landmark?: string;
   /** GPS accuracy in metres, when known. */
   accuracyM?: number;
+  lastKnownLocation?: LatLng;
   addressHint?: string;
   provinceId: string;
   cityId: string;
   /** When it happened (can be earlier than createdAt). */
   occurredAt: ISODateString;
   peopleAffected?: number;
+  numInjured?: "0" | "1" | "2-5" | "5+";
   consent: EmConsent;
+  consents?: EmConsents;
   status: EmIncidentStatus;
   history: EmStatusChange[];
+  /** Flagged for admin review when rapid repeated SOS occurs without hard-blocking */
+  flaggedForReview?: boolean;
+  flaggedReason?: string;
+  /** Marked when reporter explicitly closes SOS safely */
+  closedByUser?: boolean;
+  /** Flagged if another incident exists with same type within ~150m & 15min */
+  isPossibleDuplicate?: boolean;
+  possibleDuplicateOf?: string;
+  /** Whether uploaded photos are marked sensitive and unapproved for public view */
+  sensitiveMedia?: boolean;
+  additionalDetails?: EmIncidentAdditionalDetail[];
   /** Admin verification (needed for public alerts and news). Does not block delivery. */
   verified: boolean;
   verifiedBy?: string;
@@ -191,23 +303,38 @@ export interface EmIncident {
 export interface EmCreateIncidentInput {
   type: EmIncidentType;
   severity?: EmSeverity;
-  description: string;
+  suggestedSeverity?: EmSeverity;
+  description?: string;
   photoUrls?: string[];
-  location: LatLng;
-  locationSource: EmLocationSource;
+  location?: LatLng;
+  locationSource?: EmLocationSource;
+  locationConfirmed?: boolean;
+  locationStatus?: "CONFIRMED" | "UNCONFIRMED" | "NOT_SHARED";
+  landmark?: string;
   accuracyM?: number;
   addressHint?: string;
   provinceId: string;
   cityId: string;
   occurredAt?: ISODateString;
   peopleAffected?: number;
+  numInjured?: "0" | "1" | "2-5" | "5+";
   consent?: Partial<EmConsent>;
+  consents?: Partial<EmConsents>;
+  sensitiveMedia?: boolean;
+}
+
+export interface EmAddIncidentDetailsInput {
+  text?: string;
+  photoUrls?: string[];
 }
 
 export interface EmSosInput {
   type: EmIncidentType;
-  location: LatLng;
-  locationSource: EmLocationSource;
+  location?: LatLng;
+  locationSource?: EmLocationSource;
+  locationConfirmed?: boolean;
+  locationStatus?: "CONFIRMED" | "UNCONFIRMED" | "NOT_SHARED";
+  landmark?: string;
   accuracyM?: number;
   provinceId: string;
   cityId: string;
@@ -234,12 +361,20 @@ export interface EmSosResult {
 /** Reporter's own view: everything, including dispatches. */
 export interface EmIncidentForReporter extends EmIncident {
   dispatches: (EmDispatch & { organizationName: I18nText; organizationType: EmOrgType })[];
+  /** True when every routed dispatch has been DECLINED by the assigned organizations */
+  allDispatchesDeclined?: boolean;
 }
 
 /** Organization view: reporter contact only with consent. */
 export interface EmIncidentForOrg extends Omit<EmIncident, "reporterId"> {
   dispatch: EmDispatch;
   reporterContact?: { fullName: string; phone: string };
+  /** Warning flag if dispatch has been SENT or RECEIVED for over 5 minutes without acknowledgment */
+  isUnacknowledgedStale?: boolean;
+  /** Warning flag if citizen closed or cancelled after dispatch marked RESPONDING */
+  standDownWarning?: boolean;
+  /** Situational awareness: other organizations dispatched to this incident */
+  otherDispatches?: (EmDispatch & { organizationName: I18nText; organizationType: EmOrgType })[];
 }
 
 /** Public / visitor view: verified incidents only, no people, rounded location. */
@@ -266,16 +401,24 @@ export interface EmIncidentFilter {
 
 // ---------- Trusted contacts (Core feature 3) ----------
 
+export type EmContactStatus = "PENDING" | "CONFIRMED" | "MUTED" | "DECLINED" | "LEFT" | "EXPIRED";
+
 export interface EmTrustedContact {
   id: string;
   ownerId: string;
   name: string;
-  phone: string; // normalized 0XXXXXXXX
+  phone: string; // canonical format +855XXXXXXXX
   relation?: string;
+  priority: number; // 1 to 5
+  status: EmContactStatus;
+  inviteSentAt: ISODateString;
+  inviteExpiresAt: ISODateString;
+  shareMedicalInfo: boolean;
   /** Set when the phone belongs to an app user (they get in-app alerts). */
   linkedUserId?: string;
   notifyOnSos: boolean;
   createdAt: ISODateString;
+  updatedAt: ISODateString;
 }
 
 // ---------- News releases (approved public information) ----------
@@ -302,14 +445,19 @@ export interface EmNewsRelease {
 // ---------- Rules (Core feature 10) ----------
 
 export const EM_RULES = {
+  /** Maximum number of active (PENDING/CONFIRMED/MUTED) trusted contacts. DECLINED/LEFT/EXPIRED do not count. */
   maxTrustedContacts: 5,
-  /** SOS presses per user per hour before the app only shows the hotline. */
+  /** Number of days before a pending invite automatically expires. */
+  inviteExpiryDays: 7,
+  /** SOS presses per user per hour before incidents are flagged for admin review. Never hard-blocked. */
   sosPerHour: 3,
   /** Incident reports per user per day. */
   reportsPerDay: 10,
   /** Rejected reports in 30 days before new reports need admin review first. */
   rejectionsBeforeReview: 3,
   nearbyRadiusKm: 10,
+  /** Minutes a dispatch sits unacknowledged (SENT or RECEIVED) before showing an urgent warning */
+  unacknowledgedWarningMinutes: 5,
   /** Public locations rounded to 3 decimals (~100 m). */
   publicLocationDecimals: 3,
 } as const;

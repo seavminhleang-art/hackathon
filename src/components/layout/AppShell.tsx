@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, Suspense, type ReactNode } from "react";
 import {
   Bell,
   ChevronRight,
@@ -35,11 +35,20 @@ export function useSos() {
 
 type NavItem = { href: string; icon: LucideIcon; label: keyof Dictionary };
 
+/** Main navigation links on desktop (lg+). */
+const DESKTOP_NAV: NavItem[] = [
+  { href: "/", icon: House, label: "navHome" },
+  { href: "/emergency", icon: Siren, label: "navEmergency" },
+  { href: "/reports", icon: FileText, label: "navReports" },
+  { href: "/lost-found", icon: KeyRound, label: "navLostFound" },
+  { href: "/community", icon: Users, label: "navCommunity" },
+];
+
 /** Bottom tabs on phones (max 5). */
 const TABS: NavItem[] = [
   { href: "/", icon: House, label: "navHome" },
+  { href: "/emergency", icon: Siren, label: "navEmergency" },
   { href: "/reports", icon: FileText, label: "navReports" },
-  { href: "/lost-found", icon: KeyRound, label: "navLostFound" },
   { href: "/community", icon: Users, label: "navCommunity" },
   { href: "/me", icon: UserIcon, label: "navMe" },
 ];
@@ -69,10 +78,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <SosContext.Provider value={{ openSos }}>
-      <Navbar onSos={openSos} unread={user ? unread : 0} />
+      <Suspense fallback={<div className="h-16 bg-primary" />}>
+        <Navbar onSos={openSos} unread={user ? unread : 0} />
+      </Suspense>
       {/* Bottom padding keeps content clear of the fixed tabs + SOS on phones. */}
       <div className="flex-1 pb-36 lg:pb-16">{children}</div>
-      <BottomTabs onSos={openSos} />
+      <Suspense fallback={null}>
+        <BottomTabs onSos={openSos} />
+      </Suspense>
       {sosOpen && <SosSheet onClose={closeSos} />}
     </SosContext.Provider>
   );
@@ -137,7 +150,7 @@ function Navbar({ onSos, unread }: { onSos: () => void; unread: number }) {
         <Logo dark />
 
         <nav className="ml-8 hidden h-16 items-stretch gap-1 lg:flex" aria-label={t.appName}>
-          {TABS.slice(0, 4).map((n) => {
+          {DESKTOP_NAV.map((n) => {
             const active = isActive(pathname, n.href);
             return (
               <Link
@@ -301,6 +314,18 @@ function SosSheet({ onClose }: { onClose: () => void }) {
         <span>
           <span className="block font-bold">{t.sosSendInApp}</span>
           <span className="block text-meta text-ink-muted">{t.sosSendInAppHint}</span>
+        </span>
+        <ChevronRight aria-hidden size={20} />
+      </Link>
+
+      <Link
+        href="/me/contacts"
+        onClick={onClose}
+        className="flex min-h-14 items-center justify-between gap-2 rounded-2xl bg-surface px-4 text-primary shadow-card ring-1 ring-primary/20 ring-inset hover:bg-primary-tint"
+      >
+        <span className="flex items-center gap-2.5">
+          <Users size={20} className="text-primary" />
+          <span className="font-bold">{t.emergencyContactsTitle}</span>
         </span>
         <ChevronRight aria-hidden size={20} />
       </Link>

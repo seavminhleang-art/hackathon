@@ -58,8 +58,39 @@ export async function register(input: RegisterInput): Promise<AuthSession> {
 
 export async function login({ phone, password }: LoginInput): Promise<AuthSession> {
   const p = normalizePhone(phone);
-  const user = load().users.find((u) => u.phone === p && u.password === password);
+  const user = load().users.find((u) => (normalizePhone(u.phone) === p || u.phone === phone) && u.password === password);
   if (!user) throw new ApiError("UNAUTHORIZED", "Wrong phone or password");
+  return delay(writeSession(user));
+}
+
+export async function sendOtp(phone: string): Promise<{ success: boolean; message: string; otp: string }> {
+  const norm = normalizePhone(phone);
+  if (!norm) throw new ApiError("VALIDATION", "Invalid phone number", "phone");
+  const otp = "123456";
+  return delay({ success: true, message: `OTP sent to ${norm} (Mock: ${otp})`, otp });
+}
+
+export async function verifyOtp(phone: string, otp: string): Promise<AuthSession> {
+  const norm = normalizePhone(phone);
+  if (!norm) throw new ApiError("VALIDATION", "Invalid phone number", "phone");
+  if (otp.trim() !== "123456") throw new ApiError("UNAUTHORIZED", "Invalid OTP code");
+  let user = load().users.find((u) => normalizePhone(u.phone) === norm || u.phone === norm);
+  if (!user) {
+    const d = load();
+    user = {
+      id: nextId("u"),
+      fullName: `Citizen ${norm.slice(-4)}`,
+      phone: norm,
+      role: "CITIZEN",
+      provinceId: "phnom-penh",
+      cityId: "tuol-kouk",
+      preferredLocale: "km",
+      createdAt: now(),
+      password: "otp-login",
+    };
+    d.users.push(user);
+    save();
+  }
   return delay(writeSession(user));
 }
 

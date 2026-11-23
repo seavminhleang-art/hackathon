@@ -187,6 +187,7 @@ export interface CsAnnouncement {
   scope: CsScope;
   authorId: string; // OFFICER or ADMIN
   imageUrl?: string;
+  location?: LatLng;
   pinned: boolean;
   commentsEnabled: boolean;
   validFrom: ISODateString;
@@ -209,6 +210,7 @@ export interface CsCreateAnnouncementInput {
   category: CsAnnouncementCategory;
   scope: CsScope;
   imageUrl?: string;
+  location?: LatLng;
   pinned?: boolean;
   commentsEnabled?: boolean;
   validFrom?: ISODateString;

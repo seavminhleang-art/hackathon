@@ -5,5 +5,6 @@ export { Section, PageHeader, EmptyState, SkeletonRows, CountBadge } from "./Sec
 export { TextField, TextArea, SelectField, ChoiceCard } from "./Field";
 export { Sheet } from "./Sheet";
 export { StatusChip, type ChipStatus } from "./StatusChip";
+export { Badge, type BadgeProps } from "./Badge";
 export { Marquee } from "./Marquee";
 export { Carousel } from "./Carousel";

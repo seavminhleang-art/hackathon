@@ -1,6 +1,6 @@
 // Emergency seed data. All people, phone numbers and incidents are fake.
 // Organization names are real public institutions used as examples, but every
-// phone number here is a placeholder (023 000 3xx). Hotlines 117/118/119 are real.
+// phone number here is a placeholder (023 000 3xx). Hotlines 117/118/119 are unverified, check before launch.
 // "Today" in the demo is around 2026-11-21.
 
 import type {
@@ -65,50 +65,52 @@ export const EM_INCIDENT_TYPES: EmIncidentTypeMeta[] = [
 
 const PP = "phnom-penh";
 
+const VERIFIED_DATE = "2026-11-20T08:00:00+07:00";
+
 export const EM_ORGANIZATIONS: EmOrganization[] = [
   { id: "org-police-pp", type: "POLICE", name: { km: "ស្នងការដ្ឋាននគរបាលរាជធានីភ្នំពេញ", en: "Phnom Penh Municipal Police" },
     provinceId: PP, cityId: "doun-penh", address: "Doun Penh", location: { lat: 11.5712, lng: 104.9198 },
-    phone: "023 000 301", hotline: "117", hours: H24, coverageCityIds: [], verified: true },
+    phone: "023 000 301", hotline: "117", hours: H24, coverageCityIds: [], verified: true, lastVerified: VERIFIED_DATE, active: true },
   { id: "org-police-tk", type: "POLICE", name: { km: "អធិការដ្ឋាននគរបាលខណ្ឌទួលគោក", en: "Tuol Kouk Police Inspectorate" },
     provinceId: PP, cityId: "tuol-kouk", address: "Tuol Kouk", location: { lat: 11.5818, lng: 104.8995 },
-    phone: "023 000 302", hotline: "117", hours: H24, coverageCityIds: ["tuol-kouk"], verified: true },
+    phone: "023 000 302", hotline: "117", hours: H24, coverageCityIds: ["tuol-kouk"], verified: true, lastVerified: VERIFIED_DATE, active: true },
   { id: "org-police-bkk", type: "POLICE", name: { km: "អធិការដ្ឋាននគរបាលខណ្ឌបឹងកេងកង", en: "Boeng Keng Kang Police Inspectorate" },
     provinceId: PP, cityId: "boeng-keng-kang", address: "Boeng Keng Kang", location: { lat: 11.5535, lng: 104.9262 },
-    phone: "023 000 303", hotline: "117", hours: H24, coverageCityIds: ["boeng-keng-kang", "chamkar-mon"], verified: true },
+    phone: "023 000 303", hotline: "117", hours: H24, coverageCityIds: ["boeng-keng-kang", "chamkar-mon"], verified: true, lastVerified: VERIFIED_DATE, active: true },
   { id: "org-hosp-calmette", type: "HOSPITAL", name: { km: "មន្ទីរពេទ្យកាល់ម៉ែត", en: "Calmette Hospital" },
     provinceId: PP, cityId: "doun-penh", address: "Monivong Blvd, Doun Penh", location: { lat: 11.5818, lng: 104.9172 },
-    phone: "023 000 311", hours: H24, coverageCityIds: [], verified: true },
+    phone: "023 000 311", hours: H24, coverageCityIds: [], verified: true, lastVerified: VERIFIED_DATE, active: true },
   { id: "org-hosp-ks", type: "HOSPITAL", name: { km: "មន្ទីរពេទ្យមិត្តភាពខ្មែរ-សូវៀត", en: "Khmer-Soviet Friendship Hospital" },
     provinceId: PP, cityId: "mean-chey", address: "Mean Chey", location: { lat: 11.5373, lng: 104.9135 },
-    phone: "023 000 312", hours: H24, coverageCityIds: [], verified: true },
+    phone: "023 000 312", hours: H24, coverageCityIds: [], verified: true, lastVerified: VERIFIED_DATE, active: true },
   { id: "org-amb-pp", type: "AMBULANCE", name: { km: "សេវាសង្គ្រោះបន្ទាន់ ១១៩ ភ្នំពេញ", en: "Phnom Penh 119 ambulance service" },
     provinceId: PP, cityId: "doun-penh", address: "Doun Penh", location: { lat: 11.5795, lng: 104.9168 },
-    phone: "023 000 321", hotline: "119", hours: H24, coverageCityIds: [], verified: true },
+    phone: "023 000 321", hotline: "119", hours: H24, coverageCityIds: [], verified: true, lastVerified: VERIFIED_DATE, active: true },
   { id: "org-fire-pp", type: "FIRE", name: { km: "នាយកដ្ឋានពន្លត់អគ្គិភ័យ ភ្នំពេញ", en: "Phnom Penh Fire Department" },
     provinceId: PP, cityId: "prampir-makara", address: "Prampir Makara", location: { lat: 11.5649, lng: 104.9093 },
-    phone: "023 000 331", hotline: "118", hours: H24, coverageCityIds: [], verified: true },
+    phone: "023 000 331", hotline: "118", hours: H24, coverageCityIds: [], verified: true, lastVerified: VERIFIED_DATE, active: true },
   { id: "org-rescue-pp", type: "RESCUE", name: { km: "ក្រុមសង្គ្រោះ ភ្នំពេញ (សាកល្បង)", en: "Phnom Penh rescue team (demo)" },
     provinceId: PP, cityId: "chroy-changvar", address: "Chroy Changvar", location: { lat: 11.5989, lng: 104.9381 },
-    phone: "023 000 341", hours: H24, coverageCityIds: [], verified: true },
+    phone: "023 000 341", hours: H24, coverageCityIds: [], verified: true, lastVerified: VERIFIED_DATE, active: true },
   { id: "org-hosp-sr", type: "HOSPITAL", name: { km: "មន្ទីរពេទ្យបង្អែកខេត្តសៀមរាប", en: "Siem Reap Provincial Hospital" },
     provinceId: "siem-reap", cityId: "siem-reap-city", address: "Siem Reap City", location: { lat: 13.3622, lng: 103.8552 },
-    phone: "063 000 311", hours: H24, coverageCityIds: [], verified: true },
+    phone: "063 000 311", hours: H24, coverageCityIds: [], verified: true, lastVerified: VERIFIED_DATE, active: true },
   { id: "org-police-sr", type: "POLICE", name: { km: "ស្នងការដ្ឋាននគរបាលខេត្តសៀមរាប", en: "Siem Reap Provincial Police" },
     provinceId: "siem-reap", cityId: "siem-reap-city", address: "Siem Reap City", location: { lat: 13.3601, lng: 103.8601 },
-    phone: "063 000 301", hotline: "117", hours: H24, coverageCityIds: [], verified: true },
+    phone: "063 000 301", hotline: "117", hours: H24, coverageCityIds: [], verified: true, lastVerified: VERIFIED_DATE, active: true },
   { id: "org-hosp-bb", type: "HOSPITAL", name: { km: "មន្ទីរពេទ្យបង្អែកខេត្តបាត់ដំបង", en: "Battambang Provincial Hospital" },
     provinceId: "battambang", cityId: "battambang-city", address: "Battambang City", location: { lat: 13.0952, lng: 103.2003 },
-    phone: "053 000 311", hours: H24, coverageCityIds: [], verified: true },
+    phone: "053 000 311", hours: H24, coverageCityIds: [], verified: true, lastVerified: VERIFIED_DATE, active: true },
   { id: "org-news-demo", type: "NEWS", name: { km: "ព័ត៌មានសាកល្បង", en: "Demo News Cambodia" },
     provinceId: PP, cityId: "doun-penh", address: "Doun Penh", location: { lat: 11.567, lng: 104.925 },
-    phone: "023 000 391", hours: OFFICE, coverageCityIds: [], verified: true },
+    phone: "023 000 391", hours: OFFICE, coverageCityIds: [], verified: true, lastVerified: VERIFIED_DATE, active: true },
 ];
 
 // ---------- Incidents ----------
 
 const consent = (contact: boolean, news: boolean) => ({ shareContactWithResponders: contact, shareWithNews: news });
 
-export const EM_INCIDENTS: EmIncident[] = [
+const rawIncidents: any[] = [
   {
     id: "em-1", kind: "REPORT", reporterId: "u-citizen-2", type: "ROAD_CRASH", severity: "HIGH",
     description: "Two motorbikes crashed. One rider injured.", photoUrls: ["/mock/private/em-crash-1.jpg"],
@@ -205,6 +207,15 @@ export const EM_INCIDENTS: EmIncident[] = [
   },
 ];
 
+export const EM_INCIDENTS: EmIncident[] = rawIncidents.map((x, idx) => ({
+  code: `INC-2026-${String(idx + 1).padStart(5, "0")}`,
+  locationConfirmed: x.locationSource !== "TEXT",
+  locationStatus: x.locationSource === "GPS" ? "CONFIRMED" : x.locationSource === "MAP" ? "CONFIRMED" : "UNCONFIRMED",
+  submittedByUserId: x.reporterId,
+  suggestedSeverity: x.severity,
+  ...x,
+}));
+
 const d = (x: Omit<EmDispatch, "channel" | "routedBy"> & Partial<EmDispatch>): EmDispatch => ({ channel: "IN_APP", routedBy: "SYSTEM", ...x });
 
 export const EM_DISPATCHES: EmDispatch[] = [
@@ -219,12 +230,24 @@ export const EM_DISPATCHES: EmDispatch[] = [
 ];
 
 export const EM_TRUSTED_CONTACTS: EmTrustedContact[] = [
-  { id: "tc-1", ownerId: "u-citizen-1", name: "លី ស្រីពៅ", phone: "012000004", relation: "Neighbour",
-    linkedUserId: "u-citizen-2", notifyOnSos: true, createdAt: "2026-11-01T08:00:00+07:00" },
-  { id: "tc-2", ownerId: "u-citizen-1", name: "Mum", phone: "012888777", relation: "Mother",
-    notifyOnSos: true, createdAt: "2026-11-01T08:00:00+07:00" },
-  { id: "tc-3", ownerId: "u-citizen-3", name: "Kim Dara", phone: "012777666", relation: "Brother",
-    notifyOnSos: true, createdAt: "2026-11-02T08:00:00+07:00" },
+  {
+    id: "tc-1", ownerId: "u-citizen-1", name: "លី ស្រីពៅ", phone: "+85512000004", relation: "Neighbour",
+    priority: 1, status: "CONFIRMED", inviteSentAt: "2026-11-01T08:00:00+07:00",
+    inviteExpiresAt: "2026-11-08T08:00:00+07:00", shareMedicalInfo: true,
+    linkedUserId: "u-citizen-2", notifyOnSos: true, createdAt: "2026-11-01T08:00:00+07:00", updatedAt: "2026-11-01T08:00:00+07:00",
+  },
+  {
+    id: "tc-2", ownerId: "u-citizen-1", name: "Mum", phone: "+85512888777", relation: "Mother",
+    priority: 2, status: "CONFIRMED", inviteSentAt: "2026-11-01T08:00:00+07:00",
+    inviteExpiresAt: "2026-11-08T08:00:00+07:00", shareMedicalInfo: true,
+    notifyOnSos: true, createdAt: "2026-11-01T08:00:00+07:00", updatedAt: "2026-11-01T08:00:00+07:00",
+  },
+  {
+    id: "tc-3", ownerId: "u-citizen-3", name: "Kim Dara", phone: "+85512777666", relation: "Brother",
+    priority: 1, status: "CONFIRMED", inviteSentAt: "2026-11-02T08:00:00+07:00",
+    inviteExpiresAt: "2026-11-09T08:00:00+07:00", shareMedicalInfo: false,
+    notifyOnSos: true, createdAt: "2026-11-02T08:00:00+07:00", updatedAt: "2026-11-02T08:00:00+07:00",
+  },
 ];
 
 export const EM_NEWS_RELEASES: EmNewsRelease[] = [

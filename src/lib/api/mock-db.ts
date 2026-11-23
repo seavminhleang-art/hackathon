@@ -1,9 +1,11 @@
-// In-memory mock database shared by all mock API modules.
-// Saved to localStorage in the browser so data survives a reload.
+// [DEV-ONLY] In-memory & localStorage mock database for prototype development only.
+// This is not a production database. All mutations are stored in browser localStorage
+// or in-memory mock state and do not persist to any real backend server.
 // Call resetMockDb() to go back to the seed data.
 
 import type {
   AppNotification,
+  AuditLogEntry,
   AuthSession,
   CsAnnouncement,
   CsComment,
@@ -17,7 +19,9 @@ import type {
   EmDispatch,
   EmIncident,
   EmNewsRelease,
+  EmOrganization,
   EmTrustedContact,
+  IncidentStatusHistory,
   LfClaim,
   LfComment,
   LfPost,
@@ -34,7 +38,7 @@ import * as emSeed from "@/lib/mock/emergency";
 import * as grSeed from "@/lib/mock/gov-reporting";
 
 // Bump the version when the seed shape changes so old browser data is dropped.
-const STORAGE_KEY = "cityvoice.mockdb.v5";
+const STORAGE_KEY = "cityvoice.mockdb.v6";
 const SESSION_KEY = "cityvoice.session.v1";
 const LATENCY_MS = 300;
 
@@ -52,6 +56,8 @@ export class ApiError extends Error {
 
 export interface MockDb {
   users: UserRecord[];
+  auditLogs: AuditLogEntry[];
+  incidentStatusHistory: IncidentStatusHistory[];
   // Government reporting (feature 3)
   grReports: GrReport[];
   grComments: GrComment[];
@@ -69,7 +75,8 @@ export interface MockDb {
   csMembers: CsMember[];
   csPosts: CsPost[];
   csComments: CsComment[];
-  // Emergency (organizations and incident types are static seed data)
+  // Emergency
+  emOrganizations: EmOrganization[];
   emIncidents: EmIncident[];
   emDispatches: EmDispatch[];
   emContacts: EmTrustedContact[];
@@ -80,6 +87,8 @@ export interface MockDb {
 function freshDb(): MockDb {
   return structuredClone({
     users: seed.USERS,
+    auditLogs: [],
+    incidentStatusHistory: [],
     grReports: grSeed.GR_REPORTS,
     grComments: grSeed.GR_COMMENTS,
     notifications: [...grSeed.GR_NOTIFICATIONS, ...lfSeed.LF_NOTIFICATIONS, ...csSeed.CS_NOTIFICATIONS, ...emSeed.EM_NOTIFICATIONS],
@@ -95,6 +104,7 @@ function freshDb(): MockDb {
     csMembers: csSeed.CS_MEMBERS,
     csPosts: csSeed.CS_POSTS,
     csComments: csSeed.CS_COMMENTS,
+    emOrganizations: emSeed.EM_ORGANIZATIONS,
     emIncidents: emSeed.EM_INCIDENTS,
     emDispatches: emSeed.EM_DISPATCHES,
     emContacts: emSeed.EM_TRUSTED_CONTACTS,
@@ -111,7 +121,13 @@ export function load(): MockDb {
   if (isBrowser) {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) return (db = JSON.parse(raw) as MockDb);
+      if (raw) {
+        db = JSON.parse(raw) as MockDb;
+        if (!db.emOrganizations || !db.emOrganizations.length) {
+          db.emOrganizations = structuredClone(emSeed.EM_ORGANIZATIONS);
+        }
+        return db;
+      }
     } catch {
       /* storage blocked or corrupt: fall back to seed */
     }
@@ -123,8 +139,21 @@ export function save() {
   if (!isBrowser || !db) return;
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-  } catch {
-    /* ignore */
+  } catch (err: any) {
+    if (
+      err?.name === "QuotaExceededError" ||
+      err?.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+      err?.code === 22 ||
+      err?.code === 1014 ||
+      err?.message?.toLowerCase().includes("quota")
+    ) {
+      throw new ApiError(
+        "LIMIT",
+        "Storage quota exceeded. Report draft is preserved in memory. Please remove some photos.",
+        "storage"
+      );
+    }
+    /* ignore other minor storage errors */
   }
 }
 
@@ -198,13 +227,85 @@ export function notify(n: Omit<AppNotification, "id" | "read" | "createdAt">) {
   load().notifications.unshift({ ...n, id: nextId("n"), read: false, createdAt: now() });
 }
 
-/** Accepts 0XXXXXXXX(X) or +855XXXXXXXX(X); returns local 0-prefixed form. */
+export function recordAudit(
+  actor: { id: string; role: Role } | UserRecord,
+  action: string,
+  targetType: "INCIDENT" | "DISPATCH" | "CONTACT" | "ALERT" | "USER" | "ORGANIZATION",
+  targetId: string,
+  details?: Record<string, unknown> | string
+): AuditLogEntry {
+  const entry: AuditLogEntry = {
+    id: nextId("audit"),
+    actorId: actor.id,
+    actorRole: actor.role,
+    action,
+    targetType,
+    targetId,
+    timestamp: now(),
+    details,
+  };
+  load().auditLogs.push(entry);
+  save();
+  return entry;
+}
+
+export function recordStatusHistory(
+  incidentId: string,
+  actor: { id: string; role: Role | "SYSTEM" } | string,
+  fromStatus: string,
+  toStatus: string,
+  note?: string,
+  organizationId?: string
+): IncidentStatusHistory {
+  const actorId = typeof actor === "string" ? actor : actor.id;
+  const actorRole = typeof actor === "string" ? "SYSTEM" : actor.role;
+  const entry: IncidentStatusHistory = {
+    id: nextId("ish"),
+    incidentId,
+    actorId,
+    actorRole,
+    fromStatus,
+    toStatus,
+    timestamp: now(),
+    note,
+    organizationId,
+  };
+  load().incidentStatusHistory.push(entry);
+  save();
+  return entry;
+}
+
+/**
+ * Canonical E.164 phone normalization for Cambodia:
+ * Accepts 0xx, +855xx, or 855xx; returns canonical +855XXXXXXXX format.
+ * Validates subscriber number has 8 or 9 digits.
+ */
+export function toE164Phone(input: string): string | null {
+  if (!input) return null;
+  const cleaned = input.trim().replace(/[\s\-()]/g, "");
+  let digits = "";
+  if (cleaned.startsWith("+855")) {
+    digits = cleaned.slice(4);
+  } else if (cleaned.startsWith("855")) {
+    digits = cleaned.slice(3);
+  } else if (cleaned.startsWith("0")) {
+    digits = cleaned.slice(1);
+  } else {
+    return null;
+  }
+  // Cambodian subscriber numbers are 8 or 9 digits, starting with 1-9
+  return /^[1-9]\d{7,8}$/.test(digits) ? `+855${digits}` : null;
+}
+
+/** Local 0xx phone normalization for existing accounts and Core auth compatibility */
 export function normalizePhone(input: string): string | null {
-  const digits = input.replace(/[\s-]/g, "");
-  const local = digits.startsWith("+855")
-    ? "0" + digits.slice(4)
-    : digits.startsWith("855")
-      ? "0" + digits.slice(3)
-      : digits;
-  return /^0\d{8,9}$/.test(local) ? local : null;
+  const e164 = toE164Phone(input);
+  if (!e164) return null;
+  return "0" + e164.slice(4);
+}
+
+/** Helper to display a phone number in standard Cambodian 0xx format if needed */
+export function toLocalPhone(phone: string): string {
+  const norm = normalizePhone(phone);
+  return norm ?? phone;
 }

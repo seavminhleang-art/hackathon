@@ -21,26 +21,57 @@ export interface LatLng {
 /**
  * CITIZEN: residents. OFFICER: local government staff (one city/khan).
  * ADMIN: platform admins. ORGANIZATION: staff of an emergency organization
- * (police, hospital, fire...). REPORTER: verified news reporter.
+ * (police, hospital, fire...). NEWS: verified news reporter (also accepts REPORTER for backwards-compat).
  * DEPARTMENT_STAFF: staff of a city department that fixes civic reports (feature 3).
  */
-export type Role = "CITIZEN" | "OFFICER" | "ADMIN" | "ORGANIZATION" | "REPORTER" | "DEPARTMENT_STAFF";
+export type Role = "CITIZEN" | "OFFICER" | "ADMIN" | "ORGANIZATION" | "NEWS" | "REPORTER" | "DEPARTMENT_STAFF";
+
+export interface MedicalInfo {
+  bloodType?: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+  allergies?: string;
+  medications?: string;
+  notes?: string;
+}
 
 export interface User {
   id: string;
   fullName: string;
-  phone: string; // Cambodian format, e.g. "012345678"
+  phone: string; // Cambodian canonical format, e.g. "+85512345678"
   email?: string;
   role: Role;
-  /** Set for ORGANIZATION and REPORTER accounts. */
+  /** Set for ORGANIZATION and NEWS/REPORTER accounts. */
   organizationId?: string;
   /** Set for DEPARTMENT_STAFF accounts. */
   departmentId?: string;
   provinceId: string;
   cityId: string;
   sangkat?: string;
+  medicalInfo?: MedicalInfo;
   preferredLocale: Locale;
   createdAt: ISODateString;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  actorId: string;
+  actorRole: Role | "SYSTEM";
+  action: string;
+  targetType: "INCIDENT" | "DISPATCH" | "CONTACT" | "ALERT" | "USER" | "ORGANIZATION";
+  targetId: string;
+  timestamp: ISODateString;
+  details?: Record<string, unknown> | string;
+}
+
+export interface IncidentStatusHistory {
+  id: string;
+  incidentId: string;
+  actorId: string;
+  actorRole: Role | "SYSTEM";
+  fromStatus: string;
+  toStatus: string;
+  timestamp: ISODateString;
+  note?: string;
+  organizationId?: string;
 }
 
 /** Stored only inside the mock DB. Never returned to the UI. */
@@ -125,7 +156,8 @@ export type NotificationType =
   | "EM_NEW_INCIDENT"
   | "EM_SOS_CONTACT"
   | "EM_VERIFIED"
-  | "EM_NEWS_RELEASE";
+  | "EM_NEWS_RELEASE"
+  | "EM_TEST_ALERT";
 
 export interface AppNotification {
   id: string;
@@ -161,6 +193,7 @@ export interface EmergencyHotline {
   name: I18nText;
   number: string;
   icon: string;
+  unverified?: boolean;
 }
 
 // Civic services and announcements: see ./community.ts (Community & Services).

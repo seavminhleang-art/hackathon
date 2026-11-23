@@ -10,12 +10,14 @@ export { PROVINCES, CITIES } from "./locations";
 
 export const PHNOM_PENH_CENTER = { lat: 11.5564, lng: 104.9282 };
 
-// ---------- Emergency hotlines (shared; trusted contacts live in feature 2) ----------
+// ---------- Emergency hotlines (unverified, check before launch) ----------
+// WARNING: Unverified numbers, check before launch. Do not call them official or real.
+// Do not hard-code these numbers in UI components; import from EMERGENCY_HOTLINES.
 
 export const EMERGENCY_HOTLINES: EmergencyHotline[] = [
-  { id: "police", number: "117", icon: "🚓", name: { km: "ប៉ូលិស", en: "Police" } },
-  { id: "fire", number: "118", icon: "🚒", name: { km: "អគ្គិភ័យ", en: "Fire" } },
-  { id: "ambulance", number: "119", icon: "🚑", name: { km: "សង្គ្រោះបន្ទាន់", en: "Ambulance" } },
+  { id: "police", number: "117", icon: "🚓", name: { km: "ប៉ូលិស", en: "Police" }, unverified: true },
+  { id: "fire", number: "118", icon: "🚒", name: { km: "អគ្គិភ័យ", en: "Fire" }, unverified: true },
+  { id: "ambulance", number: "119", icon: "🚑", name: { km: "សង្គ្រោះបន្ទាន់", en: "Ambulance" }, unverified: true },
 ];
 
 // ---------- Users ----------
