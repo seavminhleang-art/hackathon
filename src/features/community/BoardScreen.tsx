@@ -40,7 +40,7 @@ import { formatDateParts } from "@/lib/i18n/format";
 import type { CsAnnouncementView, CsGroupView, CsPostType, CsPostView } from "@/types/community";
 import { useCs } from "./i18n";
 import { PostCard } from "./PostCard";
-import { CommunityTabs, InfoStrip, useAreas, useLoginGate } from "./shared";
+import { CommunityTabs, InfoStrip, useAreas, useCommunityHref, useLoginGate } from "./shared";
 
 type Filter = "ALL" | CsPostType;
 type AreaMode = "khan" | "city";
@@ -48,6 +48,7 @@ type AreaMode = "khan" | "city";
 /** /community · Board: filter chips + one chronological feed scoped to the user's area (wireframe 2a / 3a). */
 export function BoardScreen() {
   const { c, tx } = useCs();
+  const href = useCommunityHref();
   const { user, ready } = useAuth();
   const areas = useAreas();
   const { gate, sheet } = useLoginGate();
@@ -107,7 +108,7 @@ export function BoardScreen() {
     { value: "DISCUSSION", label: c.discussions, icon: MessageCircle },
   ];
 
-  const newPost = () => gate(c.actPost, () => router.push("/community/new"));
+  const newPost = () => gate(c.actPost, () => router.push(href("/community/new")));
 
   return (
     <PageContainer>
@@ -140,7 +141,7 @@ export function BoardScreen() {
         <div className="flex min-w-0 flex-col gap-4 lg:col-span-2">
           {alert && (
             <Link
-              href={`/announcements/${alert.id}`}
+              href={href(`/announcements/${alert.id}`)}
               className="flex min-h-13 items-center gap-3 rounded-2xl bg-danger px-4 py-2.5 text-white shadow-card hover:bg-danger-ink"
             >
               <TriangleAlert aria-hidden size={20} className="flex-none" />
@@ -203,7 +204,7 @@ export function BoardScreen() {
 
         {/* Right column (desktop) / end of page (phone) */}
         <aside className="flex flex-col gap-8">
-          <Section title={c.events} href="/community">
+          <Section title={c.events} href={href("/community")}>
             {!events ? (
               <SkeletonRows rows={2} />
             ) : (
@@ -214,7 +215,7 @@ export function BoardScreen() {
               </Card>
             )}
           </Section>
-          <Section title={user ? c.myGroups : c.groups} href="/community/groups">
+          <Section title={user ? c.myGroups : c.groups} href={href("/community/groups")}>
             {!groups ? (
               <SkeletonRows rows={2} />
             ) : (
@@ -224,7 +225,7 @@ export function BoardScreen() {
                     key={g.id}
                     icon={Users}
                     accent="reported"
-                    href="/community/groups"
+                    href={href("/community/groups")}
                     title={tx(g.name)}
                     subtitle={`${fmt(c.members, { n: g.memberCount })} · ${fmt(c.postsN, { n: g.postCount })}`}
                   />
@@ -233,8 +234,8 @@ export function BoardScreen() {
             )}
           </Section>
           <Card padded={false} as="ul">
-            <ListRow icon={Building2} accent="fixed" href="/services" title={c.servicesTitle} subtitle={c.servicesHint} />
-            <ListRow icon={BookOpen} accent="fixed" href="/guides" title={c.guidesTitle} subtitle={c.guidesHint} />
+            <ListRow icon={Building2} accent="fixed" href={href("/services")} title={c.servicesTitle} subtitle={c.servicesHint} />
+            <ListRow icon={BookOpen} accent="fixed" href={href("/guides")} title={c.guidesTitle} subtitle={c.guidesHint} />
           </Card>
         </aside>
       </div>
@@ -285,10 +286,11 @@ export function BoardScreen() {
 
 function EventRow({ post }: { post: CsPostView }) {
   const { c, locale } = useCs();
+  const href = useCommunityHref();
   const when = post.event ? formatDateParts(post.event.start, locale) : null;
   return (
     <li className="list-none border-b border-line last:border-b-0">
-      <Link href={`/community/posts/${post.id}`} className="flex items-start gap-3 px-4 py-3.5 hover:bg-sand">
+      <Link href={href(`/community/posts/${post.id}`)} className="flex items-start gap-3 px-4 py-3.5 hover:bg-sand">
         {when && (
           <span className="flex w-13 flex-none flex-col items-center rounded-xl bg-reported-tint py-1 text-reported-ink">
             <span className="text-caption font-semibold">{when.weekday}</span>

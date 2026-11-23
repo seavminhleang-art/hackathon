@@ -40,7 +40,7 @@ import { fmt } from "@/lib/i18n/dictionary";
 import type { I18nText } from "@/types";
 import type { CsEditField, CsGuideView, CsPlaceType, CsPlaceTypeMeta, CsPlaceView, CsWasteSchedule, OpeningHours, Weekday } from "@/types/community";
 import { useCs, type CsDict } from "./i18n";
-import { distanceLabel, mapsUrl, useAreas, useLoginGate } from "./shared";
+import { distanceLabel, mapsUrl, useAreas, useCommunityHref, useLoginGate } from "./shared";
 
 const WEEK: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const ORDER: Weekday[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -110,6 +110,7 @@ function WasteCard({ w }: { w: CsWasteSchedule }) {
 /** Civic offices nearest first, live open/closed, rubbish pickup on top (wireframe 7a). */
 export function ServicesScreen() {
   const { c, tx } = useCs();
+  const href = useCommunityHref();
   const { user, ready } = useAuth();
   const areas = useAreas();
   const [q, setQ] = useState("");
@@ -213,7 +214,7 @@ export function ServicesScreen() {
             <p className="text-body">{c.emergencyNote}</p>
           </Card>
           <Card padded={false} as="ul">
-            <ListRow icon={BookOpen} accent="fixed" href="/guides" title={c.guidesTitle} subtitle={c.guidesHint} />
+            <ListRow icon={BookOpen} accent="fixed" href={href("/guides")} title={c.guidesTitle} subtitle={c.guidesHint} />
           </Card>
         </aside>
       </div>
@@ -223,11 +224,12 @@ export function ServicesScreen() {
 
 function OfficeCard({ p, typeName }: { p: CsPlaceView; typeName: string }) {
   const { c, tx } = useCs();
+  const href = useCommunityHref();
   const Icon = PLACE_ICON[p.type] ?? Building2;
   const dist = distanceLabel(p.distanceKm, c);
   return (
     <Card className="flex flex-col gap-3">
-      <Link href={`/services/${p.id}`} className="flex items-start gap-3 [&:hover_.t]:underline">
+      <Link href={href(`/services/${p.id}`)} className="flex items-start gap-3 [&:hover_.t]:underline">
         <IconTile icon={Icon} accent="fixed" />
         <span className="min-w-0 flex-1">
           <span className="t block text-row leading-snug font-bold">{tx(p.name)}</span>
@@ -263,6 +265,7 @@ const EDIT_FIELDS: CsEditField[] = ["PHONE", "HOURS", "ADDRESS", "LOCATION", "CL
 export function OfficeScreen() {
   const { id } = useParams<{ id: string }>();
   const { c, tx } = useCs();
+  const href = useCommunityHref();
   const { ready } = useAuth();
   const { gate, sheet } = useLoginGate();
   const [p, setP] = useState<CsPlaceView | null>(null);
@@ -288,7 +291,7 @@ export function OfficeScreen() {
   }, [id, ready]);
 
   const back = (
-    <Link href="/services" className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-body font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink">
+    <Link href={href("/services")} className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-body font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink">
       <ArrowLeft aria-hidden size={20} />
       {c.servicesTitle}
     </Link>

@@ -14,12 +14,13 @@ import type { CsPostView, CsReaction } from "@/types/community";
 import { CommentThread, ReactionButtons } from "./Comments";
 import { useCs } from "./i18n";
 import { POST_ICON, RsvpButtons, eventWhen, typeLabel } from "./PostCard";
-import { OfficialBadge, ReportButton, mapsUrl, scopeLabel, timeAgo, useAreas, useLoginGate } from "./shared";
+import { OfficialBadge, ReportButton, mapsUrl, scopeLabel, timeAgo, useAreas, useCommunityHref, useLoginGate } from "./shared";
 
 /** /community/posts/[id] · Event, Poll, Question or Discussion (wireframes 4a–4i). */
 export function PostScreen() {
   const { id } = useParams<{ id: string }>();
   const { c, tx, locale } = useCs();
+  const href = useCommunityHref();
   const { user, ready } = useAuth();
   const areas = useAreas();
   const { gate, sheet } = useLoginGate();
@@ -47,7 +48,7 @@ export function PostScreen() {
           icon={ShieldAlert}
           title={c.notFound}
           body={c.notFoundBody}
-          action={<LinkButton href="/community" variant="secondary" size="sm">{c.board}</LinkButton>}
+          action={<LinkButton href={href("/community")} variant="secondary" size="sm">{c.board}</LinkButton>}
         />
       </PageContainer>
     );
@@ -183,8 +184,9 @@ export function PostScreen() {
 
 function BackLink() {
   const { c } = useCs();
+  const href = useCommunityHref();
   return (
-    <Link href="/community" className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-body font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink">
+    <Link href={href("/community")} className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-body font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink">
       <ArrowLeft aria-hidden size={20} />
       {c.board}
     </Link>

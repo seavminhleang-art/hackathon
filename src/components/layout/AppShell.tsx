@@ -13,6 +13,7 @@ import {
 } from "react";
 import {
   Bell,
+  ChevronDown,
   ChevronRight,
   FileText,
   House,
@@ -49,8 +50,13 @@ const TABS: NavItem[] = [
   { href: "/reports", icon: FileText, label: "navReports" },
   { href: "/lost-found", icon: KeyRound, label: "navLostFound" },
   { href: "/community", icon: Users, label: "navCommunity" },
-  { href: "/me", icon: UserIcon, label: "navMe" },
+  { href: "/dashboard", icon: UserIcon, label: "navMe" },
 ];
+
+/** Guests and signed-in residents share the same Home navigation. */
+function primaryTabs(): NavItem[] {
+  return TABS;
+}
 
 /**
  * Renders with the current path. On routes whose URL is only known at request time
@@ -94,11 +100,22 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <SosContext.Provider value={{ openSos }}>
-      <Navbar onSos={openSos} unread={user ? unread : 0} />
-      {/* Bottom padding keeps content clear of the fixed tabs + SOS on phones. */}
-      <div className="flex-1 pb-36 lg:pb-16">{children}</div>
-      <BottomTabs onSos={openSos} />
-      {sosOpen && <SosSheet onClose={closeSos} />}
+      <WithPath
+        render={(pathname) => {
+          const authPage = pathname === "/login" || pathname === "/register";
+          // Login / register are focused flows with their own header; everything else gets the shell.
+          const standalonePage = authPage;
+          return (
+            <>
+              {!standalonePage && <Navbar onSos={openSos} unread={user ? unread : 0} />}
+              {/* Auth flows provide their own navigation; citizen pages share the Home navbar. */}
+              <div className={`flex-1 ${standalonePage ? "pb-0" : "pb-36 lg:pb-16"}`}>{children}</div>
+              {!standalonePage && <BottomTabs onSos={openSos} />}
+              {sosOpen && <SosSheet onClose={closeSos} />}
+            </>
+          );
+        }}
+      />
     </SosContext.Provider>
   );
 }
@@ -190,7 +207,7 @@ function Navbar({ onSos, unread }: { onSos: () => void; unread: number }) {
         >
           <WithPath
             render={(pathname) =>
-              TABS.slice(0, 4).map((n) => {
+              primaryTabs().slice(0, 4).map((n) => {
                 const active = isActive(pathname, n.href);
                 return (
                   <Link
@@ -231,12 +248,12 @@ function Navbar({ onSos, unread }: { onSos: () => void; unread: number }) {
                 <CountBadge count={unread} />
               </span>
             </Link>
-            <Link
-              href="/me"
-              aria-label={t.navMe}
-              className="ml-1 hidden size-10 items-center justify-center rounded-full bg-white text-body font-bold text-primary ring-2 ring-white/30 lg:flex"
-            >
-              {user.fullName.slice(0, 1)}
+            <Link href="/dashboard/profile" aria-label={`${t.accountProfile}: ${user.fullName}`} className="ml-1 flex min-h-11 items-center gap-2 rounded-xl px-2 text-white hover:bg-white/10">
+                <span className="flex size-9 items-center justify-center rounded-full bg-white text-body font-bold text-primary ring-2 ring-white/30">
+                  {user.fullName.slice(0, 1)}
+                </span>
+                <span className="hidden max-w-36 truncate text-meta font-semibold sm:block">{user.fullName}</span>
+                <ChevronDown aria-hidden size={16} />
             </Link>
           </>
         )}
@@ -313,7 +330,7 @@ function BottomTabs({ onSos }: { onSos: () => void }) {
       >
         <WithPath
           render={(pathname) =>
-            TABS.map((n) => {
+            primaryTabs().map((n) => {
               const active = isActive(pathname, n.href);
               const Icon = n.icon;
               return (

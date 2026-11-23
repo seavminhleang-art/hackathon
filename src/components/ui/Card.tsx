@@ -13,7 +13,7 @@ export function Card({
   children: ReactNode;
   className?: string;
   padded?: boolean;
-  as?: "div" | "section" | "article" | "li" | "ul";
+  as?: "div" | "section" | "article" | "li" | "ul" | "ol";
 }) {
   return <Tag className={`rounded-2xl bg-surface shadow-card ${padded ? "p-4 lg:p-5" : ""} ${className}`}>{children}</Tag>;
 }

@@ -27,7 +27,7 @@ import { formatDateParts, shortDate } from "@/lib/i18n/format";
 import type { CsAnnouncementLevel, CsAnnouncementView, CsGroupView } from "@/types/community";
 import { CommentThread } from "./Comments";
 import { useCs, type CsDict } from "./i18n";
-import { CommunityTabs, OfficialBadge, scopeLabel, useAreas } from "./shared";
+import { CommunityTabs, OfficialBadge, scopeLabel, useAreas, useCommunityHref } from "./shared";
 
 const LEVEL: Record<CsAnnouncementLevel, { icon: LucideIcon; accent: Accent; chip: string }> = {
   ALERT: { icon: TriangleAlert, accent: "danger", chip: "bg-danger text-white" },
@@ -58,6 +58,7 @@ type LevelFilter = "ALL" | CsAnnouncementLevel;
 /** Official notices for my area. Alerts first, then newest; expired collapsed (wireframe 6a). */
 export function NewsScreen() {
   const { c, tx, locale } = useCs();
+  const href = useCommunityHref();
   const { ready, user } = useAuth();
   const [items, setItems] = useState<CsAnnouncementView[] | null>(null);
   const [filter, setFilter] = useState<LevelFilter>("ALL");
@@ -126,7 +127,7 @@ export function NewsScreen() {
                         key={a.id}
                         icon={LEVEL[a.level].icon}
                         accent="neutral"
-                        href={`/announcements/${a.id}`}
+                        href={href(`/announcements/${a.id}`)}
                         title={tx(a.title)}
                         subtitle={`${c.expired} · ${shortDate(a.validTo ?? a.validFrom, locale)}`}
                       />
@@ -144,12 +145,13 @@ export function NewsScreen() {
 
 function NewsCard({ a }: { a: CsAnnouncementView }) {
   const { c, tx, locale } = useCs();
+  const href = useCommunityHref();
   const areas = useAreas();
   const alert = a.level === "ALERT";
   const when = formatDateParts(a.validFrom, locale);
   return (
     <Link
-      href={`/announcements/${a.id}`}
+      href={href(`/announcements/${a.id}`)}
       className={`flex flex-col gap-3 rounded-2xl p-4 shadow-card transition-shadow hover:shadow-raised lg:p-5 ${
         alert ? "bg-danger text-white" : "bg-surface"
       }`}
@@ -190,6 +192,7 @@ function NewsCard({ a }: { a: CsAnnouncementView }) {
 export function AnnouncementScreen() {
   const { id } = useParams<{ id: string }>();
   const { c, tx, locale } = useCs();
+  const href = useCommunityHref();
   const { ready } = useAuth();
   const areas = useAreas();
   const { openSos } = useSos();
@@ -210,7 +213,7 @@ export function AnnouncementScreen() {
   }, [id, ready]);
 
   const back = (
-    <Link href="/announcements" className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-body font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink">
+    <Link href={href("/announcements")} className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-body font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink">
       <ArrowLeft aria-hidden size={20} />
       {c.news}
     </Link>

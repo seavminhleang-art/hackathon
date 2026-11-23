@@ -12,7 +12,7 @@ import type { CsCreatePostInput, CsGroupView, CsPostType, CsScope } from "@/type
 import { CS_RULES } from "@/types/community";
 import { useCs, type CsDict } from "./i18n";
 import { POST_ICON, typeLabel } from "./PostCard";
-import { scopeLabel, useAreas, useLoginGate } from "./shared";
+import { scopeLabel, useAreas, useCommunityHref, useLoginGate } from "./shared";
 
 const TYPES: CsPostType[] = ["EVENT", "QUESTION", "POLL", "DISCUSSION"];
 
@@ -22,6 +22,7 @@ const toIso = (date: string, time: string) => `${date}T${time}:00+07:00`;
 /** /community/new · pick a type, then a form that only asks for what that type needs (wireframes 5a–5e). */
 export function NewPostScreen() {
   const { c, tx, locale } = useCs();
+  const href = useCommunityHref();
   const { user } = useAuth();
   const areas = useAreas();
   const router = useRouter();
@@ -86,7 +87,7 @@ export function NewPostScreen() {
     if (type === "POLL") input.poll = { options: options.map((o) => o.trim()).filter(Boolean), closesAt: toIso(closes, "23:59") };
     try {
       const post = await api.cs.createPost(input);
-      router.push(`/community/posts/${post.id}`);
+      router.push(href(`/community/posts/${post.id}`));
     } catch (err) {
       setApiError(err instanceof Error ? err.message : String(err));
       setBusy(false);
@@ -97,7 +98,7 @@ export function NewPostScreen() {
     <PageContainer className="max-w-3xl">
       <button
         type="button"
-        onClick={() => (step === 2 ? setStep(1) : router.push("/community"))}
+        onClick={() => (step === 2 ? setStep(1) : router.push(href("/community")))}
         className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-body font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink"
       >
         <ArrowLeft aria-hidden size={20} />
