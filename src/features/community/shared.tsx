@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { BadgeCheck, CircleCheck, Flag, LogIn, UserPlus } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -10,17 +11,25 @@ import type { CsReportReason, CsScope } from "@/types/community";
 import { fmt } from "@/lib/i18n/dictionary";
 import { useCs, type CsDict } from "./i18n";
 
+export function useCommunityHref() {
+  const inDashboard = usePathname().startsWith("/dashboard/");
+  return (href: string) => inDashboard && href.startsWith("/") && !href.startsWith("/dashboard")
+    ? `/dashboard${href}`
+    : href;
+}
+
 // ---------- Hub header: title + Board · Groups · News ----------
 
 export function CommunityTabs({ active }: { active: "/community" | "/community/groups" | "/announcements" }) {
   const { c } = useCs();
+  const href = useCommunityHref();
   return (
     <SubNav
-      active={active}
+      active={href(active)}
       items={[
-        { href: "/community", label: c.board },
-        { href: "/community/groups", label: c.groups },
-        { href: "/announcements", label: c.news },
+        { href: href("/community"), label: c.board },
+        { href: href("/community/groups"), label: c.groups },
+        { href: href("/announcements"), label: c.news },
       ]}
     />
   );

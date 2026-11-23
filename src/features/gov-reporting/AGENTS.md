@@ -14,7 +14,7 @@ transparency, accountability and full history are the point.
 | Part | Status |
 |---|---|
 | Types, mock data, mock API, tests (phase 1 + phase 2 logic) | Done |
-| Screens (this folder) | Not started — build only when the team asks. Phase 1 screens first |
+| Citizen screens | Built on the mock API with the shared UI kit and app shell: report form (location + duplicate check inside the form), submitted page, My reports, report detail (timeline, comments, actions from `can`), public feed. Admin, staff and the full map remain |
 | Phase 3 (auto routing, AI, push, heatmap) | Not started |
 
 ## Files
@@ -24,7 +24,7 @@ transparency, accountability and full history are the point.
 | Seed (7 categories, 8 departments, 15 reports, comments) | `src/lib/mock/gov-reporting.ts` |
 | Mock API (`api.gr.*`) | `src/lib/api/gov-reporting-api.ts` |
 | Tests | `scripts/test/gov-reporting.test.mjs` → `npm run test:mock gov` |
-| UI (to build) | `src/features/gov-reporting/`, routes in `src/app/report/`, `src/app/reports/`, `src/app/admin/`, `src/app/staff/` |
+| UI | `src/features/gov-reporting/`: `ReportForm` (+ `ReportSubmitted`), `ReportLists` (`MyReports`, `PublicReports`), `ReportDetail`, `meta` (category icons, plain-words status line). Routes in `src/app/(app)/report/…`, `reports/…`, `me/reports` |
 
 ## Status flow
 ```
@@ -58,13 +58,15 @@ side paths: NEED_MORE_INFO, REJECTED, DUPLICATE, REOPENED, CANCELLED
 ## Screens to build
 | Phase | Page | Route idea | Who |
 |---|---|---|---|
-| 1 | Create report (+ duplicate suggestions) | `/report/new` | citizen |
-| 1 | My reports | `/me/reports` | citizen |
-| 1 | Report detail (timeline, photos, comments, actions from `can`) | `/reports/[code]` | all |
+| 1 | Create report (location + duplicate suggestions in the same page) ✅ | `/report/new` | citizen |
+| 1 | Submission confirmation ✅ | `/report/submitted?code=` | citizen |
+| 1 | My reports ✅ | `/me/reports` | citizen |
+| 1 | Report detail ✅ (photos not uploaded yet) | `/reports/[code]` | all |
 | 1 | Admin management + review | `/admin/reports`, `/admin/reports/[code]` | admin |
 | 1 | Department task dashboard | `/staff/tasks` | staff |
 | 1 | Notifications | `/notifications` (shared) | logged in |
-| 2 | Public reports + map | `/reports`, `/reports/map` | all |
+| 2 | Public reports feed ✅ (list; map not built) | `/reports` | all |
+| 2 | Full public reports map | `/reports/map` | all |
 | 2 | Admin statistics | `/admin/stats` | admin |
 
 Status colors: `reported` (submitted/review), `progress` (assigned/in progress), `fixed` (resolved/closed), `rejected` (rejected/duplicate/cancelled). Always icon + label.

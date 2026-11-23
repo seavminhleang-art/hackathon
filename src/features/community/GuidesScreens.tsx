@@ -30,7 +30,7 @@ import type { CsGuideCategory, CsGuideView, CsPlaceView } from "@/types/communit
 import { CommentThread } from "./Comments";
 import { useCs, type CsDict } from "./i18n";
 import { openStatus } from "./ServicesScreens";
-import { useLoginGate } from "./shared";
+import { useCommunityHref, useLoginGate } from "./shared";
 
 const CAT_ICON: Partial<Record<CsGuideCategory, LucideIcon>> = {
   IDENTITY: IdCard,
@@ -43,6 +43,7 @@ const CAT_ICON: Partial<Record<CsGuideCategory, LucideIcon>> = {
 /** Find the paperwork guide I need. Search + categories (wireframe 8a). */
 export function GuidesScreen() {
   const { c, tx } = useCs();
+  const href = useCommunityHref();
   const { ready } = useAuth();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<"ALL" | CsGuideCategory>("ALL");
@@ -70,7 +71,7 @@ export function GuidesScreen() {
 
   return (
     <PageContainer className="max-w-4xl">
-      <Link href="/services" className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-body font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink">
+      <Link href={href("/services")} className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-body font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink">
         <ArrowLeft aria-hidden size={20} />
         {c.servicesTitle}
       </Link>
@@ -106,7 +107,7 @@ export function GuidesScreen() {
             title={c.noGuides}
             body={c.noGuidesBody}
             action={
-              <LinkButton href="/community/new" variant="secondary" size="sm" icon={MessageCircleQuestion}>
+              <LinkButton href={href("/community/new")} variant="secondary" size="sm" icon={MessageCircleQuestion}>
                 {c.askOnBoard}
               </LinkButton>
             }
@@ -118,7 +119,7 @@ export function GuidesScreen() {
                 key={g.id}
                 icon={CAT_ICON[g.category] ?? FileText}
                 accent="fixed"
-                href={`/guides/${g.id}`}
+                href={href(`/guides/${g.id}`)}
                 title={tx(g.title)}
                 subtitle={tx(g.summary)}
                 meta={
@@ -147,6 +148,7 @@ const TICKS_KEY = (id: string) => `cityvoice.guide-ticks.${id}`;
 export function GuideScreen() {
   const { id } = useParams<{ id: string }>();
   const { c, tx } = useCs();
+  const href = useCommunityHref();
   const { ready } = useAuth();
   const { gate, sheet } = useLoginGate();
   const [g, setG] = useState<CsGuideView | null>(null);
@@ -190,7 +192,7 @@ export function GuideScreen() {
     });
 
   const back = (
-    <Link href="/guides" className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-body font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink">
+    <Link href={href("/guides")} className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-body font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink">
       <ArrowLeft aria-hidden size={20} />
       {c.guidesTitle}
     </Link>
@@ -295,7 +297,7 @@ export function GuideScreen() {
                   key={p.id}
                   icon={Landmark}
                   accent="fixed"
-                  href={`/services/${p.id}`}
+                  href={href(`/services/${p.id}`)}
                   title={tx(p.name)}
                   subtitle={p.address}
                   meta={<span className={`text-meta font-semibold ${st.open ? "text-fixed-ink" : "text-ink-muted"}`}>{st.text}</span>}

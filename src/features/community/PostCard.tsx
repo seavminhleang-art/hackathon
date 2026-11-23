@@ -21,7 +21,7 @@ import { fmt } from "@/lib/i18n/dictionary";
 import { formatDateParts, shortDate } from "@/lib/i18n/format";
 import type { CsPostType, CsPostView, CsRsvp } from "@/types/community";
 import { useCs, type CsDict } from "./i18n";
-import { OfficialBadge, ReportButton, timeAgo, useLoginGate } from "./shared";
+import { OfficialBadge, ReportButton, timeAgo, useCommunityHref, useLoginGate } from "./shared";
 
 export const POST_ICON: Record<CsPostType, LucideIcon> = {
   EVENT: CalendarDays,
@@ -102,8 +102,9 @@ export function RsvpButtons({
  */
 export function PostCard({ post, onChange }: { post: CsPostView; onChange: (p: CsPostView) => void }) {
   const { c, tx, locale } = useCs();
+  const dashboardHref = useCommunityHref();
   const Icon = POST_ICON[post.type];
-  const href = `/community/posts/${post.id}`;
+  const href = dashboardHref(`/community/posts/${post.id}`);
   const ev = post.event;
   const poll = post.poll;
   const hasBest = post.type === "QUESTION" && !!post.acceptedCommentId;

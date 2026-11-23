@@ -8,6 +8,7 @@ import * as lf from "./lost-found-api";
 import * as cs from "./community-api";
 import * as em from "./emergency-api";
 import * as gr from "./gov-reporting-api";
+import * as activity from "./activity-api";
 
-export const api = { ...core, lf, cs, em, gr };
+export const api = { ...core, lf, cs, em, gr, activity };
 export { ApiError } from "./mock-db";
