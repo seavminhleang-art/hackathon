@@ -142,7 +142,7 @@ export function BoardScreen() {
           {alert && (
             <Link
               href={href(`/announcements/${alert.id}`)}
-              className="flex min-h-13 items-center gap-3 rounded-2xl bg-danger px-4 py-2.5 text-white shadow-card hover:bg-danger-ink"
+              className="civic-alert-surface flex min-h-13 items-center gap-3 rounded-2xl px-4 py-2.5 shadow-card transition-colors"
             >
               <TriangleAlert aria-hidden size={20} className="flex-none" />
               <span className="min-w-0 flex-1 truncate text-body font-semibold">{tx(alert.title)}</span>

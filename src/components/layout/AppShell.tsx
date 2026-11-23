@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Suspense,
@@ -8,23 +9,25 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import {
   Bell,
+  Check,
   ChevronDown,
   ChevronRight,
   FileText,
   House,
   KeyRound,
-  Languages,
   LogIn,
   Siren,
   User as UserIcon,
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -106,6 +109,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
+  useEffect(() => {
+    const refresh = () => api.unreadCount().then(setUnread);
+    window.addEventListener("cityvoice:notifications", refresh);
+    return () => window.removeEventListener("cityvoice:notifications", refresh);
+  }, []);
+
   return (
     <SosContext.Provider value={{ openSos }}>
       <WithPath
@@ -154,41 +163,75 @@ export function LanguageToggle({
   variant?: "light" | "dark";
   compact?: boolean;
 }) {
-  const { t, locale, setLocale } = useLocale();
-  const next = locale === "km" ? "en" : "km";
+  const { locale, setLocale } = useLocale();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: MouseEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
   return (
-    <button
-      type="button"
-      onClick={() => setLocale(next)}
-      lang={next}
-      className={`flex min-h-11 items-center gap-1.5 rounded-xl px-2.5 text-meta font-semibold ${
-        variant === "dark"
-          ? "text-white hover:bg-white/10"
-          : "text-ink hover:bg-sand-deep"
-      }`}
-    >
-      <Languages aria-hidden size={18} />
-      {compact ? t.langSwitchShort : t.langSwitch}
-    </button>
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-label={locale === "km" ? "ជ្រើសរើសភាសា" : "Choose language"}
+        aria-haspopup="true"
+        aria-expanded={open}
+        className={`flex min-h-11 items-center gap-1.5 rounded-xl border px-2.5 text-meta font-semibold transition-colors ${variant === "dark" ? "focus-visible:outline-white" : "focus-visible:outline-primary"} ${
+          compact ? "min-w-20" : "min-w-28"
+        } ${variant === "dark" ? "border-transparent bg-transparent text-white shadow-none hover:bg-white/10" : "border-line bg-surface text-ink shadow-card hover:bg-sand-deep"}`}
+      >
+        <span aria-hidden>{locale === "km" ? "🇰🇭" : "🇬🇧"}</span>
+        <span className="flex-1">{locale === "km" ? "KM" : "EN"}</span>
+        <ChevronDown aria-hidden size={15} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div role="group" aria-label={locale === "km" ? "ភាសា" : "Language"} className="absolute top-full right-0 z-50 mt-2 w-48 overflow-hidden rounded-2xl border border-line bg-surface p-1.5 text-ink shadow-raised">
+          {([
+            { value: "en" as const, flag: "🇬🇧", label: "English" },
+            { value: "km" as const, flag: "🇰🇭", label: "ភាសាខ្មែរ" },
+          ]).map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              aria-pressed={locale === option.value}
+              lang={option.value}
+              onClick={() => {
+                setLocale(option.value);
+                setOpen(false);
+              }}
+              className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-body font-medium hover:bg-sand-deep"
+            >
+              <span aria-hidden>{option.flag}</span>
+              <span className="flex-1">{option.label}</span>
+              {locale === option.value && <Check aria-hidden size={18} className="text-primary" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
-function Logo({ dark = false }: { dark?: boolean }) {
+function Logo() {
   const { t } = useLocale();
   return (
-    <Link href="/" className="flex items-center gap-2.5" aria-label={t.appName}>
-      <span
-        className={`flex size-9 flex-none items-center justify-center rounded-xl text-meta font-extrabold ${
-          dark ? "bg-white text-primary" : "bg-primary text-white"
-        }`}
-      >
-        CV
-      </span>
-      <span
-        className={`text-row font-bold ${dark ? "text-white" : "text-ink"}`}
-      >
-        {t.appName}
-      </span>
+    <Link href="/" className="flex min-w-0 items-center" aria-label={t.appName}>
+      <Image src="/cityvoice-logo-transparent.png" alt="" width={1856} height={557} priority className="navbar-logo h-11 w-[146px] object-contain sm:h-12 sm:w-40 lg:h-[52px] lg:w-[174px]" />
     </Link>
   );
 }
@@ -205,9 +248,9 @@ function Navbar({ onSos, unread }: { onSos: () => void; unread: number }) {
   const { user, ready } = useAuth();
 
   return (
-    <header className="sticky top-0 z-30 bg-primary text-white shadow-raised">
+    <header className="app-navbar sticky top-0 z-30 text-white shadow-raised">
       <div className="mx-auto flex min-h-14 max-w-[1440px] items-center gap-1 py-1.5 pr-2 pl-4 sm:px-6 lg:min-h-16 lg:gap-2 lg:px-12 2xl:px-16">
-        <Logo dark />
+        <Logo />
 
         <nav className="ml-8 hidden h-16 items-stretch gap-1 lg:flex" aria-label={t.appName}>
           <WithPath
@@ -234,13 +277,14 @@ function Navbar({ onSos, unread }: { onSos: () => void; unread: number }) {
 
         <div className="flex-1" />
 
+        <ThemeToggle />
         <LanguageToggle variant="dark" compact />
 
         {ready && user && (
           <>
             <Link
               href="/notifications"
-              className="relative flex size-11 items-center justify-center rounded-xl hover:bg-white/10"
+              className="relative flex size-12 items-center justify-center rounded-xl hover:bg-white/10"
               aria-label={`${t.notifications} (${unread})`}
             >
               <Bell aria-hidden size={22} />

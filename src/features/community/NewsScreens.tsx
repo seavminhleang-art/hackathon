@@ -30,7 +30,7 @@ import { useCs, type CsDict } from "./i18n";
 import { CommunityTabs, OfficialBadge, scopeLabel, useAreas, useCommunityHref } from "./shared";
 
 const LEVEL: Record<CsAnnouncementLevel, { icon: LucideIcon; accent: Accent; chip: string }> = {
-  ALERT: { icon: TriangleAlert, accent: "danger", chip: "bg-danger text-white" },
+  ALERT: { icon: TriangleAlert, accent: "danger", chip: "civic-alert-chip" },
   WARNING: { icon: TriangleAlert, accent: "gold", chip: "bg-progress-tint text-progress-ink ring-1 ring-progress/40 ring-inset" },
   INFO: { icon: Info, accent: "primary", chip: "bg-primary-tint text-primary" },
 };
@@ -153,7 +153,7 @@ function NewsCard({ a }: { a: CsAnnouncementView }) {
     <Link
       href={href(`/announcements/${a.id}`)}
       className={`flex flex-col gap-3 rounded-2xl p-4 shadow-card transition-shadow hover:shadow-raised lg:p-5 ${
-        alert ? "bg-danger text-white" : "bg-surface"
+        alert ? "civic-alert-surface" : "bg-surface"
       }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -246,7 +246,7 @@ export function AnnouncementScreen() {
   return (
     <PageContainer className="max-w-4xl">
       {back}
-      <header className={`flex flex-col gap-3 rounded-3xl p-5 shadow-card lg:p-8 ${alert ? "bg-danger text-white" : "bg-surface"}`}>
+      <header className={`flex flex-col gap-3 rounded-3xl p-5 shadow-card lg:p-8 ${alert ? "civic-alert-surface" : "bg-surface"}`}>
         {alert ? (
           <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-white/20 px-3 py-1 text-meta font-semibold">
             <TriangleAlert aria-hidden size={15} />

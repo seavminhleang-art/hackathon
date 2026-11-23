@@ -9,40 +9,40 @@
  * All text pairs meet WCAG AA (4.5:1) on white or sand.
  */
 @theme {
-  --color-primary: #032ea1;
-  --color-primary-hover: #1e47b5;
-  --color-primary-tint: #eaf0fc;
+  --color-primary: var(--cv-primary);
+  --color-primary-hover: var(--cv-primary-hover);
+  --color-primary-tint: var(--cv-primary-tint);
 
-  --color-gold: #c99a2e;
-  --color-gold-ink: #8a6512;
-  --color-gold-tint: #fbf4e2;
+  --color-gold: var(--cv-gold);
+  --color-gold-ink: var(--cv-gold-ink);
+  --color-gold-tint: var(--cv-gold-tint);
 
-  --color-danger: #c8102e;
-  --color-danger-ink: #8f0b21;
-  --color-danger-tint: #fdecee;
+  --color-danger: var(--cv-danger);
+  --color-danger-ink: var(--cv-danger-ink);
+  --color-danger-tint: var(--cv-danger-tint);
 
-  --color-reported: #c2410c;
-  --color-reported-ink: #9a3412;
-  --color-reported-tint: #fdebe1;
+  --color-reported: var(--cv-reported);
+  --color-reported-ink: var(--cv-reported-ink);
+  --color-reported-tint: var(--cv-reported-tint);
 
-  --color-progress: #f2b01e;
-  --color-progress-ink: #8a4a05;
-  --color-progress-tint: #fef3d6;
+  --color-progress: var(--cv-progress);
+  --color-progress-ink: var(--cv-progress-ink);
+  --color-progress-tint: var(--cv-progress-tint);
 
-  --color-fixed: #157347;
-  --color-fixed-ink: #0f5434;
-  --color-fixed-tint: #e7f4ec;
+  --color-fixed: var(--cv-fixed);
+  --color-fixed-ink: var(--cv-fixed-ink);
+  --color-fixed-tint: var(--cv-fixed-tint);
 
-  --color-rejected: #7a7468;
+  --color-rejected: var(--cv-rejected);
 
-  --color-sand: #faf8f4;
-  --color-surface: #ffffff;
-  --color-line: #e6e0d6;
-  --color-ink: #1c1a17;
-  --color-ink-muted: #6b6457;
+  --color-sand: var(--cv-sand);
+  --color-surface: var(--cv-surface);
+  --color-line: var(--cv-line);
+  --color-ink: var(--cv-ink);
+  --color-ink-muted: var(--cv-ink-muted);
 
-  --color-line-strong: #d6cfc2;
-  --color-sand-deep: #f3efe7;
+  --color-line-strong: var(--cv-line-strong);
+  --color-sand-deep: var(--cv-sand-deep);
 
   --font-sans: var(--font-khmer), var(--font-latin), system-ui, sans-serif;
 
@@ -73,7 +73,111 @@
 }
 
 :root {
+  --cv-primary: #032ea1;
+  --cv-primary-hover: #1e47b5;
+  --cv-primary-tint: #eaf0fc;
+  --cv-navbar: #032ea1;
+  --cv-gold: #c99a2e;
+  --cv-gold-ink: #8a6512;
+  --cv-gold-tint: #fbf4e2;
+  --cv-rejected: #7a7468;
+  --cv-danger: #c8102e;
+  --cv-danger-ink: #8f0b21;
+  --cv-danger-tint: #fdecee;
+  --cv-reported: #c2410c;
+  --cv-reported-ink: #9a3412;
+  --cv-reported-tint: #fdebe1;
+  --cv-progress: #f2b01e;
+  --cv-progress-ink: #8a4a05;
+  --cv-progress-tint: #fef3d6;
+  --cv-fixed: #157347;
+  --cv-fixed-ink: #0f5434;
+  --cv-fixed-tint: #e7f4ec;
+  --cv-sand: #faf8f4;
+  --cv-surface: #ffffff;
+  --cv-line: #e6e0d6;
+  --cv-ink: #1c1a17;
+  --cv-ink-muted: #6b6457;
+  --cv-line-strong: #d6cfc2;
+  --cv-sand-deep: #f3efe7;
   color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --cv-primary: #416bd5;
+  --cv-primary-hover: #547ce0;
+  --cv-primary-tint: #202f50;
+  --cv-navbar: #242424;
+  --cv-gold: #e2b951;
+  --cv-gold-ink: #f0d281;
+  --cv-gold-tint: #403823;
+  --cv-rejected: #c1b9ab;
+  --cv-danger: #c8102e;
+  --cv-danger-ink: #ff8792;
+  --cv-danger-tint: #3d252c;
+  --cv-reported: #f28a56;
+  --cv-reported-ink: #ffad83;
+  --cv-reported-tint: #422d25;
+  --cv-progress: #eebd4b;
+  --cv-progress-ink: #f4cd79;
+  --cv-progress-tint: #413824;
+  --cv-fixed: #56b88b;
+  --cv-fixed-ink: #82d6ad;
+  --cv-fixed-tint: #243a31;
+  --cv-sand: #191919;
+  --cv-surface: #242424;
+  --cv-line: #383838;
+  --cv-ink: #f2f2f2;
+  --cv-ink-muted: #b8b8b8;
+  --cv-line-strong: #4a4a4a;
+  --cv-sand-deep: #303030;
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] .bg-white {
+  background-color: var(--cv-surface);
+}
+
+html[data-theme="dark"] .text-black {
+  color: var(--cv-ink);
+}
+
+.app-navbar {
+  background-color: var(--cv-navbar);
+}
+
+html[data-theme="dark"] .navbar-logo {
+  filter: brightness(0.86) saturate(0.92);
+}
+
+.civic-alert-surface {
+  background-color: var(--cv-danger);
+  color: #fff;
+}
+
+.civic-alert-surface:hover {
+  background-color: var(--cv-danger-ink);
+}
+
+.civic-alert-chip {
+  background-color: var(--cv-danger);
+  color: #fff;
+}
+
+html[data-theme="dark"] .civic-alert-surface {
+  background-color: #39252c;
+  color: #ffedf0;
+  border: 1px solid #633944;
+}
+
+html[data-theme="dark"] .civic-alert-surface:hover {
+  background-color: #452a33;
+}
+
+html[data-theme="dark"] .civic-alert-chip {
+  background-color: #542f39;
+  color: #ffdfe4;
+  box-shadow: inset 0 0 0 1px #76424d;
 }
 
 html {
