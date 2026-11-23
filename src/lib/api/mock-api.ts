@@ -73,6 +73,32 @@ export async function me(): Promise<User | null> {
   return delay(u ? toUser(u) : null);
 }
 
+export type ProfileUpdate = Pick<User, "fullName" | "phone" | "provinceId" | "cityId" | "preferredLocale"> & Pick<User, "email" | "sangkat">;
+
+export async function updateProfile(input: ProfileUpdate): Promise<User> {
+  const user = requireUser();
+  const fullName = input.fullName.trim();
+  const phone = normalizePhone(input.phone);
+  const email = input.email?.trim() || undefined;
+  if (fullName.length < 2) throw new ApiError("VALIDATION", "Name is required", "fullName");
+  if (!phone) throw new ApiError("VALIDATION", "Phone must look like 012345678", "phone");
+  if (load().users.some((other) => other.id !== user.id && other.phone === phone))
+    throw new ApiError("CONFLICT", "Phone already registered", "phone");
+  if (email && !/^\S+@\S+\.\S+$/.test(email)) throw new ApiError("VALIDATION", "Invalid email", "email");
+  if (!findProvince(input.provinceId) || findCity(input.cityId)?.provinceId !== input.provinceId)
+    throw new ApiError("VALIDATION", "Choose a province and city", "cityId");
+
+  user.fullName = fullName;
+  user.phone = phone;
+  user.email = email;
+  user.provinceId = input.provinceId;
+  user.cityId = input.cityId;
+  user.sangkat = input.sangkat?.trim() || undefined;
+  user.preferredLocale = input.preferredLocale;
+  save();
+  return delay(writeSession(user).user);
+}
+
 // ---------- notifications ----------
 
 export async function myNotifications(): Promise<AppNotification[]> {

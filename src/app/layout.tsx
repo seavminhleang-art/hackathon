@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Kantumruy_Pro } from "next/font/google";
 import "./globals.css";
+import "react-toastify/dist/ReactToastify.css";
 import { Providers } from "./providers";
 
 // Khmer first, Inter for Latin text. Both feed --font-sans in globals.css.

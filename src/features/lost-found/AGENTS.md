@@ -14,7 +14,7 @@ items; ownership is decided only by Claim → Approve → Returned.
 | Part | Status |
 |---|---|
 | Types, mock data, mock API, tests | Done |
-| Screens (this folder) | Not started — build only when the team asks |
+| Screens (this folder) | Browse/list and lost/found post form built; detail and claim flows remain |
 | Backend | Not started |
 
 ## Files
@@ -60,8 +60,7 @@ Claim: `PENDING → APPROVED → COMPLETED`, or `REJECTED`.
 ## Screens to build
 | Route | Who | Notes |
 |---|---|---|
-| `/lost-found` | all | List + filters, "my city first", lost/found tabs |
-| `/lost-found/new` | citizen | Kind, category, photo, province/city, place + pin, date, secret (FOUND) |
+| `/lost-found` | all | List + filters and lost/found post sheets; available standalone and inside the dashboard workspace |
 | `/lost-found/[id]` | all | Details, comments/sightings, matches, claim button |
 | `/lost-found/[id]/claim` | citizen | Description + answer the finder's question |
 | `/lost-found/mine` | citizen | My posts with claims to review; my claims with pickup info |

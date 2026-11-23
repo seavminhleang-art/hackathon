@@ -364,6 +364,18 @@ export async function listAnnouncements(
   return delay(rows.map(announcementView));
 }
 
+/** Active public announcements for the Home ticker and featured carousel. */
+export async function listPublicAnnouncements(): Promise<CsAnnouncementView[]> {
+  const rows = load().csAnnouncements.filter((announcement) => isActive(announcement));
+  rows.sort(
+    (a, b) =>
+      Number(b.pinned) - Number(a.pinned) ||
+      LEVEL_RANK[a.level] - LEVEL_RANK[b.level] ||
+      b.createdAt.localeCompare(a.createdAt),
+  );
+  return delay(rows.map(announcementView));
+}
+
 /** Active ALERTs for the banner. */
 export async function activeAlerts(): Promise<CsAnnouncementView[]> {
   const all = await listAnnouncements();

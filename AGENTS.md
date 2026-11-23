@@ -31,14 +31,14 @@ Student team; each main feature has a different owner.
 | Area | Status | Details |
 |---|---|---|
 | Design tokens, fonts, i18n, auth session | Done | README.md |
-| 1. Lost & Found | Foundation done (types, mock, API, tests) | src/features/lost-found/AGENTS.md |
+| 1. Lost & Found | Browse and lost/found post flows built; standalone and dashboard workspace | src/features/lost-found/AGENTS.md |
 | 2. Emergency response | Foundation done | src/features/emergency/AGENTS.md |
 | 3. Government reporting | Foundation done | src/features/gov-reporting/AGENTS.md |
 | 4. Community & Services | P0 screens built (Board, posts, News, Services, Guides) | src/features/community/AGENTS.md |
 | UI kit (Button, Card, ListRow, Section, fields, Sheet, StatusChip…) | Done. Live demo at `/design` (dev only) | src/components/ui/ |
 | App shell (blue navbar on all sizes; bottom tabs + floating SOS on phone; feature links + SOS in navbar on desktop) | Done | src/components/layout/AppShell.tsx, src/app/(app)/layout.tsx |
 | Home `/` dashboard | Done | src/features/home/ |
-| Other screens | **Not started** for features 1–3, login/register, notifications, me. Build only when the team asks | docs/FEATURES.md (screen list) |
+| Other screens | Report detail/admin/staff, emergency flows, notifications, and me remain unbuilt. Login/register and Lost & Found browse/post flows are built | docs/FEATURES.md (screen list) |
 | Spring Boot backend | Not started | — |
 
 ## Commands
@@ -109,3 +109,13 @@ docs/                           FEATURES.md (index) + features/*.md (one human s
 1. Build screens per feature from `docs/FEATURES.md` (only when the team asks).
 2. Open questions listed at the end of each feature spec.
 3. Start the Spring Boot API: mirror `src/types/*` as DTOs and keep the function names in `src/lib/api/*` so the frontend switch is one file.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
