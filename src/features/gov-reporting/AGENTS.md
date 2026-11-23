@@ -14,7 +14,7 @@ transparency, accountability and full history are the point.
 | Part | Status |
 |---|---|
 | Types, mock data, mock API, tests (phase 1 + phase 2 logic) | Done |
-| Screens (this folder) | Not started — build only when the team asks. Phase 1 screens first |
+| Screens (this folder) | Static responsive citizen form, location picker, duplicate check, submission confirmation, My Reports, report detail, and public report feed built; map-only, admin, and staff screens remain |
 | Phase 3 (auto routing, AI, push, heatmap) | Not started |
 
 ## Files
@@ -58,13 +58,17 @@ side paths: NEED_MORE_INFO, REJECTED, DUPLICATE, REOPENED, CANCELLED
 ## Screens to build
 | Phase | Page | Route idea | Who |
 |---|---|---|---|
-| 1 | Create report (+ duplicate suggestions) | `/report/new` | citizen |
-| 1 | My reports | `/me/reports` | citizen |
-| 1 | Report detail (timeline, photos, comments, actions from `can`) | `/reports/[code]` | all |
+| 1 | Create report form (static UI; submission not connected) | `/report/new` | citizen |
+| 1 | Choose report location (static map preview) | `/report/location` | citizen |
+| 1 | Duplicate suggestions before submit | `/report/duplicates` | citizen |
+| 1 | Submission confirmation | `/report/submitted` | citizen |
+| 1 | My reports (static sample list) | `/me/reports` | citizen |
+| 1 | Report detail (static timeline, photos, comments, sample actions) | `/reports/[code]` | all |
 | 1 | Admin management + review | `/admin/reports`, `/admin/reports/[code]` | admin |
 | 1 | Department task dashboard | `/staff/tasks` | staff |
 | 1 | Notifications | `/notifications` (shared) | logged in |
-| 2 | Public reports + map | `/reports`, `/reports/map` | all |
+| 2 | Public reports feed (static filters and map preview) | `/reports` | all |
+| 2 | Full public reports map | `/reports/map` | all |
 | 2 | Admin statistics | `/admin/stats` | admin |
 
 Status colors: `reported` (submitted/review), `progress` (assigned/in progress), `fixed` (resolved/closed), `rejected` (rejected/duplicate/cancelled). Always icon + label.
