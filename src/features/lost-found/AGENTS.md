@@ -14,7 +14,7 @@ items; ownership is decided only by Claim → Approve → Returned.
 | Part | Status |
 |---|---|
 | Types, mock data, mock API, tests | Done |
-| Screens (this folder) | Browse/list and lost/found post form built; detail and claim flows remain |
+| Screens (this folder) | Browse/list, lost/found post form, and item detail (`PostDetail`: photo, claim form, finder claim review with approve/reject/mark returned, comments + sightings, report) built. Pickup scheduling and `/lost-found/mine` remain |
 | Backend | Not started |
 
 ## Files
@@ -61,7 +61,7 @@ Claim: `PENDING → APPROVED → COMPLETED`, or `REJECTED`.
 | Route | Who | Notes |
 |---|---|---|
 | `/lost-found` | all | List + filters and lost/found post sheets; available standalone and inside the dashboard workspace |
-| `/lost-found/[id]` | all | Details, comments/sightings, matches, claim button |
+| `/lost-found/[id]` ✅ | all | Details, comments/sightings, claim form (inline, no separate claim route), finder review |
 | `/lost-found/[id]/claim` | citizen | Description + answer the finder's question |
 | `/lost-found/mine` | citizen | My posts with claims to review; my claims with pickup info |
 
