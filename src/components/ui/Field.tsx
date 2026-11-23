@@ -1,14 +1,15 @@
 "use client";
 
-import { useId, type ComponentProps, type ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
+import { useId, useState, type ComponentProps, type ReactNode } from "react";
+import { ChevronDown, Eye, EyeOff } from "lucide-react";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 /**
  * Form fields with label, hint and error built in. Pass `error` from ApiError.field.
  * Inputs are 48px tall, 16px text (prevents iOS zoom), rounded 12px.
  */
 const CONTROL =
-  "w-full rounded-xl bg-surface px-3.5 text-base text-ink ring-1 ring-inset ring-line-strong placeholder:text-ink-muted/70 focus:ring-2 focus:ring-primary focus:outline-none aria-invalid:ring-2 aria-invalid:ring-danger disabled:bg-sand-deep";
+  "w-full rounded-xl bg-surface px-3.5 text-base text-ink ring-1 ring-inset ring-line-strong placeholder:text-ink-muted focus:ring-2 focus:ring-primary focus:outline-none aria-invalid:ring-2 aria-invalid:ring-danger disabled:bg-sand-deep";
 
 function Wrap({
   id,
@@ -49,13 +50,75 @@ function Wrap({
 
 type FieldProps = { label: string; hint?: string; error?: string; optional?: string };
 
-export function TextField({ label, hint, error, optional, id, ...rest }: FieldProps & ComponentProps<"input">) {
+/** Only point aria-describedby at the message when one is rendered. */
+const describedBy = (fid: string, hint?: string, error?: string) => (error || hint ? `${fid}-msg` : undefined);
+
+/**
+ * Text input. `prefix` shows fixed text inside the field (e.g. "+855");
+ * `trailing` puts a control at the right edge (e.g. a Show password button).
+ */
+export function TextField({
+  label,
+  hint,
+  error,
+  optional,
+  id,
+  prefix,
+  trailing,
+  ...rest
+}: FieldProps & { prefix?: string; trailing?: ReactNode } & ComponentProps<"input">) {
   const auto = useId();
   const fid = id ?? auto;
+  const input = (
+    <input
+      id={fid}
+      aria-invalid={!!error || undefined}
+      aria-describedby={describedBy(fid, hint, error)}
+      className={`${CONTROL} min-h-13 ${prefix ? "pl-[4.75rem]" : ""} ${trailing ? "pr-28" : ""}`}
+      {...rest}
+    />
+  );
   return (
     <Wrap id={fid} label={label} hint={hint} error={error} optional={optional}>
-      <input id={fid} aria-invalid={!!error || undefined} aria-describedby={`${fid}-msg`} className={`${CONTROL} min-h-12`} {...rest} />
+      {prefix || trailing ? (
+        <div className="relative">
+          {prefix && (
+            <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 flex items-center gap-3 pl-3.5 text-body font-semibold text-ink-muted">
+              {prefix}
+              <span className="h-6 w-px bg-line-strong" />
+            </span>
+          )}
+          {input}
+          {trailing && <span className="absolute inset-y-0 right-1.5 flex items-center">{trailing}</span>}
+        </div>
+      ) : (
+        input
+      )}
     </Wrap>
+  );
+}
+
+/** Password with a Show / Hide toggle (no "confirm password" needed). */
+export function PasswordField(props: FieldProps & Omit<ComponentProps<"input">, "type">) {
+  const { t } = useLocale();
+  const [shown, setShown] = useState(false);
+  return (
+    <TextField
+      {...props}
+      type={shown ? "text" : "password"}
+      trailing={
+        <button
+          type="button"
+          onClick={() => setShown((s) => !s)}
+          aria-pressed={shown}
+          aria-label={shown ? t.hidePassword : t.showPassword}
+          className="flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-meta font-semibold text-primary hover:bg-primary-tint"
+        >
+          {shown ? <EyeOff aria-hidden size={18} /> : <Eye aria-hidden size={18} />}
+          {shown ? t.hidePasswordShort : t.showPasswordShort}
+        </button>
+      }
+    />
   );
 }
 
@@ -64,7 +127,7 @@ export function TextArea({ label, hint, error, optional, id, ...rest }: FieldPro
   const fid = id ?? auto;
   return (
     <Wrap id={fid} label={label} hint={hint} error={error} optional={optional}>
-      <textarea id={fid} rows={4} aria-invalid={!!error || undefined} aria-describedby={`${fid}-msg`} className={`${CONTROL} py-3`} {...rest} />
+      <textarea id={fid} rows={4} aria-invalid={!!error || undefined} aria-describedby={describedBy(fid, hint, error)} className={`${CONTROL} py-3`} {...rest} />
     </Wrap>
   );
 }
@@ -78,8 +141,8 @@ export function SelectField({ label, hint, error, optional, id, children, ...res
         <select
           id={fid}
           aria-invalid={!!error || undefined}
-          aria-describedby={`${fid}-msg`}
-          className={`${CONTROL} min-h-12 appearance-none pr-10`}
+          aria-describedby={describedBy(fid, hint, error)}
+          className={`${CONTROL} min-h-13 appearance-none pr-10`}
           {...rest}
         >
           {children}

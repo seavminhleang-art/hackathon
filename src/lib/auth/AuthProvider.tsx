@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import type { LoginInput, RegisterInput, User } from "@/types";
+import type { GoogleProfile, LoginInput, RegisterInput, User } from "@/types";
 import type { ProfileUpdate } from "@/lib/api/mock-api";
 
 interface AuthContextValue {
@@ -11,7 +11,13 @@ interface AuthContextValue {
   /** false until the saved session has been read on the client. */
   ready: boolean;
   login: (input: LoginInput, redirectTo?: string) => Promise<User>;
-  register: (input: RegisterInput) => Promise<User>;
+  register: (input: RegisterInput, redirectTo?: string) => Promise<User>;
+  /** Code login (step 2, after api.requestLoginCode by email or Telegram). */
+  loginWithCode: (identifier: string, code: string, redirectTo?: string) => Promise<User>;
+  /** Sign-up confirmed with a code (after api.requestSignupCode). */
+  registerWithCode: (input: RegisterInput & { code: string }, redirectTo?: string) => Promise<User>;
+  /** Google: signs in an existing account; throws ApiError NOT_FOUND for a new email. */
+  loginWithGoogle: (profile: GoogleProfile, redirectTo?: string) => Promise<User>;
   updateProfile: (input: ProfileUpdate) => Promise<User>;
   logout: () => Promise<void>;
 }
@@ -38,12 +44,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return s.user;
   }, [router]);
 
-  const register = useCallback(async (input: RegisterInput) => {
+  const register = useCallback(async (input: RegisterInput, redirectTo = "/") => {
     const s = await api.register(input);
     setUser(s.user);
-    router.push("/");
+    router.push(redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/");
     return s.user;
   }, [router]);
+
+  const go = useCallback(
+    (redirectTo: string) => router.push(redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/"),
+    [router],
+  );
+
+  const loginWithCode = useCallback(
+    async (identifier: string, code: string, redirectTo = "/") => {
+      const s = await api.loginWithCode(identifier, code);
+      setUser(s.user);
+      go(redirectTo);
+      return s.user;
+    },
+    [go],
+  );
+
+  const registerWithCode = useCallback(
+    async (input: RegisterInput & { code: string }, redirectTo = "/") => {
+      const s = await api.registerWithCode(input);
+      setUser(s.user);
+      go(redirectTo);
+      return s.user;
+    },
+    [go],
+  );
+
+  const loginWithGoogle = useCallback(
+    async (profile: GoogleProfile, redirectTo = "/") => {
+      const s = await api.loginWithGoogle(profile);
+      setUser(s.user);
+      go(redirectTo);
+      return s.user;
+    },
+    [go],
+  );
 
   const updateProfile = useCallback(async (input: ProfileUpdate) => {
     const updated = await api.updateProfile(input);
@@ -56,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
-  return <AuthContext.Provider value={{ user, ready, login, register, updateProfile, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, ready, login, register, loginWithCode, registerWithCode, loginWithGoogle, updateProfile, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

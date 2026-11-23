@@ -1,6 +1,6 @@
 // Seed data for the mock API. All people, phones and reports are fake.
 // Demo accounts (mock only, password for all: "demo1234"). Full list in README.md.
-//   Citizen: 012000001   Officer (local official): 012000002   Admin: 012000003
+//   Log in with phone, email or username. Citizen: 012000001 / dara@example.com / dara
 
 import type { EmergencyHotline, UserRecord } from "@/types";
 
@@ -20,8 +20,25 @@ export const EMERGENCY_HOTLINES: EmergencyHotline[] = [
 
 // ---------- Users ----------
 
-export const USERS: UserRecord[] = [
-  { id: "u-citizen-1", fullName: "សុខ ដារ៉ា", phone: "012000001", email: "dara@example.com", role: "CITIZEN",
+type SeedUser = Omit<UserRecord, "username" | "firstName" | "lastName" | "authProvider"> & { username?: string };
+
+/** Fill username / names / email for seed users. Names are "Family Given" (Khmer order). */
+const withAccountFields = (u: SeedUser): UserRecord => {
+  const clean = u.fullName.replace(/\s*\(.*\)\s*$/, "");
+  const [lastName, ...rest] = clean.split(" ");
+  const username = u.username ?? u.id.replace(/^u-/, "").replace(/-/g, ".");
+  return {
+    ...u,
+    username,
+    lastName,
+    firstName: rest.join(" ") || lastName,
+    email: u.email ?? `${username}@example.com`,
+    authProvider: "PASSWORD",
+  };
+};
+
+const SEED_USERS: SeedUser[] = [
+  { id: "u-citizen-1", username: "dara", fullName: "សុខ ដារ៉ា", phone: "012000001", email: "dara@example.com", role: "CITIZEN",
     provinceId: "phnom-penh", cityId: "tuol-kouk", sangkat: "Boeng Kak 2", preferredLocale: "km", createdAt: "2026-10-01T08:00:00+07:00", password: DEMO_PASSWORD },
   { id: "u-officer-1", fullName: "ចាន់ វិចិត្រ", phone: "012000002", role: "OFFICER",
     provinceId: "phnom-penh", cityId: "tuol-kouk", preferredLocale: "km", createdAt: "2026-09-15T08:00:00+07:00", password: DEMO_PASSWORD },
@@ -59,6 +76,8 @@ export const USERS: UserRecord[] = [
   { id: "u-citizen-bb", fullName: "Vann Rithy", phone: "012000008", role: "CITIZEN",
     provinceId: "battambang", cityId: "battambang-city", preferredLocale: "en", createdAt: "2026-10-22T08:00:00+07:00", password: DEMO_PASSWORD },
 ];
+
+export const USERS: UserRecord[] = SEED_USERS.map(withAccountFields);
 
 // Civic reports (feature 3): see ./gov-reporting.ts.
 // Lost & Found seed data: see ./lost-found.ts

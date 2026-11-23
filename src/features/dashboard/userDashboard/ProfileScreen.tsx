@@ -41,7 +41,7 @@ export function ProfileScreen() {
   if (user && filledFor !== user.id) {
     setFilledFor(user.id);
     setFullName(user.fullName);
-    setPhone(user.phone);
+    setPhone(user.phone ?? "");
     setEmail(user.email ?? "");
     setProvinceId(user.provinceId);
     setCityId(user.cityId);
@@ -120,7 +120,7 @@ export function ProfileScreen() {
           <TextField label={t.profileSangkat} value={sangkat} onChange={(event) => setSangkat(event.target.value)} optional={t.optional} />
           <div className="flex items-end gap-2 text-meta text-ink-muted"><MapPin aria-hidden size={17} className="mb-3.5 text-primary" />{[city && tx(city.name), province && tx(province.name)].filter(Boolean).join(" · ")}</div>
         </div>
-        <div className="flex justify-end gap-2 border-t border-line pt-4"><Button type="button" variant="secondary" onClick={() => { if (!user) return; setFullName(user.fullName); setPhone(user.phone); setEmail(user.email ?? ""); setProvinceId(user.provinceId); setCityId(user.cityId); setSangkat(user.sangkat ?? ""); setPreferredLocale(user.preferredLocale); }}>{t.profileCancel}</Button><Button type="submit" disabled={busy || !provinceId || !cityId} icon={Check}>{busy ? t.submitting : t.profileSave}</Button></div>
+        <div className="flex justify-end gap-2 border-t border-line pt-4"><Button type="button" variant="secondary" onClick={() => { if (!user) return; setFullName(user.fullName); setPhone(user.phone ?? ""); setEmail(user.email ?? ""); setProvinceId(user.provinceId); setCityId(user.cityId); setSangkat(user.sangkat ?? ""); setPreferredLocale(user.preferredLocale); }}>{t.profileCancel}</Button><Button type="submit" disabled={busy || !provinceId || !cityId} icon={Check}>{busy ? t.submitting : t.profileSave}</Button></div>
       </form>
     </Card>}
 

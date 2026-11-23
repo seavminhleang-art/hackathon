@@ -239,7 +239,7 @@ export interface EmIncidentForReporter extends EmIncident {
 /** Organization view: reporter contact only with consent. */
 export interface EmIncidentForOrg extends Omit<EmIncident, "reporterId"> {
   dispatch: EmDispatch;
-  reporterContact?: { fullName: string; phone: string };
+  reporterContact?: { fullName: string; phone?: string };
 }
 
 /** Public / visitor view: verified incidents only, no people, rounded location. */

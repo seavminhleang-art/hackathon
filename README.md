@@ -104,7 +104,7 @@ The frontend works without a backend. Data is kept in memory and saved to
 ```ts
 import { api, ApiError } from "@/lib/api";
 
-await api.login({ phone: "012000001", password: "demo1234" });
+await api.login({ identifier: "012000001", password: "demo1234" }); // or "dara@example.com" or "dara"
 await api.gr.listPublicReports({ category: ["WASTE"] });        // Government reporting
 await api.gr.createReport({ category: "DRAINAGE_FLOODING", title, description, location, locationSource: "GPS", provinceId, cityId });
 await api.lf.listPosts({ provinceId: "siem-reap", q: "bag" });   // Lost & Found
@@ -123,7 +123,7 @@ await api.em.nearbyServices(location, { type: ["HOSPITAL"] });
 
 ### Demo accounts
 
-Password for all: `demo1234`.
+Password for all: `demo1234`. Log in with the phone, the email (`<username>@example.com`, citizen 012000001 is `dara@example.com`) or the username.
 
 | Phone | Role | Location |
 |---|---|---|
