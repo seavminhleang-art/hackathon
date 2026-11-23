@@ -12,15 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { PageContainer } from "@/components/layout/AppShell";
-import {
-  Card,
-  EmptyState,
-  FilterChips,
-  IconTile,
-  Section,
-  SkeletonRows,
-  StatusChip,
-} from "@/components/ui";
+import { Card, EmptyState, FilterChips, IconTile, Section, SkeletonRows, StatusChip, Thumb } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -222,7 +214,7 @@ export function ListScreen() {
                     <div className="divide-y divide-line">
                       {myPosts.slice(0, 3).map((post) => (
                         <div key={post.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                          <IconTile icon={post.kind === "LOST" ? Search : KeyRound} accent={post.kind === "LOST" ? "reported" : "gold"} size="sm" />
+                          <Thumb src={post.photoUrls[0]} icon={post.kind === "LOST" ? Search : KeyRound} accent={post.kind === "LOST" ? "reported" : "gold"} size="sm" />
                           <span className="min-w-0 flex-1"><strong className="block truncate text-body text-ink">{post.title}</strong><span className="block truncate text-meta text-ink-muted">{post.place}</span></span>
                           <StatusChip status={post.kind} />
                         </div>
@@ -238,7 +230,7 @@ export function ListScreen() {
                     <div className="divide-y divide-line">
                       {myMatches.flatMap((entry) => entry.matches.map((match) => ({ ...match, sourcePostId: entry.postId }))).slice(0, 3).map((match) => (
                         <div key={`${match.sourcePostId}-${match.post.id}`} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                          <IconTile icon={match.post.kind === "FOUND" ? KeyRound : Search} accent={match.post.kind === "FOUND" ? "gold" : "reported"} size="sm" />
+                          <Thumb src={match.post.photoUrls[0]} icon={match.post.kind === "FOUND" ? KeyRound : Search} accent={match.post.kind === "FOUND" ? "gold" : "reported"} size="sm" />
                           <span className="min-w-0 flex-1"><strong className="block truncate text-body text-ink">{match.post.title}</strong><span className="block truncate text-meta text-ink-muted">{match.post.place}</span></span>
                           <span className="rounded-full bg-fixed-tint px-2.5 py-1 text-meta font-semibold text-fixed-ink">{match.score}%</span>
                         </div>
@@ -327,7 +319,7 @@ export function ListScreen() {
                     return (
                       <article key={post.id} className="flex min-h-48 flex-col rounded-2xl bg-surface p-4 shadow-card ring-1 ring-line/70 transition-shadow hover:shadow-raised lg:p-5">
                         <div className="flex items-start gap-3">
-                          {post.photoUrls[0] ? <img src={post.photoUrls[0]} alt="" className="size-12 flex-none rounded-xl object-cover" /> : <IconTile icon={post.kind === "LOST" ? Search : KeyRound} accent={post.kind === "LOST" ? "reported" : "gold"} />}
+                          <Thumb src={post.photoUrls[0]} icon={post.kind === "LOST" ? Search : KeyRound} accent={post.kind === "LOST" ? "reported" : "gold"} size="lg" />
                           <div className="min-w-0 flex-1">
                             <div className="mb-1 flex flex-wrap items-center gap-2"><StatusChip status={post.kind} /><span className="text-meta text-ink-muted">{meta ? tx(meta.label) : post.category}</span></div>
                             <h3 className="text-row leading-snug font-bold text-ink">{post.title}</h3>

@@ -14,7 +14,7 @@ admin-approved news releases.
 | Part | Status |
 |---|---|
 | Types, mock data, mock API, tests | Done |
-| Screens (this folder) | Not started — build only when the team asks |
+| Screens | Built by Smey (routes in `src/app/(app)/emergency/`, `sos/`, `org/`, `me/contacts/`). Aligned with the shared model: design tokens only, lucide icons (no emoji), shared `HotlineStrip`, data through `api.*` (`useLocations`, `useIncidentTypes` in `meta.tsx`). Admin and news screens remain |
 | Real channels (Telegram, SMS, APIs) | Future plan. Mock delivers to an in-app organization inbox only |
 
 ## Files
@@ -25,7 +25,7 @@ admin-approved news releases.
 | Hotlines 117/118/119 (shared) | `EMERGENCY_HOTLINES` in `src/lib/mock/data.ts` |
 | Mock API (`api.em.*`) | `src/lib/api/emergency-api.ts` |
 | Tests | `scripts/test/emergency.test.mjs` → `npm run test:mock emergency` |
-| UI (to build) | `src/features/emergency/`, routes in `src/app/sos`, `src/app/emergency/`, `src/app/org/` |
+| UI | Shared pieces in `src/features/emergency/` (`meta.tsx`: `HotlineStrip`, `IncidentIcon`, `useLocations`, `useIncidentTypes`; `EmergencyProfileCard` on `/dashboard/profile`). Routes in `src/app/(app)/sos`, `emergency/`, `org/`, `me/contacts` |
 
 ## Status flow
 ```

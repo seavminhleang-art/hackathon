@@ -406,6 +406,7 @@ export async function createAnnouncement(input: CsCreateAnnouncementInput): Prom
     scope: input.scope,
     authorId: u.id,
     imageUrl: input.imageUrl,
+    location: input.location,
     pinned: !!input.pinned,
     commentsEnabled: input.commentsEnabled ?? input.level !== "ALERT",
     validFrom: input.validFrom ?? t,

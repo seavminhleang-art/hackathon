@@ -110,8 +110,8 @@ export const GR_REPORTS: GrReport[] = [
     dueAt: due("2026-11-10T09:00:00+07:00", "HIGH"), resolvedAt: "2026-11-11T15:40:00+07:00", closedAt: "2026-11-12T09:00:00+07:00",
     resolutionNote: "Drain cleared, 6 bags of waste removed",
     photos: [
-      photo("/mock/gr-drain-1.jpg", "u-citizen-1", "2026-11-10T07:12:00+07:00"),
-      photo("/mock/gr-drain-1-fixed.jpg", "u-staff-drain", "2026-11-11T15:40:00+07:00", "REPAIR"),
+      photo("/mock/gov/drain-blocked.webp", "u-citizen-1", "2026-11-10T07:12:00+07:00"),
+      photo("/mock/gov/drain-cleared.webp", "u-staff-drain", "2026-11-11T15:40:00+07:00", "REPAIR"),
     ],
     supporters: ["u-citizen-2", "u-citizen-3", "u-citizen-5"],
     history: [
@@ -131,7 +131,7 @@ export const GR_REPORTS: GrReport[] = [
     location: { lat: 11.5462, lng: 104.9198 }, locationSource: "GPS", addressHint: "Near BKK1 St. 51",
     provinceId: PP, cityId: "chamkar-mon", status: "ASSIGNED", departmentId: "dep-waste-pp",
     assignedAt: "2026-11-20T08:15:00+07:00", dueAt: due("2026-11-20T08:15:00+07:00", "MEDIUM"),
-    photos: [photo("/mock/gr-waste-1.jpg", "u-citizen-2", "2026-11-19T18:05:00+07:00")],
+    photos: [photo("/mock/gov/waste-sidewalk.webp", "u-citizen-2", "2026-11-19T18:05:00+07:00")],
     supporters: ["u-citizen-1", "u-citizen-3"],
     confirmations: [{ userId: "u-citizen-3", stillExists: true, at: "2026-11-21T07:00:00+07:00" }],
     history: [
@@ -145,7 +145,7 @@ export const GR_REPORTS: GrReport[] = [
     id: "gr-3", code: "RPT-2026-00003", reporterId: "u-citizen-3", category: "ROAD_TRANSPORT", priority: "MEDIUM",
     title: "Big pothole on Hanoi Friendship Blvd", description: "Deep hole in the right lane. Two motos almost fell this morning.",
     location: { lat: 11.5921, lng: 104.8735 }, locationSource: "MAP", provinceId: PP, cityId: "sen-sok", status: "SUBMITTED",
-    photos: [photo("/mock/gr-pothole-1.jpg", "u-citizen-3", "2026-11-20T07:45:00+07:00")],
+    photos: [photo("/mock/gov/pothole.webp", "u-citizen-3", "2026-11-20T07:45:00+07:00")],
     history: [h("CREATED", "u-citizen-3", "2026-11-20T07:45:00+07:00", { to: "SUBMITTED" })],
     createdAt: "2026-11-20T07:45:00+07:00",
   }),
@@ -166,7 +166,7 @@ export const GR_REPORTS: GrReport[] = [
     provinceId: PP, cityId: "mean-chey", status: "IN_PROGRESS", departmentId: "dep-drain-pp",
     acceptedBy: "u-staff-drain", acceptedAt: "2026-11-16T09:00:00+07:00", assignedAt: "2026-11-16T08:00:00+07:00",
     dueAt: due("2026-11-16T08:00:00+07:00", "HIGH"),
-    photos: [photo("/mock/gr-flood-1.jpg", "u-citizen-2", "2026-11-15T16:30:00+07:00")],
+    photos: [photo("/mock/gov/flood-street.webp", "u-citizen-2", "2026-11-15T16:30:00+07:00")],
     supporters: ["u-citizen-1", "u-citizen-3", "u-citizen-5", "u-citizen-bb"],
     history: [
       h("CREATED", "u-citizen-2", "2026-11-15T16:30:00+07:00", { to: "SUBMITTED" }),
@@ -181,6 +181,7 @@ export const GR_REPORTS: GrReport[] = [
   report({
     id: "gr-6", code: "RPT-2026-00006", reporterId: "u-citizen-3", category: "WASTE", priority: "MEDIUM",
     title: "No public bins near the riverside park", description: "Lots of people eat here in the evening but there are no bins.",
+    photos: [photo("/mock/gov/riverside-park.webp", "u-citizen-3", "2026-11-20T20:30:00+07:00")],
     location: { lat: 11.564, lng: 104.93 }, locationSource: "MAP", addressHint: "Riverside park",
     provinceId: PP, cityId: "doun-penh", status: "NEED_MORE_INFO", infoRequest: "Which end of the park? Please add a photo.",
     history: [
@@ -193,6 +194,7 @@ export const GR_REPORTS: GrReport[] = [
   report({
     id: "gr-7", code: "RPT-2026-00007", reporterId: "u-citizen-1", category: "ROAD_TRANSPORT", priority: "HIGH",
     title: "Traffic light off at Russian Blvd x Monivong", description: "Traffic light at the intersection is off. Heavy jam at rush hour.",
+    photos: [photo("/mock/gov/traffic-light.webp", "u-citizen-1", "2026-11-21T07:20:00+07:00")],
     location: { lat: 11.5687, lng: 104.9015 }, locationSource: "GPS", provinceId: PP, cityId: "tuol-kouk",
     status: "IN_PROGRESS", departmentId: "dep-road-pp", acceptedBy: "u-staff-road", acceptedAt: "2026-11-21T07:40:00+07:00",
     assignedAt: "2026-11-21T07:30:00+07:00", dueAt: due("2026-11-21T07:30:00+07:00", "HIGH"),
@@ -212,7 +214,7 @@ export const GR_REPORTS: GrReport[] = [
     title: "Construction waste dumped in an empty lot", description: "People dump construction waste in an empty lot every night.",
     location: { lat: 11.615, lng: 104.905 }, locationSource: "GPS", provinceId: PP, cityId: "russey-keo",
     status: "REJECTED", rejectReason: "Private land: the owner was notified directly",
-    photos: [photo("/mock/gr-dump-1.jpg", "u-citizen-1", "2026-11-05T10:00:00+07:00")],
+    photos: [photo("/mock/gov/construction-dump.webp", "u-citizen-1", "2026-11-05T10:00:00+07:00")],
     history: [
       h("CREATED", "u-citizen-1", "2026-11-05T10:00:00+07:00", { to: "SUBMITTED" }),
       h("REVIEW_STARTED", ADMIN, "2026-11-06T08:30:00+07:00", { from: "SUBMITTED", to: "UNDER_REVIEW" }),
@@ -228,8 +230,8 @@ export const GR_REPORTS: GrReport[] = [
     assignedAt: "2026-11-17T08:00:00+07:00", dueAt: due("2026-11-17T08:00:00+07:00", "CRITICAL"),
     resolvedAt: "2026-11-18T10:00:00+07:00", resolutionNote: "New steel cover installed",
     photos: [
-      photo("/mock/gr-cover-1.jpg", "u-citizen-1", "2026-11-16T11:00:00+07:00"),
-      photo("/mock/gr-cover-1-fixed.jpg", "u-staff-drain", "2026-11-18T10:00:00+07:00", "REPAIR"),
+      photo("/mock/gov/drain-cover-broken.webp", "u-citizen-1", "2026-11-16T11:00:00+07:00"),
+      photo("/mock/gov/drain-cover-fixed.webp", "u-staff-drain", "2026-11-18T10:00:00+07:00", "REPAIR"),
     ],
     history: [
       h("CREATED", "u-citizen-1", "2026-11-16T11:00:00+07:00", { to: "SUBMITTED" }),
@@ -245,6 +247,7 @@ export const GR_REPORTS: GrReport[] = [
   report({
     id: "gr-10", code: "RPT-2026-00010", reporterId: "u-citizen-3", category: "ROAD_TRANSPORT", priority: "MEDIUM",
     title: "Road cracked after rainy season", description: "Many small holes along the street.",
+    photos: [photo("/mock/gov/road-cracked.webp", "u-citizen-3", "2026-11-11T09:20:00+07:00")],
     location: { lat: 11.6, lng: 104.938 }, locationSource: "MAP", provinceId: PP, cityId: "chroy-changvar",
     status: "REOPENED", departmentId: "dep-road-pp", assignedAt: "2026-11-12T08:00:00+07:00",
     resolvedAt: "2026-11-14T16:00:00+07:00", closedAt: "2026-11-15T09:00:00+07:00", resolutionNote: "Holes patched", reopenCount: 1,
@@ -263,6 +266,7 @@ export const GR_REPORTS: GrReport[] = [
   report({
     id: "gr-11", code: "RPT-2026-00011", reporterId: "u-citizen-1", category: "WASTE", priority: "MEDIUM",
     title: "Community bin overflowing, strong smell", description: "Community bin overflowing, strong smell, dogs spreading it.",
+    photos: [photo("/mock/gov/bin-overflowing.webp", "u-citizen-1", "2026-11-08T06:40:00+07:00")],
     location: { lat: 11.496, lng: 104.87 }, locationSource: "GPS", provinceId: PP, cityId: "dangkao",
     status: "CLOSED", departmentId: "dep-waste-pp", acceptedBy: "u-staff-waste", assignedAt: "2026-11-08T08:00:00+07:00",
     dueAt: due("2026-11-08T08:00:00+07:00", "MEDIUM"), resolvedAt: "2026-11-09T07:00:00+07:00", closedAt: "2026-11-09T12:00:00+07:00",
@@ -280,6 +284,7 @@ export const GR_REPORTS: GrReport[] = [
   report({
     id: "gr-12", code: "RPT-2026-00012", reporterId: "u-citizen-5", category: "DRAINAGE_FLOODING", priority: "MEDIUM",
     title: "Flooding on the street near Chbar Ampov bridge", description: "Water on the road again after the rain, motos can't pass.",
+    photos: [photo("/mock/gov/flood-bridge.webp", "u-citizen-5", "2026-11-20T17:00:00+07:00")],
     location: { lat: 11.5207, lng: 104.9312 }, locationSource: "GPS", provinceId: PP, cityId: "mean-chey",
     status: "DUPLICATE", duplicateOf: "gr-5",
     history: [
@@ -291,6 +296,7 @@ export const GR_REPORTS: GrReport[] = [
   report({
     id: "gr-13", code: "RPT-2026-00013", reporterId: "u-citizen-3", category: "PUBLIC_INFRASTRUCTURE", priority: "LOW",
     title: "Fallen tree branch blocking the sidewalk", description: "Big branch blocking half the sidewalk next to the park.",
+    photos: [photo("/mock/gov/fallen-branch.webp", "u-citizen-3", "2026-11-20T15:00:00+07:00")],
     location: { lat: 11.531, lng: 104.783 }, locationSource: "GPS", provinceId: PP, cityId: "kamboul",
     status: "ASSIGNED", departmentId: "dep-parks-pp", assignedAt: "2026-11-21T08:00:00+07:00", dueAt: due("2026-11-21T08:00:00+07:00", "LOW"),
     history: [
@@ -303,6 +309,7 @@ export const GR_REPORTS: GrReport[] = [
   report({
     id: "gr-14", code: "RPT-2026-00014", reporterId: "u-citizen-2", category: "WATER", priority: "MEDIUM",
     title: "Water pipe leaking on the street", description: "Clean water leaking from a pipe for two days.",
+    photos: [photo("/mock/gov/pipe-leak.webp", "u-citizen-2", "2026-11-18T09:00:00+07:00")],
     location: { lat: 11.552, lng: 104.927 }, locationSource: "GPS", provinceId: PP, cityId: "boeng-keng-kang",
     status: "CANCELLED",
     history: [
@@ -314,6 +321,7 @@ export const GR_REPORTS: GrReport[] = [
   report({
     id: "gr-15", code: "RPT-2026-00015", reporterId: "u-citizen-sr", category: "WASTE", priority: "MEDIUM",
     title: "Rubbish dumped near the Old Market", description: "Bags of rubbish left near the market entrance every morning.",
+    photos: [photo("/mock/gov/market-rubbish.webp", "u-citizen-sr", "2026-11-21T06:30:00+07:00")],
     location: { lat: 13.3546, lng: 103.8551 }, locationSource: "GPS", provinceId: "siem-reap", cityId: "siem-reap-city",
     status: "SUBMITTED",
     history: [h("CREATED", "u-citizen-sr", "2026-11-21T06:30:00+07:00", { to: "SUBMITTED" })],

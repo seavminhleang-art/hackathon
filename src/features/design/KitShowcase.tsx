@@ -38,6 +38,8 @@ import {
   TextField,
   type Accent,
   type ChipStatus,
+  Photo,
+  Thumb,
 } from "@/components/ui";
 
 // Internal page for the team (English only). Shows every kit component with the
@@ -180,6 +182,7 @@ export function KitShowcase() {
             <ListRow
               icon={TrafficCone}
               accent="primary"
+              media={<Thumb src="/mock/gov/traffic-light.webp" icon={TrafficCone} accent="primary" size="sm" />}
               href="/"
               title="Traffic light off at Russian Blvd x Monivong"
               subtitle="RPT-2026-00007"
@@ -200,6 +203,17 @@ export function KitShowcase() {
             <ListRow icon={Bell} accent="neutral" href="/" title="Notifications" trailing={<CountBadge count={3} />} />
           </Card>
         </Section>
+
+        <Demo title="Photos (Thumb, Photo)" rule="Reports and Lost & Found items show their photo; with no photo (or a private one) the category icon shows instead. Pass ListRow media={<Thumb …/>}.">
+          <div className="flex flex-wrap items-end gap-4">
+            <Thumb src="/mock/lf/wallet-found.webp" icon={TrafficCone} accent="gold" size="lg" />
+            <Thumb src="/mock/lf/phone-black.webp" icon={TrafficCone} accent="gold" size="md" />
+            <Thumb icon={TrafficCone} accent="primary" size="md" />
+            <div className="w-64">
+              <Photo src="/mock/gov/pothole.webp" icon={TrafficCone} accent="primary" />
+            </div>
+          </div>
+        </Demo>
 
         <Demo title="Form fields" rule="Label always visible. Hint under the field; error replaces the hint. 16px text so phones don't zoom.">
           <div className="grid gap-4 sm:grid-cols-2">

@@ -24,7 +24,7 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { fmt, type Dictionary } from "@/lib/i18n/dictionary";
 import { formatDateParts, shortDate } from "@/lib/i18n/format";
 import { PageContainer } from "@/components/layout/AppShell";
-import { Button, Card, EmptyState, IconTile, LinkButton, SkeletonRows, StatusChip, TextArea, type ChipStatus } from "@/components/ui";
+import { Button, Card, EmptyState, IconTile, LinkButton, Photo, SkeletonRows, StatusChip, TextArea, type ChipStatus } from "@/components/ui";
 import type { GrActorRole, GrCommentView, GrReportView } from "@/types/gov-reporting";
 import { CATEGORY_ICON, statusLine } from "./meta";
 
@@ -124,6 +124,8 @@ export function ReportDetail() {
             <p className="text-body whitespace-pre-line">{r.description}</p>
           </Card>
 
+          {r.photos.length > 0 && <PhotoGallery r={r} />}
+
           <section>
             <h2 className="mb-3 text-title font-bold">{t.reportTimeline}</h2>
             <Card>
@@ -195,6 +197,31 @@ export function ReportDetail() {
         </aside>
       </div>
     </PageContainer>
+  );
+}
+
+/** Citizen photos, then repair photos from the department ("before / after"). */
+function PhotoGallery({ r }: { r: GrReportView }) {
+  const { t } = useLocale();
+  const groups: [string, typeof r.photos][] = [
+    [t.reportPhotos, r.photos.filter((p) => p.kind === "EVIDENCE")],
+    [t.reportRepairPhotos, r.photos.filter((p) => p.kind === "REPAIR")],
+  ];
+  return (
+    <section className="flex flex-col gap-4">
+      {groups
+        .filter(([, photos]) => photos.length > 0)
+        .map(([label, photos]) => (
+          <div key={label}>
+            <h2 className="mb-3 text-title font-bold">{label}</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {photos.map((p) => (
+                <Photo key={p.id} src={p.url} alt={`${label}: ${r.title}`} icon={CATEGORY_ICON[r.category]} accent="primary" />
+              ))}
+            </div>
+          </div>
+        ))}
+    </section>
   );
 }
 

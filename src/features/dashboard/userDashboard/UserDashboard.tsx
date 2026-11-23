@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { CheckCircle, ChevronRight, Clock3, KeyRound, Landmark, MapPin, Phone, Search, TriangleAlert, type LucideIcon } from "lucide-react";
 import { PageContainer, useUserCity } from "@/components/layout/AppShell";
-import { Card, EmptyState, IconTile, ListRow, SkeletonRows, StatusChip, type Accent, type ChipStatus } from "@/components/ui";
+import { Card, EmptyState, IconTile, ListRow, SkeletonRows, StatusChip, type Accent, type ChipStatus, Thumb } from "@/components/ui";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { fmt } from "@/lib/i18n/dictionary";
 import { shortDate } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
-import { CATEGORY_ICON } from "@/features/gov-reporting/meta";
+import { CATEGORY_ICON, coverPhoto } from "@/features/gov-reporting/meta";
 import { useHomeData } from "@/features/home/useHomeData";
 
 export function UserDashboard() {
@@ -20,7 +20,7 @@ export function UserDashboard() {
   return <PageContainer className="flex flex-col gap-6 pb-10 lg:gap-8">
     <div className="grid items-stretch gap-4 xl:grid-cols-3">
       <FeaturePanel title={t.lostFoundRecent} hint={t.lostFoundRecentHint} icon={Search} accent="primary" href="/lost-found" listLabel={t.dashboardRecentPosts} stats={[[data ? String(data.stats.lostFoundPosts) : "–", t.lfItemsListed], [data ? String(data.stats.matchedPosts) : "–", t.lfPossibleMatches], [data ? String(data.stats.returned) : "–", t.statReturned]]}>
-        {!data ? <SkeletonRows rows={3} /> : data.lostFound.length ? data.lostFound.slice(0, 3).map((post) => <ListRow key={post.id} icon={post.kind === "FOUND" ? KeyRound : Search} accent={post.kind === "FOUND" ? "gold" : "reported"} href="/lost-found" title={post.title} subtitle={<span className="flex items-center gap-1"><MapPin aria-hidden size={13} />{post.place} · {shortDate(post.createdAt, locale)}</span>} meta={<StatusChip status={post.kind} />} />) : <EmptyState icon={Search} title={t.emptyNearTitle} body={t.emptyNearBody} />}
+        {!data ? <SkeletonRows rows={3} /> : data.lostFound.length ? data.lostFound.slice(0, 3).map((post) => <ListRow key={post.id} icon={post.kind === "FOUND" ? KeyRound : Search} accent={post.kind === "FOUND" ? "gold" : "reported"} media={<Thumb src={post.photoUrls?.[0]} icon={post.kind === "FOUND" ? KeyRound : Search} accent={post.kind === "FOUND" ? "gold" : "reported"} size="sm" />} href="/lost-found" title={post.title} subtitle={<span className="flex items-center gap-1"><MapPin aria-hidden size={13} />{post.place} · {shortDate(post.createdAt, locale)}</span>} meta={<StatusChip status={post.kind} />} />) : <EmptyState icon={Search} title={t.emptyNearTitle} body={t.emptyNearBody} />}
       </FeaturePanel>
 
       <FeaturePanel title={t.dashboardEmergencyResponse} hint={t.dashboardEmergencyHint} icon={TriangleAlert} accent="danger" href="/announcements" listLabel={t.dashboardActivePublicAlerts} stats={[[data ? String(data.alerts.length) : "–", t.dashboardActiveAlerts], [data ? String(data.stats.myEmergencyReports) : "–", t.navMyReports], [data ? String(data.stats.myEmergencyInProgress) : "–", t.statWorking]]}>
@@ -28,7 +28,7 @@ export function UserDashboard() {
       </FeaturePanel>
 
       <FeaturePanel id="government-reporting" title={t.governmentReporting} hint={t.latestReportsHint} icon={Landmark} accent="gold" href="/me/reports" listLabel={t.dashboardRecentReports} stats={[[data ? String(data.stats.myGovReports) : "–", t.navMyReports], [data ? String(data.stats.myGovInProgress) : "–", t.statWorking], [data ? String(data.stats.myGovResolved) : "–", t.statFixed]]}>
-        {!data ? <SkeletonRows rows={3} /> : data.latestReports.length ? data.latestReports.slice(0, 3).map((report) => <ListRow key={report.id} icon={CATEGORY_ICON[report.category]} accent="primary" href="/me/reports" title={report.title} subtitle={<span className="flex items-center gap-1"><MapPin aria-hidden size={13} />{report.addressHint}</span>} meta={<><span className="text-caption text-ink-muted">{shortDate(report.updatedAt, locale)}</span><StatusChip status={report.status as ChipStatus} /></>} />) : <EmptyState icon={Landmark} title={t.emptyNearTitle} body={t.emptyNearBody} />}
+        {!data ? <SkeletonRows rows={3} /> : data.latestReports.length ? data.latestReports.slice(0, 3).map((report) => <ListRow key={report.id} icon={CATEGORY_ICON[report.category]} accent="primary" media={<Thumb src={coverPhoto(report)} icon={CATEGORY_ICON[report.category]} accent="primary" size="sm" />} href="/me/reports" title={report.title} subtitle={<span className="flex items-center gap-1"><MapPin aria-hidden size={13} />{report.addressHint}</span>} meta={<><span className="text-caption text-ink-muted">{shortDate(report.updatedAt, locale)}</span><StatusChip status={report.status as ChipStatus} /></>} />) : <EmptyState icon={Landmark} title={t.emptyNearTitle} body={t.emptyNearBody} />}
       </FeaturePanel>
     </div>
 

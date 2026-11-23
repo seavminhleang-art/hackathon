@@ -9,20 +9,9 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { fmt } from "@/lib/i18n/dictionary";
 import { shortDate } from "@/lib/i18n/format";
 import { PageContainer } from "@/components/layout/AppShell";
-import {
-  Button,
-  Card,
-  EmptyState,
-  FilterChips,
-  LinkButton,
-  ListRow,
-  PageHeader,
-  SkeletonRows,
-  StatusChip,
-  type ChipStatus,
-} from "@/components/ui";
+import { Button, Card, EmptyState, FilterChips, LinkButton, ListRow, PageHeader, SkeletonRows, StatusChip, type ChipStatus, Thumb } from "@/components/ui";
 import type { GrCategory, GrCategoryMeta, GrReportView, GrStatus } from "@/types/gov-reporting";
-import { CATEGORY_ICON, statusLine } from "./meta";
+import { CATEGORY_ICON, coverPhoto, statusLine } from "./meta";
 
 const ACTIVE: GrStatus[] = ["SUBMITTED", "UNDER_REVIEW", "NEED_MORE_INFO", "ASSIGNED", "IN_PROGRESS", "REOPENED"];
 const NEEDS_ME: GrStatus[] = ["NEED_MORE_INFO", "RESOLVED"];
@@ -121,6 +110,7 @@ export function MyReports() {
               key={r.id}
               icon={CATEGORY_ICON[r.category]}
               accent={NEEDS_ME.includes(r.status) ? "reported" : "primary"}
+              media={<Thumb src={coverPhoto(r)} icon={CATEGORY_ICON[r.category]} accent={NEEDS_ME.includes(r.status) ? "reported" : "primary"} size="sm" />}
               href={`/reports/${r.code}`}
               title={r.title}
               subtitle={`${r.code} · ${t.reportUpdatedAt} ${shortDate(r.updatedAt, locale)}`}
@@ -271,9 +261,7 @@ function ListHeader({ r }: { r: GrReportView }) {
   const Icon = CATEGORY_ICON[r.category];
   return (
     <Link href={`/reports/${r.code}`} className="flex items-start gap-3 [&:hover_.t]:underline">
-      <span className="flex size-11 flex-none items-center justify-center rounded-xl bg-primary-tint text-primary">
-        <Icon aria-hidden size={22} />
-      </span>
+      <Thumb src={coverPhoto(r)} icon={Icon} accent="primary" size="lg" />
       <span className="min-w-0 flex-1">
         <span className="t block text-row leading-snug font-bold">{r.title}</span>
         <span className="mt-0.5 block text-meta text-ink-muted">{[r.code, r.addressHint].filter(Boolean).join(" · ")}</span>
