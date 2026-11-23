@@ -2,61 +2,33 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import {
-  ArrowLeft,
-  Check,
-  CircleAlert,
-  CircleHelp,
-  Info,
-  Landmark,
-  Mail,
-  MapPin,
-  Send,
-  ShieldCheck,
-  Siren,
-  type LucideIcon,
-} from "lucide-react";
+import { useEffect, useState, type ComponentProps, type ReactNode } from "react";
+import { ArrowLeft, Check, CircleAlert, Info, Landmark, Mail, Send, ShieldCheck, type LucideIcon } from "lucide-react";
 import { toast } from "react-toastify";
-import { z } from "zod";
-import { LanguageToggle, useSos } from "@/components/layout/AppShell";
+import { Controller, useForm, useWatch, type FieldPath, type FieldValues, type UseFormReturn } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, PasswordField, SelectField, Sheet, TextField } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import type { CodeSent } from "@/lib/api/mock-api";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { fmt, type Dictionary } from "@/lib/i18n/dictionary";
-import type { City, CodeChannel, GoogleProfile, Province, RegisterInput } from "@/types";
+import type { City, GoogleProfile, Province, RegisterInput } from "@/types";
+import { loginSchema, registerSchema, toCodeDigits, type LoginValues, type RegisterValues } from "./schemas";
 
 /**
- * Login / register (visual direction A "City-hall counter", Figma row A).
+ * Login / register.
  *
  * Login:    Google · email/phone/username + password · or a one-time code by email or Telegram.
- * Register: 1 account (username, last + first name, email, phone optional, password) →
- *           2 area → 3 confirm with a code by email or Telegram. Google sign-up skips the
- *           password and the code (Google already verified the email).
+ * Register: 1 account → 2 area → 3 confirm with a code by email or Telegram.
+ *           Google sign-up skips the password and the code (Google already verified the email).
  *
- * Errors show under each field plus one summary (role=alert). The mock API returns codes as
- * `demoCode` (shown on screen) and offers sample Google accounts until real services exist.
+ * Validation: React Hook Form + zod (`./schemas.ts`). Each step validates only its own fields
+ * with `trigger([...], { shouldFocus: true })`. API errors land on the matching field via
+ * `setError`; errors without a field (wrong password) show in one banner.
+ * The mock API returns codes as `demoCode` (shown on screen) and offers sample Google accounts.
  */
 
-type Field =
-  | "identifier"
-  | "password"
-  | "username"
-  | "firstName"
-  | "lastName"
-  | "email"
-  | "phone"
-  | "provinceId"
-  | "cityId"
-  | "channel"
-  | "code";
-type Errors = Partial<Record<Field, string>>;
-type LoginStage = "password" | "codeRequest" | "codeEnter";
-type RegisterStep = "account" | "area" | "verify";
-
-const ACCOUNT_FIELDS: Field[] = ["username", "firstName", "lastName", "email", "phone", "password"];
 const GOOGLE_HANDOFF = "cityvoice.googleSignup";
 
 function postLoginPath() {
@@ -64,13 +36,13 @@ function postLoginPath() {
   return requested?.startsWith("/") && !requested.startsWith("//") ? requested : "/";
 }
 
-/** Turn an ApiError from the auth API into [field, plain-words message]. */
-function explain(cause: unknown, t: Dictionary): [Field | undefined, string] {
+/** Turn an ApiError from the auth API into [form field, plain-words message]. */
+function explain(cause: unknown, t: Dictionary): [string | undefined, string] {
   if (!(cause instanceof ApiError)) return [undefined, t.errGeneric];
   const conflict = cause.code === "CONFLICT";
   switch (cause.field) {
     case "username":
-      return ["username", conflict ? t.authUsernameTaken : t.authUsernameRequired];
+      return ["username", conflict ? t.authUsernameTaken : t.authUsernameChars];
     case "email":
       return ["email", conflict ? t.authEmailTaken : t.authEmailRequired];
     case "phone":
@@ -96,668 +68,118 @@ function explain(cause: unknown, t: Dictionary): [Field | undefined, string] {
   return [undefined, t.errGeneric];
 }
 
-export function AuthScreen({ mode }: { mode: "login" | "register" }) {
-  const isRegister = mode === "register";
-  // Unique per page: Next keeps the previous route mounted (hidden), so login and register can coexist in the DOM.
-  const id = (f: Field) => `${mode}-${f}`;
-  const SUMMARY_ID = `${mode}-summary`;
-  const router = useRouter();
-  const { login, register, loginWithCode, registerWithCode, loginWithGoogle, user, ready } = useAuth();
-  const { t, tx, locale } = useLocale();
+/** Shared async runner: busy flag, field errors via setError, other errors in a banner. */
+function useSubmit<T extends FieldValues>(form: UseFormReturn<T>, beforeFieldError?: (field: string) => void) {
+  const { t } = useLocale();
+  const [busy, setBusy] = useState(false);
+  const [banner, setBanner] = useState<string | null>(null);
+  async function run(f: () => Promise<void>) {
+    setBusy(true);
+    setBanner(null);
+    try {
+      await f();
+    } catch (cause) {
+      const [field, message] = explain(cause, t);
+      if (!field) return setBanner(message);
+      beforeFieldError?.(field);
+      form.setError(field as FieldPath<T>, { type: "server", message });
+      // The field may only mount after a step change, so focus on the next frame.
+      requestAnimationFrame(() => form.setFocus(field as FieldPath<T>));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return { busy, banner, setBanner, run };
+}
 
-  // login
-  const [stage, setStage] = useState<LoginStage>("password");
-  const [identifier, setIdentifier] = useState("");
-  // register
-  const [step, setStep] = useState<RegisterStep>("account");
-  const [google, setGoogle] = useState<GoogleProfile | null>(null);
-  const [username, setUsername] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [provinces, setProvinces] = useState<Province[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
-  const [provinceId, setProvinceId] = useState("");
-  const [cityId, setCityId] = useState("");
-  // shared
-  const [password, setPassword] = useState("");
-  const [channel, setChannel] = useState<CodeChannel>("EMAIL");
-  const [code, setCode] = useState("");
+/** Code sent + resend countdown. */
+function useCodeSent() {
   const [sent, setSent] = useState<CodeSent | null>(null);
   const [resendLeft, setResendLeft] = useState(0);
-  const [errors, setErrors] = useState<Errors>({});
-  const [summary, setSummary] = useState<ReactNode>(null);
-  const [busy, setBusy] = useState(false);
-  const [sheet, setSheet] = useState<"google" | "help" | null>(null);
-
-  useEffect(() => {
-    if (ready && user) router.replace(postLoginPath());
-  }, [ready, user, router]);
-
-  // A Google sign-in from the login page with a new email hands the profile over here.
-  useEffect(() => {
-    if (!isRegister) return;
-    const timer = setTimeout(() => {
-      try {
-        const raw = sessionStorage.getItem(GOOGLE_HANDOFF);
-        if (!raw) return;
-        sessionStorage.removeItem(GOOGLE_HANDOFF);
-        startGoogleSignup(JSON.parse(raw) as GoogleProfile);
-      } catch {
-        /* storage blocked: the user can press the Google button again */
-      }
-    }, 0);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
-  }, [isRegister]);
-
-  useEffect(() => {
-    if (!isRegister) return;
-    let alive = true;
-    api.getProvinces().then((rows) => alive && setProvinces(rows));
-    return () => {
-      alive = false;
-    };
-  }, [isRegister]);
-
-  useEffect(() => {
-    if (!provinceId) return; // city is reset in the province onChange
-    let alive = true;
-    api.getCities(provinceId).then((rows) => alive && setCities(rows));
-    return () => {
-      alive = false;
-    };
-  }, [provinceId]);
-
   useEffect(() => {
     if (!sent) return;
     const timer = window.setInterval(() => setResendLeft((s) => Math.max(0, s - 1)), 1000);
     return () => window.clearInterval(timer);
   }, [sent]);
-
-  // ---------- helpers ----------
-
-  function fail(next: Errors, message: ReactNode) {
-    setErrors(next);
-    setSummary(message);
-    const first = (Object.keys(next) as Field[])[0];
-    requestAnimationFrame(() => document.getElementById(first ? id(first) : SUMMARY_ID)?.focus());
-  }
-  function failFrom(cause: unknown) {
-    const [field, message] = explain(cause, t);
-    if (isRegister && field && ACCOUNT_FIELDS.includes(field)) setStep("account");
-    if (isRegister && (field === "cityId" || field === "provinceId")) setStep("area");
-    fail(field ? { [field]: message } : {}, message);
-  }
-  const reset = () => {
-    setErrors({});
-    setSummary(null);
+  return {
+    sent,
+    resendLeft,
+    clear: () => setSent(null),
+    got: (s: CodeSent) => {
+      setSent(s);
+      setResendLeft(s.resendInSec);
+    },
   };
-  const clear = (key: Field) => {
-    if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
-  };
-  const issuesToErrors = (issues: { path: PropertyKey[]; message: string }[]) =>
-    issues.reduce<Errors>((acc, i) => {
-      const key = i.path[0] as Field;
-      if (key && !acc[key]) acc[key] = i.message;
-      return acc;
-    }, {});
-  async function run(f: () => Promise<void>) {
-    setBusy(true);
-    try {
-      await f();
-    } catch (cause) {
-      failFrom(cause);
-    } finally {
-      setBusy(false);
-    }
-  }
-  function codeSent(s: CodeSent) {
-    setSent(s);
-    setResendLeft(s.resendInSec);
-    setCode("");
-  }
+}
 
-  const registerInput = (): RegisterInput => ({
-    username: username.trim().toLowerCase(),
-    firstName: firstName.trim(),
-    lastName: lastName.trim(),
-    email: (google?.email ?? email).trim(),
-    phone: phone.trim() || undefined,
-    password: google ? undefined : password,
-    provinceId,
-    cityId,
-    preferredLocale: locale,
-    provider: google ? "GOOGLE" : "PASSWORD",
-  });
+export function AuthScreen({ mode }: { mode: "login" | "register" }) {
+  const router = useRouter();
+  const { loginWithGoogle, user, ready } = useAuth();
+  const { t } = useLocale();
+  const [chooser, setChooser] = useState(false);
+  const [google, setGoogle] = useState<GoogleProfile | null>(null);
 
-  // ---------- Google (mock chooser) ----------
+  useEffect(() => {
+    if (ready && user) router.replace(postLoginPath());
+  }, [ready, user, router]);
 
-  function startGoogleSignup(profile: GoogleProfile) {
-    setGoogle(profile);
-    setFirstName(profile.firstName);
-    setLastName(profile.lastName);
-    setEmail(profile.email);
-    setUsername((u) => u || profile.email.split("@")[0].toLowerCase().replace(/[^a-z0-9_.]/g, "").slice(0, 20));
-    setStep("account");
-    reset();
-  }
+  // A Google sign-in from the login page with a new email hands the profile over to /register.
+  useEffect(() => {
+    if (mode !== "register") return;
+    const timer = setTimeout(() => {
+      try {
+        const raw = sessionStorage.getItem(GOOGLE_HANDOFF);
+        if (!raw) return;
+        sessionStorage.removeItem(GOOGLE_HANDOFF);
+        setGoogle(JSON.parse(raw) as GoogleProfile);
+      } catch {
+        /* storage blocked: the user can press the Google button again */
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [mode]);
 
   async function chooseGoogle(profile: GoogleProfile) {
-    setSheet(null);
-    setBusy(true);
+    setChooser(false);
     try {
       await loginWithGoogle(profile, postLoginPath());
       toast.success(t.authLoginSuccess);
     } catch (cause) {
-      if (cause instanceof ApiError && cause.code === "NOT_FOUND") {
-        if (isRegister) startGoogleSignup(profile);
-        else {
-          try {
-            sessionStorage.setItem(GOOGLE_HANDOFF, JSON.stringify(profile));
-          } catch {
-            /* ignore */
-          }
-          router.push("/register");
-        }
-      } else failFrom(cause);
-    } finally {
-      setBusy(false);
+      if (!(cause instanceof ApiError && cause.code === "NOT_FOUND")) return toast.error(t.errGeneric);
+      if (mode === "register") return setGoogle(profile);
+      try {
+        sessionStorage.setItem(GOOGLE_HANDOFF, JSON.stringify(profile));
+      } catch {
+        /* ignore */
+      }
+      router.push("/register");
     }
   }
-
-  // ---------- login handlers ----------
-
-  const identifierSchema = z.string().trim().min(1, t.authIdentifierRequired);
-
-  async function onPasswordLogin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const parsed = z.object({ identifier: identifierSchema, password: z.string().min(1, t.authPasswordRequired) }).safeParse({ identifier, password });
-    if (!parsed.success) return fail(issuesToErrors(parsed.error.issues), t.authErrorSummary);
-    await run(async () => {
-      await login(parsed.data, postLoginPath());
-      toast.success(t.authLoginSuccess);
-    });
-  }
-
-  async function onRequestLoginCode(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const parsed = z.object({ identifier: identifierSchema }).safeParse({ identifier });
-    if (!parsed.success) return fail(issuesToErrors(parsed.error.issues), t.authErrorSummary);
-    await run(async () => {
-      codeSent(await api.requestLoginCode(identifier, channel));
-      reset();
-      setStage("codeEnter");
-    });
-  }
-
-  async function onLoginCode(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (code.length !== 6) return fail({ code: t.authCodeIncomplete }, t.authCodeIncomplete);
-    await run(async () => {
-      await loginWithCode(identifier, code, postLoginPath());
-      toast.success(t.authLoginSuccess);
-    });
-  }
-
-  // ---------- register handlers ----------
-
-  function onAccount(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const parsed = z
-      .object({
-        username: z.string().trim().toLowerCase().regex(/^[a-z0-9_.]{3,20}$/, t.authUsernameRequired),
-        lastName: z.string().trim().min(1, t.authLastNameRequired),
-        firstName: z.string().trim().min(1, t.authFirstNameRequired),
-        email: z.string().trim().email(t.authEmailRequired),
-        phone: z.string().trim().refine((v) => !v || api.normalizePhone(v) !== null, t.authPhoneInvalid),
-        password: google ? z.string() : z.string().min(8, t.authPasswordShort8),
-      })
-      .safeParse({ username, lastName, firstName, email: google?.email ?? email, phone, password });
-    if (!parsed.success) return fail(issuesToErrors(parsed.error.issues), t.authErrorSummary);
-    if (!phone.trim()) setChannel("EMAIL");
-    reset();
-    setStep("area");
-  }
-
-  async function onArea(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const parsed = z
-      .object({ provinceId: z.string().min(1, t.authChooseLocation), cityId: z.string().min(1, t.authChooseLocation) })
-      .safeParse({ provinceId, cityId });
-    if (!parsed.success) return fail(issuesToErrors(parsed.error.issues), t.authErrorSummary);
-    reset();
-    if (google) {
-      // Google verified the email already: create the account now.
-      await run(async () => {
-        await register(registerInput(), postLoginPath());
-        toast.success(t.authRegisterSuccess);
-      });
-    } else setStep("verify");
-  }
-
-  async function onSendSignupCode() {
-    await run(async () => {
-      codeSent(await api.requestSignupCode(registerInput(), channel));
-      reset();
-    });
-  }
-
-  async function onVerify(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!sent) return onSendSignupCode();
-    if (code.length !== 6) return fail({ code: t.authCodeIncomplete }, t.authCodeIncomplete);
-    await run(async () => {
-      await registerWithCode({ ...registerInput(), code }, postLoginPath());
-      toast.success(t.authRegisterSuccess);
-    });
-  }
-
-  // ---------- reusable form parts ----------
-
-  const summaryBox = summary && (
-    <div
-      id={SUMMARY_ID}
-      tabIndex={-1}
-      role="alert"
-      className="flex items-start gap-3 rounded-xl bg-danger-tint px-4 py-3 text-meta font-medium text-danger-ink outline-none"
-    >
-      <CircleAlert aria-hidden size={20} className="mt-0.5 flex-none text-danger" />
-      <span>{summary}</span>
-    </div>
-  );
-
-  const identifierField = (
-    <TextField
-      id={id("identifier")}
-      label={t.authIdentifier}
-      hint={t.authIdentifierHint}
-      autoComplete="username"
-      inputMode="email"
-      autoCapitalize="none"
-      spellCheck={false}
-      placeholder="you@example.com · 012 345 678"
-      value={identifier}
-      error={errors.identifier}
-      onChange={(e) => {
-        setIdentifier(e.target.value);
-        clear("identifier");
-      }}
-    />
-  );
-
-  const channelPicker = (telegramAvailable: boolean) => (
-    <fieldset className="flex flex-col gap-2">
-      <legend className="mb-1.5 text-body font-semibold text-ink">{t.authSendVia}</legend>
-      <div className="grid gap-2 sm:grid-cols-2" id={id("channel")} tabIndex={-1}>
-        <ChannelOption icon={Mail} label={t.authViaEmail} desc={t.authViaEmailDesc} checked={channel === "EMAIL"} onChange={() => setChannel("EMAIL")} />
-        <ChannelOption
-          icon={Send}
-          label={t.authViaTelegram}
-          desc={telegramAvailable ? t.authViaTelegramDesc : t.authViaTelegramNeedsPhone}
-          checked={channel === "TELEGRAM"}
-          disabled={!telegramAvailable}
-          onChange={() => setChannel("TELEGRAM")}
-        />
-      </div>
-      {errors.channel && <p className="text-meta font-medium text-danger">{errors.channel}</p>}
-    </fieldset>
-  );
-
-  const codeBlock = (purpose: "LOGIN" | "SIGNUP") =>
-    sent && (
-      <>
-        <p className="flex items-center gap-2 text-meta font-semibold text-fixed-ink" aria-live="polite">
-          <Check aria-hidden size={18} />
-          {fmt(t.authCodeSentVia, { to: sent.sentTo })}
-        </p>
-        <CodeInput
-          id={id("code")}
-          label={t.authCodeLabel}
-          value={code}
-          error={errors.code}
-          onChange={(v) => {
-            setCode(v);
-            clear("code");
-          }}
-        />
-        <p className="flex items-start gap-2 rounded-xl bg-gold-tint px-4 py-3 text-meta text-ink">
-          <Info aria-hidden size={18} className="mt-0.5 flex-none text-gold-ink" />
-          {fmt(t.authDemoCode, { code: sent.demoCode })}
-        </p>
-        {resendLeft > 0 ? (
-          <p className="text-meta font-medium text-ink-muted">{fmt(t.authResendIn, { s: resendLeft })}</p>
-        ) : (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() =>
-              run(async () => codeSent(purpose === "LOGIN" ? await api.requestLoginCode(identifier, channel) : await api.requestSignupCode(registerInput(), channel)))
-            }
-            className="-ml-2 min-h-11 self-start rounded-lg px-2 text-meta font-bold text-primary hover:bg-primary-tint"
-          >
-            {t.authResend}
-          </button>
-        )}
-      </>
-    );
-
-  // ---------- screens ----------
-
-  let body: ReactNode;
-
-  if (!isRegister && stage === "password") {
-    body = (
-      <form onSubmit={onPasswordLogin} noValidate className="flex flex-col gap-5">
-        <Heading title={t.login} lead={t.authLoginLeadPw} />
-        <GoogleButton label={t.authGoogle} onClick={() => setSheet("google")} disabled={busy} />
-        <Divider label={t.authOr} />
-        {summaryBox}
-        {identifierField}
-        <div className="flex flex-col gap-1">
-          <PasswordField
-            id={id("password")}
-            label={t.authPassword}
-            autoComplete="current-password"
-            value={password}
-            error={errors.password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              clear("password");
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => {
-              reset();
-              setStage("codeRequest");
-            }}
-            className="-mr-2 min-h-11 self-end rounded-lg px-2 text-meta font-bold text-primary hover:bg-primary-tint"
-          >
-            {t.authForgot}
-          </button>
-        </div>
-        <Button type="submit" size="lg" block disabled={busy}>
-          {busy ? t.submitting : t.login}
-        </Button>
-        <Button
-          variant="ghost"
-          block
-          onClick={() => {
-            reset();
-            setStage("codeRequest");
-          }}
-        >
-          {t.authUseCodeInstead}
-        </Button>
-        <PrivacyPromise />
-        <div className="flex flex-col gap-1">
-          <SwitchLine lead={t.authNew} href="/register" label={t.authCreateAccount} />
-          <HelpLine onClick={() => setSheet("help")} />
-        </div>
-      </form>
-    );
-  } else if (!isRegister && stage === "codeRequest") {
-    body = (
-      <form onSubmit={onRequestLoginCode} noValidate className="flex flex-col gap-5">
-        <BackButton
-          label={t.authBack}
-          onClick={() => {
-            reset();
-            setStage("password");
-          }}
-        />
-        <Heading title={t.authCodeLoginTitle} lead={t.authCodeLoginLead} />
-        {summaryBox}
-        {identifierField}
-        {channelPicker(true)}
-        <Button type="submit" size="lg" block disabled={busy}>
-          {busy ? t.submitting : t.authSendCode}
-        </Button>
-        <Button
-          variant="ghost"
-          block
-          onClick={() => {
-            reset();
-            setStage("password");
-          }}
-        >
-          {t.authUsePasswordInstead}
-        </Button>
-        <PrivacyPromise />
-      </form>
-    );
-  } else if (!isRegister) {
-    body = (
-      <form onSubmit={onLoginCode} noValidate className="flex flex-col gap-5">
-        <BackButton
-          label={t.authBack}
-          onClick={() => {
-            reset();
-            setStage("codeRequest");
-          }}
-        />
-        <Heading title={t.authEnterCode} />
-        {summaryBox}
-        {codeBlock("LOGIN")}
-        <Button type="submit" size="lg" block disabled={busy}>
-          {busy ? t.submitting : t.login}
-        </Button>
-        <PrivacyPromise />
-      </form>
-    );
-  } else if (step === "account") {
-    body = (
-      <form onSubmit={onAccount} noValidate className="flex flex-col gap-5">
-        <Progress step={1} label={`${fmt(t.authStepOf3, { n: 1 })} · ${t.authStepAccount}`} />
-        <Heading title={t.authCreateAccount} />
-        {google ? (
-          <p className="flex items-center gap-3 rounded-xl bg-primary-tint px-4 py-3 text-meta text-ink">
-            <GoogleMark />
-            {fmt(t.authGoogleAs, { email: google.email })}
-          </p>
-        ) : (
-          <>
-            <GoogleButton label={t.authGoogleSignup} onClick={() => setSheet("google")} disabled={busy} />
-            <Divider label={t.authOr} />
-          </>
-        )}
-        {summaryBox}
-        <TextField
-          id={id("username")}
-          label={t.authUsername}
-          hint={t.authUsernameHint}
-          autoComplete="username"
-          autoCapitalize="none"
-          spellCheck={false}
-          value={username}
-          error={errors.username}
-          onChange={(e) => {
-            setUsername(e.target.value);
-            clear("username");
-          }}
-        />
-        <div className="grid gap-5 sm:grid-cols-2">
-          <TextField
-            id={id("lastName")}
-            label={t.authLastName}
-            autoComplete="family-name"
-            value={lastName}
-            error={errors.lastName}
-            onChange={(e) => {
-              setLastName(e.target.value);
-              clear("lastName");
-            }}
-          />
-          <TextField
-            id={id("firstName")}
-            label={t.authFirstName}
-            autoComplete="given-name"
-            value={firstName}
-            error={errors.firstName}
-            onChange={(e) => {
-              setFirstName(e.target.value);
-              clear("firstName");
-            }}
-          />
-        </div>
-        <TextField
-          id={id("email")}
-          label={t.authEmail}
-          hint={t.authEmailHint}
-          type="email"
-          autoComplete="email"
-          autoCapitalize="none"
-          spellCheck={false}
-          readOnly={!!google}
-          value={google?.email ?? email}
-          error={errors.email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            clear("email");
-          }}
-        />
-        <TextField
-          id={id("phone")}
-          label={t.authPhone}
-          optional={t.optional}
-          hint={t.authPhoneOptional}
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          prefix="+855"
-          placeholder="012 345 678"
-          value={phone}
-          error={errors.phone}
-          onChange={(e) => {
-            setPhone(e.target.value);
-            clear("phone");
-          }}
-        />
-        {!google && (
-          <PasswordField
-            id={id("password")}
-            label={t.authPassword}
-            hint={t.authPasswordHint8}
-            autoComplete="new-password"
-            value={password}
-            error={errors.password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              clear("password");
-            }}
-          />
-        )}
-        <Button type="submit" size="lg" block>
-          {t.authContinue}
-        </Button>
-        <PrivacyPromise />
-        <SwitchLine lead={t.authHasAccount} href="/login" label={t.login} />
-      </form>
-    );
-  } else if (step === "area") {
-    body = (
-      <form onSubmit={onArea} noValidate className="flex flex-col gap-5">
-        <BackButton
-          label={t.authBack}
-          onClick={() => {
-            reset();
-            setStep("account");
-          }}
-        />
-        <Progress step={2} label={`${fmt(t.authStepOf3, { n: 2 })} · ${t.authStepArea}`} />
-        <Heading title={t.authWhereLive} />
-        <p className="flex items-start gap-3 rounded-2xl bg-primary-tint p-4 text-meta text-ink">
-          <MapPin aria-hidden size={22} className="mt-0.5 flex-none text-primary" />
-          {t.authAreaWhy}
-        </p>
-        {summaryBox}
-        <SelectField
-          id={id("provinceId")}
-          label={t.province}
-          value={provinceId}
-          error={errors.provinceId}
-          onChange={(e) => {
-            setProvinceId(e.target.value);
-            setCityId("");
-            clear("provinceId");
-          }}
-        >
-          <option value="">{t.authChoose}</option>
-          {provinces.map((p) => (
-            <option key={p.id} value={p.id}>
-              {tx(p.name)}
-            </option>
-          ))}
-        </SelectField>
-        <SelectField
-          id={id("cityId")}
-          label={t.city}
-          value={cityId}
-          disabled={!provinceId}
-          hint={provinceId ? undefined : t.authChooseProvinceFirst}
-          error={errors.cityId}
-          onChange={(e) => {
-            setCityId(e.target.value);
-            clear("cityId");
-          }}
-        >
-          <option value="">{t.authChoose}</option>
-          {(provinceId ? cities : []).map((c) => (
-            <option key={c.id} value={c.id}>
-              {tx(c.name)}
-            </option>
-          ))}
-        </SelectField>
-        <Button type="submit" size="lg" block disabled={busy}>
-          {busy ? t.submitting : google ? t.authCreateAccount : t.authContinue}
-        </Button>
-        <p className="flex items-center gap-2 text-meta text-ink-muted">
-          <ShieldCheck aria-hidden size={18} className="flex-none text-fixed" />
-          {t.authAreaLater}
-        </p>
-      </form>
-    );
-  } else {
-    body = (
-      <form onSubmit={onVerify} noValidate className="flex flex-col gap-5">
-        <BackButton
-          label={t.authBack}
-          onClick={() => {
-            reset();
-            setSent(null);
-            setStep("area");
-          }}
-        />
-        <Progress step={3} label={`${fmt(t.authStepOf3, { n: 3 })} · ${t.authStepVerify}`} />
-        <Heading title={t.authVerifyTitle} lead={t.authVerifyLead} />
-        {summaryBox}
-        {channelPicker(!!phone.trim())}
-        {codeBlock("SIGNUP")}
-        <Button type="submit" size="lg" block disabled={busy}>
-          {busy ? t.submitting : sent ? t.authCreateAccount : t.authSendCode}
-        </Button>
-        <PrivacyPromise />
-      </form>
-    );
-  }
-
-  // ---------- layout ----------
 
   return (
     <div className="min-h-dvh bg-sand lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <PromisePanel />
-      <div className="relative flex min-h-dvh flex-col lg:min-h-0">
-        <MobileHeader />
-        <CornerActions />
-        <main className="flex flex-1 justify-center px-5 pt-7 pb-12 sm:px-8 lg:items-center lg:px-12 lg:py-16">
-          <div className="w-full max-w-md lg:rounded-2xl lg:bg-surface lg:p-9 lg:shadow-card">{body}</div>
+
+      <div className="flex min-h-dvh flex-col">
+        <header className="flex items-center justify-between gap-3 px-5 py-3 sm:px-8 lg:justify-end lg:py-6">
+          <span className="lg:hidden">
+            <Brand />
+          </span>
+          <LangSwitch />
+        </header>
+        <main className="flex flex-1 justify-center px-5 pt-4 pb-12 sm:px-8 lg:items-center">
+          <div className="w-full max-w-md lg:rounded-2xl lg:bg-surface lg:p-9 lg:shadow-card">
+            {mode === "login" ? (
+              <LoginFlow onGoogle={() => setChooser(true)} />
+            ) : (
+              <RegisterFlow google={google} onGoogle={() => setChooser(true)} />
+            )}
+          </div>
         </main>
       </div>
 
-      {sheet === "google" && (
-        <Sheet title={t.authGoogleChoose} icon={<GoogleMark />} onClose={() => setSheet(null)}>
+      {chooser && (
+        <Sheet title={t.authGoogleChoose} icon={<GoogleMark />} onClose={() => setChooser(false)}>
           <p className="text-meta text-ink-muted">{t.authGoogleDemo}</p>
           <ul className="flex flex-col gap-2">
             {api.DEMO_GOOGLE_ACCOUNTS.map((g) => (
@@ -782,76 +204,370 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
           </ul>
         </Sheet>
       )}
-      {sheet === "help" && (
-        <Sheet title={t.authHelp} icon={<CircleHelp aria-hidden size={22} />} onClose={() => setSheet(null)}>
-          <p className="text-body text-ink-muted">{t.authForgotBody}</p>
-          <Button onClick={() => setSheet(null)} block>
-            {t.authOk}
-          </Button>
-        </Sheet>
-      )}
     </div>
+  );
+}
+
+// ---------- login ----------
+
+type LoginStage = "password" | "codeRequest" | "codeEnter";
+
+function LoginFlow({ onGoogle }: { onGoogle: () => void }) {
+  const { t } = useLocale();
+  const { login, loginWithCode } = useAuth();
+  const [stage, setStage] = useState<LoginStage>("password");
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema(t)),
+    defaultValues: { identifier: "", password: "", channel: "EMAIL", code: "" },
+    mode: "onTouched",
+  });
+  const { register, control, trigger, getValues, clearErrors, formState } = form;
+  const { busy, banner, setBanner, run } = useSubmit(form);
+  const code = useCodeSent();
+  const id = (f: string) => `login-${f}`;
+
+  const go = (next: LoginStage) => {
+    clearErrors();
+    setBanner(null);
+    setStage(next);
+  };
+  const sendCode = () =>
+    run(async () => {
+      const { identifier, channel } = getValues();
+      code.got(await api.requestLoginCode(identifier.trim(), channel));
+      form.setValue("code", "");
+      go("codeEnter");
+    });
+
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    const fields = stage === "password" ? (["identifier", "password"] as const) : stage === "codeRequest" ? (["identifier", "channel"] as const) : (["code"] as const);
+    if (!(await trigger(fields, { shouldFocus: true }))) return;
+    const v = getValues();
+    if (stage === "codeRequest") return sendCode();
+    await run(async () => {
+      if (stage === "password") await login({ identifier: v.identifier.trim(), password: v.password }, postLoginPath());
+      else await loginWithCode(v.identifier.trim(), v.code, postLoginPath());
+      toast.success(t.authLoginSuccess);
+    });
+  }
+
+  const err = formState.errors;
+  const identifierField = (
+    <TextField
+      id={id("identifier")}
+      label={t.authIdentifier}
+      autoComplete="username"
+      inputMode="email"
+      autoCapitalize="none"
+      spellCheck={false}
+      error={err.identifier?.message}
+      {...register("identifier")}
+    />
+  );
+
+  return (
+    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+      {stage === "password" && (
+        <>
+          <Heading title={t.login} />
+          <GoogleButton label={t.authGoogle} onClick={onGoogle} />
+          <Divider label={t.authOr} />
+          <Banner text={banner} />
+          {identifierField}
+          <div className="flex flex-col gap-1">
+            <PasswordField id={id("password")} label={t.authPassword} autoComplete="current-password" error={err.password?.message} {...register("password")} />
+            <TextButton className="self-end" onClick={() => go("codeRequest")}>
+              {t.authForgot}
+            </TextButton>
+          </div>
+          <Button type="submit" size="lg" block disabled={busy}>
+            {busy ? t.submitting : t.login}
+          </Button>
+          <SwitchLine lead={t.authNew} href="/register" label={t.authCreateAccount} />
+        </>
+      )}
+
+      {stage === "codeRequest" && (
+        <>
+          <BackButton label={t.authBack} onClick={() => go("password")} />
+          <Heading title={t.authCodeLoginTitle} lead={t.authCodeLoginLead} />
+          <Banner text={banner} />
+          {identifierField}
+          <ChannelPicker id={id("channel")} telegram field={register("channel")} error={err.channel?.message} />
+          <Button type="submit" size="lg" block disabled={busy}>
+            {busy ? t.submitting : t.authSendCode}
+          </Button>
+        </>
+      )}
+
+      {stage === "codeEnter" && (
+        <>
+          <BackButton label={t.authBack} onClick={() => go("codeRequest")} />
+          <Heading title={t.authEnterCode} />
+          <Banner text={banner} />
+          <Controller
+            control={control}
+            name="code"
+            render={({ field: { value, onChange, onBlur }, fieldState }) => (
+              <CodeBlock id={id("code")} sent={code.sent} resendLeft={code.resendLeft} busy={busy} onResend={sendCode} field={{ value, onChange, onBlur }} error={fieldState.error?.message} />
+            )}
+          />
+          <Button type="submit" size="lg" block disabled={busy}>
+            {busy ? t.submitting : t.login}
+          </Button>
+        </>
+      )}
+    </form>
+  );
+}
+
+// ---------- register ----------
+
+type RegisterStep = "account" | "area" | "verify";
+const STEP_FIELDS = {
+  account: ["username", "lastName", "firstName", "email", "phone", "password"],
+  area: ["provinceId", "cityId"],
+  verify: ["channel", "code"],
+} as const satisfies Record<RegisterStep, readonly (keyof RegisterValues)[]>;
+
+function stepOf(field: string): RegisterStep {
+  return (Object.keys(STEP_FIELDS) as RegisterStep[]).find((s) => (STEP_FIELDS[s] as readonly string[]).includes(field)) ?? "verify";
+}
+
+function RegisterFlow({ google, onGoogle }: { google: GoogleProfile | null; onGoogle: () => void }) {
+  const { t, tx, locale } = useLocale();
+  const { register: signUp, registerWithCode } = useAuth();
+  const [step, setStep] = useState<RegisterStep>("account");
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const form = useForm<RegisterValues>({
+    resolver: zodResolver(registerSchema(t)),
+    defaultValues: { provider: "PASSWORD", username: "", lastName: "", firstName: "", email: "", phone: "", password: "", provinceId: "", cityId: "", channel: "EMAIL", code: "" },
+    mode: "onTouched",
+  });
+  const { register, control, trigger, getValues, setValue, clearErrors, formState } = form;
+  const { busy, banner, setBanner, run } = useSubmit(form, (field) => setStep(stepOf(field)));
+  const code = useCodeSent();
+  const id = (f: string) => `register-${f}`;
+  const [provinceId, phone, provider] = useWatch({ control, name: ["provinceId", "phone", "provider"] });
+  const hasPhone = !!phone.trim();
+  const isGoogle = provider === "GOOGLE";
+
+  useEffect(() => {
+    let alive = true;
+    api.getProvinces().then((rows) => alive && setProvinces(rows));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!provinceId) return;
+    let alive = true;
+    api.getCities(provinceId).then((rows) => alive && setCities(rows));
+    return () => {
+      alive = false;
+    };
+  }, [provinceId]);
+
+  // Google picked (here or handed over from /login): fill the form, skip password and code.
+  useEffect(() => {
+    if (!google) return;
+    setValue("provider", "GOOGLE");
+    setValue("firstName", google.firstName);
+    setValue("lastName", google.lastName);
+    setValue("email", google.email);
+    if (!getValues("username")) setValue("username", google.email.split("@")[0].toLowerCase().replace(/[^a-z0-9_.]/g, "").slice(0, 20));
+    clearErrors();
+  }, [google, setValue, getValues, clearErrors]);
+
+  const input = (): RegisterInput => {
+    const v = getValues();
+    return {
+      username: v.username.trim().toLowerCase(),
+      firstName: v.firstName.trim(),
+      lastName: v.lastName.trim(),
+      email: v.email.trim(),
+      phone: v.phone.trim() || undefined,
+      password: v.provider === "GOOGLE" ? undefined : v.password,
+      provinceId: v.provinceId,
+      cityId: v.cityId,
+      preferredLocale: locale,
+      provider: v.provider,
+    };
+  };
+
+  const go = (next: RegisterStep) => {
+    clearErrors();
+    setBanner(null);
+    setStep(next);
+  };
+  const sendCode = () =>
+    run(async () => {
+      code.got(await api.requestSignupCode(input(), getValues("channel")));
+      setValue("code", "");
+    });
+
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (step === "account") {
+      if (!(await trigger(STEP_FIELDS.account, { shouldFocus: true }))) return;
+      if (!hasPhone) setValue("channel", "EMAIL");
+      return go("area");
+    }
+    if (step === "area") {
+      if (!(await trigger(STEP_FIELDS.area, { shouldFocus: true }))) return;
+      if (!isGoogle) return go("verify");
+      return run(async () => {
+        await signUp(input(), postLoginPath());
+        toast.success(t.authRegisterSuccess);
+      });
+    }
+    if (!code.sent) return sendCode();
+    if (!(await trigger("code", { shouldFocus: true }))) return;
+    await run(async () => {
+      await registerWithCode({ ...input(), code: getValues("code") }, postLoginPath());
+      toast.success(t.authRegisterSuccess);
+    });
+  }
+
+  const err = formState.errors;
+  const n = step === "account" ? 1 : step === "area" ? 2 : 3;
+  const stepName = step === "account" ? t.authStepAccount : step === "area" ? t.authStepArea : t.authStepVerify;
+
+  return (
+    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+      {step !== "account" && (
+        <BackButton
+          label={t.authBack}
+          onClick={() => {
+            code.clear();
+            go(step === "verify" ? "area" : "account");
+          }}
+        />
+      )}
+      <Progress step={n} label={`${fmt(t.authStepOf3, { n })} · ${stepName}`} />
+
+      {step === "account" && (
+        <>
+          <Heading title={t.authCreateAccount} />
+          {isGoogle ? (
+            <p className="flex items-center gap-3 rounded-xl bg-primary-tint px-4 py-3 text-meta text-ink">
+              <GoogleMark />
+              {fmt(t.authGoogleAs, { email: getValues("email") })}
+            </p>
+          ) : (
+            <>
+              <GoogleButton label={t.authGoogleSignup} onClick={onGoogle} />
+              <Divider label={t.authOr} />
+            </>
+          )}
+          <Banner text={banner} />
+          <TextField id={id("username")} label={t.authUsername} autoComplete="username" autoCapitalize="none" spellCheck={false} error={err.username?.message} {...register("username")} />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <TextField id={id("lastName")} label={t.authLastName} autoComplete="family-name" error={err.lastName?.message} {...register("lastName")} />
+            <TextField id={id("firstName")} label={t.authFirstName} autoComplete="given-name" error={err.firstName?.message} {...register("firstName")} />
+          </div>
+          <TextField
+            id={id("email")}
+            label={t.authEmail}
+            type="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            spellCheck={false}
+            readOnly={isGoogle}
+            error={err.email?.message}
+            {...register("email")}
+          />
+          <TextField
+            id={id("phone")}
+            label={t.authPhone}
+            optional={t.optional}
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            prefix="+855"
+            placeholder="012 345 678"
+            error={err.phone?.message}
+            {...register("phone")}
+          />
+          {!isGoogle && <PasswordField id={id("password")} label={t.authPassword} autoComplete="new-password" error={err.password?.message} {...register("password")} />}
+          <Button type="submit" size="lg" block>
+            {t.authContinue}
+          </Button>
+          <SwitchLine lead={t.authHasAccount} href="/login" label={t.login} />
+        </>
+      )}
+
+      {step === "area" && (
+        <>
+          <Heading title={t.authWhereLive} />
+          <Banner text={banner} />
+          <SelectField id={id("provinceId")} label={t.province} error={err.provinceId?.message} {...register("provinceId", { onChange: () => setValue("cityId", "") })}>
+            <option value="">{t.authChoose}</option>
+            {provinces.map((p) => (
+              <option key={p.id} value={p.id}>
+                {tx(p.name)}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField id={id("cityId")} label={t.city} disabled={!provinceId} error={err.cityId?.message} {...register("cityId")}>
+            <option value="">{t.authChoose}</option>
+            {(provinceId ? cities : []).map((c) => (
+              <option key={c.id} value={c.id}>
+                {tx(c.name)}
+              </option>
+            ))}
+          </SelectField>
+          <Button type="submit" size="lg" block disabled={busy}>
+            {busy ? t.submitting : isGoogle ? t.authCreateAccount : t.authContinue}
+          </Button>
+        </>
+      )}
+
+      {step === "verify" && (
+        <>
+          <Heading title={t.authVerifyTitle} lead={t.authVerifyLead} />
+          <Banner text={banner} />
+          <ChannelPicker id={id("channel")} telegram={hasPhone} field={register("channel")} error={err.channel?.message} />
+          {code.sent && (
+            <Controller
+              control={control}
+              name="code"
+              render={({ field: { value, onChange, onBlur }, fieldState }) => (
+                <CodeBlock id={id("code")} sent={code.sent} resendLeft={code.resendLeft} busy={busy} onResend={sendCode} field={{ value, onChange, onBlur }} error={fieldState.error?.message} />
+              )}
+            />
+          )}
+          <Button type="submit" size="lg" block disabled={busy}>
+            {busy ? t.submitting : code.sent ? t.authCreateAccount : t.authSendCode}
+          </Button>
+        </>
+      )}
+    </form>
   );
 }
 
 // ---------- pieces ----------
 
-/** Round flag-blue mark with a gold ring: the "official counter" signature. */
-function Mark({ size = "md" }: { size?: "md" | "lg" }) {
-  return (
-    <span
-      aria-hidden
-      className={`flex flex-none items-center justify-center rounded-full bg-primary font-bold text-white ring-gold ring-inset ${
-        size === "lg" ? "size-16 text-page ring-4" : "size-10 text-row ring-[2.5px]"
-      }`}
-    >
-      ស
-    </span>
-  );
-}
-
 function Brand({ size = "md" }: { size?: "md" | "lg" }) {
   const { t } = useLocale();
   return (
     <Link href="/" className="flex min-h-11 items-center gap-3" aria-label={`${t.appName} · ${t.navHome}`}>
-      <Mark size={size} />
+      <span
+        aria-hidden
+        className={`flex flex-none items-center justify-center rounded-full bg-primary font-bold text-white ring-gold ring-inset ${
+          size === "lg" ? "size-16 text-page ring-4" : "size-10 text-row ring-[2.5px]"
+        }`}
+      >
+        ស
+      </span>
       <span className="flex flex-col">
         <span className={`font-bold text-ink ${size === "lg" ? "text-title" : "text-row"}`}>{t.appName}</span>
         <span className={size === "lg" ? "text-body text-ink-muted" : "text-caption text-ink-muted"}>{t.authTagline}</span>
       </span>
     </Link>
-  );
-}
-
-function SosButton() {
-  const { openSos } = useSos();
-  return (
-    <button type="button" onClick={openSos} className="flex min-h-11 items-center gap-1.5 rounded-xl bg-danger px-3.5 text-meta font-bold text-white hover:bg-danger-ink">
-      <Siren aria-hidden size={18} />
-      SOS
-    </button>
-  );
-}
-
-/** Phones: white header with brand, language and SOS (the app navbar is hidden on auth pages). */
-function MobileHeader() {
-  return (
-    <header className="flex items-center gap-2 border-b border-line bg-surface py-2.5 pr-3 pl-5 lg:hidden">
-      <div className="flex-1">
-        <Brand />
-      </div>
-      <LanguageToggle compact />
-      <SosButton />
-    </header>
-  );
-}
-
-function CornerActions() {
-  return (
-    <div className="absolute top-6 right-8 hidden items-center gap-2 lg:flex">
-      <LanguageToggle compact />
-      <SosButton />
-    </div>
   );
 }
 
@@ -884,26 +600,38 @@ function PromisePanel() {
   );
 }
 
-function PrivacyPromise() {
-  const { t } = useLocale();
+/** Two-option language switch: both languages visible, the current one highlighted. */
+function LangSwitch() {
+  const { locale, setLocale } = useLocale();
+  const options = [
+    ["km", "ខ្មែរ"],
+    ["en", "EN"],
+  ] as const;
   return (
-    <div className="flex items-start gap-3 rounded-2xl bg-fixed-tint p-4">
-      <ShieldCheck aria-hidden size={22} className="mt-0.5 flex-none text-fixed" />
-      <span>
-        <span className="block text-meta font-semibold text-ink">{t.authPrivacyTitle}</span>
-        <span className="block text-meta text-ink-muted">{t.authPrivacyBody}</span>
-      </span>
+    <div role="group" aria-label="Language / ភាសា" className="flex rounded-full bg-sand-deep p-1">
+      {options.map(([value, label]) => (
+        <button
+          key={value}
+          type="button"
+          lang={value}
+          aria-pressed={locale === value}
+          onClick={() => setLocale(value)}
+          className="min-h-9 min-w-12 rounded-full px-3 text-meta font-semibold text-ink-muted aria-pressed:bg-surface aria-pressed:text-ink aria-pressed:shadow-card"
+        >
+          {label}
+        </button>
+      ))}
     </div>
   );
 }
 
-function HelpLine({ onClick }: { onClick: () => void }) {
-  const { t } = useLocale();
+function Banner({ text }: { text: string | null }) {
+  if (!text) return null;
   return (
-    <button type="button" onClick={onClick} className="-ml-2 flex min-h-11 items-center gap-2 self-start rounded-lg px-2 text-left text-meta font-medium text-ink-muted hover:bg-sand-deep hover:text-ink">
-      <CircleHelp aria-hidden size={18} className="flex-none" />
-      {t.authHelp}
-    </button>
+    <div role="alert" className="flex items-start gap-3 rounded-xl bg-danger-tint px-4 py-3 text-meta font-medium text-danger-ink">
+      <CircleAlert aria-hidden size={20} className="mt-0.5 flex-none text-danger" />
+      <span>{text}</span>
+    </div>
   );
 }
 
@@ -919,13 +647,12 @@ function GoogleMark() {
   );
 }
 
-function GoogleButton({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
+function GoogleButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
-      className="flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-surface px-5 text-body font-semibold text-ink ring-1 ring-line-strong ring-inset hover:bg-sand disabled:opacity-50"
+      className="flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-surface px-5 text-body font-semibold text-ink ring-1 ring-line-strong ring-inset hover:bg-sand"
     >
       <GoogleMark />
       {label}
@@ -933,66 +660,113 @@ function GoogleButton({ label, onClick, disabled }: { label: string; onClick: ()
   );
 }
 
-function ChannelOption({
-  icon: Icon,
-  label,
-  desc,
-  checked,
-  disabled,
-  onChange,
-}: {
-  icon: LucideIcon;
-  label: string;
-  desc: string;
-  checked: boolean;
-  disabled?: boolean;
-  onChange: () => void;
-}) {
+/** Email / Telegram radio cards, registered with React Hook Form. */
+function ChannelPicker({ id, telegram, field, error }: { id: string; telegram: boolean; field: ComponentProps<"input">; error?: string }) {
+  const { t } = useLocale();
+  const options: [string, LucideIcon, string, string, boolean][] = [
+    ["EMAIL", Mail, t.authViaEmail, t.authViaEmailDesc, false],
+    ["TELEGRAM", Send, t.authViaTelegram, telegram ? t.authViaTelegramDesc : t.authViaTelegramNeedsPhone, !telegram],
+  ];
   return (
-    <label
-      className={`flex min-h-16 items-center gap-3 rounded-xl bg-surface p-3 ring-1 ring-line-strong ring-inset has-checked:bg-primary-tint has-checked:ring-2 has-checked:ring-primary has-focus-visible:outline-3 has-focus-visible:outline-gold ${
-        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-      }`}
-    >
-      <input type="radio" name="code-channel" className="sr-only" checked={checked} disabled={disabled} onChange={onChange} />
-      <span className="flex size-10 flex-none items-center justify-center rounded-lg bg-primary-tint text-primary">
-        <Icon aria-hidden size={20} />
-      </span>
-      <span className="min-w-0">
-        <span className="block text-body font-semibold text-ink">{label}</span>
-        <span className="block text-meta text-ink-muted">{desc}</span>
-      </span>
-    </label>
+    <fieldset id={id} className="flex flex-col gap-2">
+      <legend className="mb-1.5 text-body font-semibold text-ink">{t.authSendVia}</legend>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {options.map(([value, Icon, label, desc, disabled]) => (
+          <label
+            key={value}
+            className={`flex min-h-16 items-center gap-3 rounded-xl bg-surface p-3 ring-1 ring-line-strong ring-inset has-checked:bg-primary-tint has-checked:ring-2 has-checked:ring-primary has-focus-visible:outline-3 has-focus-visible:outline-gold ${
+              disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+            }`}
+          >
+            <input type="radio" className="sr-only" value={value} disabled={disabled} {...field} />
+            <span className="flex size-10 flex-none items-center justify-center rounded-lg bg-primary-tint text-primary">
+              <Icon aria-hidden size={20} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-body font-semibold text-ink">{label}</span>
+              <span className="block text-meta text-ink-muted">{desc}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      {error && <p className="text-meta font-medium text-danger">{error}</p>}
+    </fieldset>
+  );
+}
+
+/** Value + handlers from a Controller (no ref: the input autofocuses itself). */
+type CodeField = { value: string; onChange: (v: string) => void; onBlur: () => void };
+
+/** "Code sent to …", the 6-box input, the demo code note and resend. */
+function CodeBlock({
+  id,
+  sent,
+  resendLeft,
+  busy,
+  onResend,
+  field,
+  error,
+}: {
+  id: string;
+  sent: CodeSent | null;
+  resendLeft: number;
+  busy: boolean;
+  onResend: () => void;
+  field: CodeField;
+  error?: string;
+}) {
+  const { t } = useLocale();
+  if (!sent) return null;
+  return (
+    <>
+      <p className="flex items-center gap-2 text-meta font-semibold text-fixed-ink" aria-live="polite">
+        <Check aria-hidden size={18} />
+        {fmt(t.authCodeSentVia, { to: sent.sentTo })}
+      </p>
+      <CodeInput id={id} label={t.authCodeLabel} field={field} error={error} />
+      <p className="flex items-start gap-2 rounded-xl bg-gold-tint px-4 py-3 text-meta text-ink">
+        <Info aria-hidden size={18} className="mt-0.5 flex-none text-gold-ink" />
+        {fmt(t.authDemoCode, { code: sent.demoCode })}
+      </p>
+      {resendLeft > 0 ? (
+        <p className="text-meta font-medium text-ink-muted">{fmt(t.authResendIn, { s: resendLeft })}</p>
+      ) : (
+        <TextButton className="self-start" disabled={busy} onClick={onResend}>
+          {t.authResend}
+        </TextButton>
+      )}
+    </>
   );
 }
 
 /**
  * One real input (so paste, one-time-code autofill and screen readers work), drawn as 6 boxes.
- * Accepts Khmer digits and converts them.
+ * Khmer digits are converted.
  */
-function CodeInput({ id: inputId, label, value, error, onChange }: { id: string; label: string; value: string; error?: string; onChange: (v: string) => void }) {
+function CodeInput({ id, label, field, error }: { id: string; label: string; field: CodeField; error?: string }) {
   const [focused, setFocused] = useState(false);
+  const value = field.value ?? "";
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={inputId} className="text-body font-semibold text-ink">
+      <label htmlFor={id} className="text-body font-semibold text-ink">
         {label}
       </label>
       <div className="relative">
         <input
-          id={inputId}
+          id={id}
           value={value}
           inputMode="numeric"
           autoComplete="one-time-code"
           autoFocus
           maxLength={6}
           aria-invalid={!!error || undefined}
-          aria-describedby={error ? `${inputId}-msg` : undefined}
+          aria-describedby={error ? `${id}-msg` : undefined}
           onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          onChange={(e) => {
-            const latin = e.target.value.replace(/[០-៩]/g, (d) => String(d.charCodeAt(0) - 0x17e0));
-            onChange(latin.replace(/\D/g, "").slice(0, 6));
+          onBlur={() => {
+            setFocused(false);
+            field.onBlur();
           }}
+          onChange={(e) => field.onChange(toCodeDigits(e.target.value))}
           className="absolute inset-0 z-10 h-full w-full cursor-text opacity-0"
         />
         <div aria-hidden className="grid grid-cols-6 gap-2">
@@ -1012,7 +786,7 @@ function CodeInput({ id: inputId, label, value, error, onChange }: { id: string;
         </div>
       </div>
       {error && (
-        <p id={`${inputId}-msg`} className="text-meta font-medium text-danger">
+        <p id={`${id}-msg`} className="text-meta font-medium text-danger">
           {error}
         </p>
       )}
@@ -1029,7 +803,7 @@ function Heading({ title, lead }: { title: string; lead?: string }) {
   );
 }
 
-function Progress({ step, label }: { step: 1 | 2 | 3; label: string }) {
+function Progress({ step, label }: { step: number; label: string }) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-meta font-semibold text-primary">{label}</p>
@@ -1051,6 +825,10 @@ function BackButton({ label, onClick }: { label: string; onClick: () => void }) 
   );
 }
 
+function TextButton({ className = "", ...rest }: ComponentProps<"button">) {
+  return <button type="button" className={`-mx-2 min-h-11 rounded-lg px-2 text-meta font-bold text-primary hover:bg-primary-tint disabled:opacity-50 ${className}`} {...rest} />;
+}
+
 function Divider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 text-meta font-medium text-ink-muted">
@@ -1063,7 +841,7 @@ function Divider({ label }: { label: string }) {
 
 function SwitchLine({ lead, href, label }: { lead: string; href: string; label: ReactNode }) {
   return (
-    <p className="text-meta text-ink-muted">
+    <p className="text-center text-meta text-ink-muted">
       {lead}{" "}
       <Link href={href} className="font-bold text-primary underline-offset-4 hover:underline">
         {label}
