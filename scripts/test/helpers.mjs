@@ -21,7 +21,7 @@ export async function expectErr(promise, code, name) {
   }
 }
 /** Log in as a demo account (password demo1234). */
-export const as = (phone) => api.login({ phone, password: "demo1234" });
+export const as = (phone) => api.login({ identifier: phone, password: "demo1234" });
 export const logout = () => api.logout();
 export const inDays = (d) => new Date(Date.now() + d * 864e5).toISOString();
 export function done() {

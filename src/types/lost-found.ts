@@ -149,7 +149,9 @@ export interface LfClaim {
 
 export interface LfContact {
   fullName: string;
-  phone: string;
+  /** Missing when the person registered without a phone number. */
+  phone?: string;
+  email?: string;
 }
 
 /** What the finder sees when reviewing claims: claim next to the secret. */

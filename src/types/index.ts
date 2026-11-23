@@ -28,9 +28,19 @@ export type Role = "CITIZEN" | "OFFICER" | "ADMIN" | "ORGANIZATION" | "REPORTER"
 
 export interface User {
   id: string;
+  /** Unique handle for logging in: a–z, 0–9, "_" and ".", 3–20 characters. */
+  username: string;
+  /** Given name (នាមខ្លួន). */
+  firstName: string;
+  /** Family name (នាមត្រកូល). */
+  lastName: string;
+  /** Display name, Khmer order: family name then given name ("សុខ ដារ៉ា"). */
   fullName: string;
-  phone: string; // Cambodian format, e.g. "012345678"
+  /** Optional for self-registered users. Needed for Telegram codes. Cambodian format, e.g. "012345678". */
+  phone?: string;
   email?: string;
+  /** How the account signs in. GOOGLE accounts have no password. */
+  authProvider: AuthProvider;
   role: Role;
   /** Set for ORGANIZATION and REPORTER accounts. */
   organizationId?: string;
@@ -43,25 +53,42 @@ export interface User {
   createdAt: ISODateString;
 }
 
+export type AuthProvider = "PASSWORD" | "GOOGLE";
+
+/** Where a one-time code is delivered. TELEGRAM goes to the Telegram account of the user's phone. */
+export type CodeChannel = "EMAIL" | "TELEGRAM";
+
 /** Stored only inside the mock DB. Never returned to the UI. */
 export interface UserRecord extends User {
-  password: string; // mock only: the real backend stores a hash
+  password?: string; // mock only: the real backend stores a hash. None for GOOGLE accounts.
 }
 
 export interface RegisterInput {
-  fullName: string;
-  phone: string;
-  email?: string;
-  password: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  /** Required unless `provider` is GOOGLE. */
+  password?: string;
+  phone?: string;
   provinceId: string;
   cityId: string;
   sangkat?: string;
   preferredLocale?: Locale;
+  provider?: AuthProvider;
 }
 
 export interface LoginInput {
-  phone: string;
+  /** Email, phone number or username. */
+  identifier: string;
   password: string;
+}
+
+/** Demo Google profile (the real backend verifies a Google ID token instead). */
+export interface GoogleProfile {
+  email: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface AuthSession {

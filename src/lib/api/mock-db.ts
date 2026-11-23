@@ -34,7 +34,7 @@ import * as emSeed from "@/lib/mock/emergency";
 import * as grSeed from "@/lib/mock/gov-reporting";
 
 // Bump the version when the seed shape changes so old browser data is dropped.
-const STORAGE_KEY = "cityvoice.mockdb.v5";
+const STORAGE_KEY = "cityvoice.mockdb.v7";
 const SESSION_KEY = "cityvoice.session.v1";
 const LATENCY_MS = 300;
 
@@ -198,9 +198,14 @@ export function notify(n: Omit<AppNotification, "id" | "read" | "createdAt">) {
   load().notifications.unshift({ ...n, id: nextId("n"), read: false, createdAt: now() });
 }
 
-/** Accepts 0XXXXXXXX(X) or +855XXXXXXXX(X); returns local 0-prefixed form. */
+/**
+ * Accepts 0XXXXXXXX(X) or +855XXXXXXXX(X); returns local 0-prefixed form.
+ * Khmer digits (០–៩, what Khmer keyboards type) are converted to 0–9 first;
+ * spaces, dashes, dots and brackets are ignored.
+ */
 export function normalizePhone(input: string): string | null {
-  const digits = input.replace(/[\s-]/g, "");
+  const latin = input.replace(/[\u17E0-\u17E9]/g, (d) => String(d.charCodeAt(0) - 0x17e0));
+  const digits = latin.replace(/[\s\-.()]/g, "");
   const local = digits.startsWith("+855")
     ? "0" + digits.slice(4)
     : digits.startsWith("855")

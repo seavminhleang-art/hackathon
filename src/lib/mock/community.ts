@@ -274,14 +274,14 @@ export const CS_ANNOUNCEMENTS: CsAnnouncement[] = [
     scope: { level: "PROVINCE", provinceId: "phnom-penh" },
     title: { km: "ប្រកាសអាសន្ន៖ ភ្លៀងធ្លាក់ខ្លាំង", en: "Alert: heavy rain expected" },
     body: { km: "សូមជៀសវាងផ្លូវទាប និងរាយការណ៍លូស្ទះភ្លាមៗ", en: "Avoid low roads and report blocked drains right away." },
-    validFrom: "2026-11-21T06:00:00+07:00", validTo: "2026-11-23T06:00:00+07:00", createdAt: "2026-11-21T06:00:00+07:00",
+    validFrom: "2026-11-21T06:00:00+07:00", validTo: "2026-12-31T23:00:00+07:00", createdAt: "2026-11-21T06:00:00+07:00",
   },
   {
     id: "an-2", level: "WARNING", category: "ROAD_CLOSURE", authorId: "u-officer-1", pinned: false, commentsEnabled: true,
     scope: { level: "CITY", provinceId: "phnom-penh", cityId: "tuol-kouk" },
     title: { km: "បិទផ្លូវ ២៨៩ ជាបណ្ដោះអាសន្ន", en: "St. 289 partly closed" },
     body: { km: "ជួសជុលលូ ពីថ្ងៃទី២២ ដល់ ២៥ វិច្ឆិកា", en: "Drain repair from 22 to 25 November. Use St. 315 instead." },
-    validFrom: "2026-11-20T08:00:00+07:00", validTo: "2026-11-25T18:00:00+07:00", createdAt: "2026-11-20T08:00:00+07:00",
+    validFrom: "2026-11-20T08:00:00+07:00", validTo: "2026-12-31T18:00:00+07:00", createdAt: "2026-11-20T08:00:00+07:00",
   },
   {
     id: "an-3", level: "INFO", category: "WASTE", authorId: "u-officer-2", pinned: false, commentsEnabled: true,
