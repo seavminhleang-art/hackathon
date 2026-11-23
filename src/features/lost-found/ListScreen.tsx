@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -213,11 +214,11 @@ export function ListScreen() {
                   ) : (
                     <div className="divide-y divide-line">
                       {myPosts.slice(0, 3).map((post) => (
-                        <div key={post.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                        <Link key={post.id} href={`/lost-found/${post.id}`} className="flex items-center gap-3 rounded-lg py-3 first:pt-0 last:pb-0 hover:bg-sand">
                           <Thumb src={post.photoUrls[0]} icon={post.kind === "LOST" ? Search : KeyRound} accent={post.kind === "LOST" ? "reported" : "gold"} size="sm" />
                           <span className="min-w-0 flex-1"><strong className="block truncate text-body text-ink">{post.title}</strong><span className="block truncate text-meta text-ink-muted">{post.place}</span></span>
                           <StatusChip status={post.kind} />
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   )}
@@ -229,11 +230,11 @@ export function ListScreen() {
                   ) : (
                     <div className="divide-y divide-line">
                       {myMatches.flatMap((entry) => entry.matches.map((match) => ({ ...match, sourcePostId: entry.postId }))).slice(0, 3).map((match) => (
-                        <div key={`${match.sourcePostId}-${match.post.id}`} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                        <Link key={`${match.sourcePostId}-${match.post.id}`} href={`/lost-found/${match.post.id}`} className="flex items-center gap-3 rounded-lg py-3 first:pt-0 last:pb-0 hover:bg-sand">
                           <Thumb src={match.post.photoUrls[0]} icon={match.post.kind === "FOUND" ? KeyRound : Search} accent={match.post.kind === "FOUND" ? "gold" : "reported"} size="sm" />
                           <span className="min-w-0 flex-1"><strong className="block truncate text-body text-ink">{match.post.title}</strong><span className="block truncate text-meta text-ink-muted">{match.post.place}</span></span>
                           <span className="rounded-full bg-fixed-tint px-2.5 py-1 text-meta font-semibold text-fixed-ink">{match.score}%</span>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   )}
@@ -317,12 +318,12 @@ export function ListScreen() {
                     const city = cityById.get(post.cityId);
                     const provinceName = provinceById.get(post.provinceId);
                     return (
-                      <article key={post.id} className="flex min-h-48 flex-col rounded-2xl bg-surface p-4 shadow-card ring-1 ring-line/70 transition-shadow hover:shadow-raised lg:p-5">
+                      <article key={post.id} className="relative flex min-h-48 flex-col rounded-2xl bg-surface p-4 shadow-card ring-1 ring-line/70 transition-shadow hover:shadow-raised lg:p-5">
                         <div className="flex items-start gap-3">
                           <Thumb src={post.photoUrls[0]} icon={post.kind === "LOST" ? Search : KeyRound} accent={post.kind === "LOST" ? "reported" : "gold"} size="lg" />
                           <div className="min-w-0 flex-1">
                             <div className="mb-1 flex flex-wrap items-center gap-2"><StatusChip status={post.kind} /><span className="text-meta text-ink-muted">{meta ? tx(meta.label) : post.category}</span></div>
-                            <h3 className="text-row leading-snug font-bold text-ink">{post.title}</h3>
+                            <h3 className="text-row leading-snug font-bold text-ink"><Link href={`/lost-found/${post.id}`} className="after:absolute after:inset-0 hover:underline">{post.title}</Link></h3>
                           </div>
                         </div>
                         <p className="mt-3 line-clamp-2 text-meta leading-relaxed text-ink-muted">{post.description}</p>
