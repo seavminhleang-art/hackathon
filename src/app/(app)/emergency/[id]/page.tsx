@@ -3,20 +3,14 @@
 import { useEffect, useState, Suspense } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, Building2, Camera, CheckCircle2, Clock, Eye, FileText, MapPin, MessageSquarePlus, Phone, RefreshCw, ShieldCheck, XCircle } from "lucide-react";
+import { AlertTriangle, Building2, Camera, CheckCircle2, Clock, Eye, FileText, MapPin, MessageSquarePlus, Phone, ShieldCheck, XCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { IncidentIcon, useIncidentTypes } from "@/features/emergency/meta";
 import { api } from "@/lib/api";
 import { stripExifAndCompress } from "@/lib/utils/image-utils";
 import { PageContainer } from "@/components/layout/AppShell";
-import {
-  Button,
-  Card,
-  PageHeader,
-  Sheet,
-  TextField,
-} from "@/components/ui";
+import { PageSkeleton, Button, Card, PageHeader, Sheet, TextField } from "@/components/ui";
 import type {
   EmIncidentForReporter,
   EmIncidentStatus,
@@ -167,9 +161,7 @@ function IncidentTrackingContent() {
   if (loading) {
     return (
       <PageContainer>
-        <div className="flex justify-center py-20">
-          <RefreshCw className="size-8 animate-spin text-primary" />
-        </div>
+        <PageSkeleton variant="detail" rows={2} />
       </PageContainer>
     );
   }
@@ -235,7 +227,7 @@ function IncidentTrackingContent() {
                   {typeMeta ? tx(typeMeta.label) : incident.type}
                 </h2>
               </div>
-              <p className="font-mono text-meta font-bold text-primary mt-0.5">
+              <p className="font-mono text-meta font-bold text-primary-ink mt-0.5">
                 {incident.code}
               </p>
             </div>
@@ -248,7 +240,7 @@ function IncidentTrackingContent() {
                     : incident.status === "RESPONDING"
                     ? "bg-fixed animate-pulse"
                     : incident.status === "REJECTED" || incident.status === "CANCELLED"
-                    ? "bg-ink"
+                    ? "bg-night"
                     : "bg-danger"
                 }`}
               >
@@ -300,21 +292,21 @@ function IncidentTrackingContent() {
                   </span>
                   <a
                     href="tel:117"
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-danger px-3 py-1.5 text-caption font-bold text-white hover:bg-danger-ink"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-danger px-3 py-1.5 text-caption font-bold text-white hover:bg-danger-hover"
                   >
                     <Phone size={13} />
                     <span>117 ({locale === "km" ? "នគរបាល" : "Police"})</span>
                   </a>
                   <a
                     href="tel:118"
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-danger px-3 py-1.5 text-caption font-bold text-white hover:bg-danger-ink"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-danger px-3 py-1.5 text-caption font-bold text-white hover:bg-danger-hover"
                   >
                     <Phone size={13} />
                     <span>118 ({locale === "km" ? "ពន្លត់អគ្គិភ័យ" : "Fire"})</span>
                   </a>
                   <a
                     href="tel:119"
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-danger px-3 py-1.5 text-caption font-bold text-white hover:bg-danger-ink"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-danger px-3 py-1.5 text-caption font-bold text-white hover:bg-danger-hover"
                   >
                     <Phone size={13} />
                     <span>119 ({locale === "km" ? "សង្គ្រោះបន្ទាន់" : "Ambulance"})</span>
@@ -395,10 +387,10 @@ function IncidentTrackingContent() {
                 </div>
               </div>
             ) : incident.status === "UNDER_REVIEW" ? (
-              <div className="rounded-2xl border-2 border-primary bg-primary-tint p-4 text-primary flex items-start gap-3 shadow-card">
-                <Clock size={24} className="text-primary flex-none mt-0.5" />
+              <div className="rounded-2xl border-2 border-primary bg-primary-tint p-4 text-primary-ink flex items-start gap-3 shadow-card">
+                <Clock size={24} className="text-primary-ink flex-none mt-0.5" />
                 <div>
-                  <h4 className="font-black text-row text-primary ">
+                  <h4 className="font-black text-row text-primary-ink ">
                     {t.statusUnderReview}
                   </h4>
                   <p className="text-body mt-1">
@@ -407,10 +399,10 @@ function IncidentTrackingContent() {
                 </div>
               </div>
             ) : incident.status === "RECEIVED" ? (
-              <div className="rounded-2xl border-2 border-primary bg-primary-tint p-4 text-primary flex items-start gap-3 shadow-card">
-                <Eye size={24} className="text-primary flex-none mt-0.5" />
+              <div className="rounded-2xl border-2 border-primary bg-primary-tint p-4 text-primary-ink flex items-start gap-3 shadow-card">
+                <Eye size={24} className="text-primary-ink flex-none mt-0.5" />
                 <div>
-                  <h4 className="font-black text-row text-primary ">
+                  <h4 className="font-black text-row text-primary-ink ">
                     {t.statusReceived}
                   </h4>
                   <p className="text-body mt-1">
@@ -478,7 +470,7 @@ function IncidentTrackingContent() {
           {/* 4. DISPATCHED ORGANIZATIONS */}
           <div className="mt-6 pt-4 border-t border-line">
             <h4 className="text-meta font-bold text-ink mb-2.5 flex items-center gap-1.5">
-              <Building2 size={16} className="text-primary" />
+              <Building2 size={16} className="text-primary-ink" />
               <span>{t.dispatchesLabel}</span>
             </h4>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -491,7 +483,7 @@ function IncidentTrackingContent() {
                     <span className="font-semibold text-meta block">{tx(d.organizationName)}</span>
                     <span className="text-caption text-ink-muted">{d.organizationType}</span>
                     {d.responseInfo && (
-                      <span className="text-caption block text-primary font-medium mt-0.5">
+                      <span className="text-caption block text-primary-ink font-medium mt-0.5">
                         {d.responseInfo}
                       </span>
                     )}
@@ -543,7 +535,7 @@ function IncidentTrackingContent() {
             <div className="mt-6 pt-4 border-t border-line space-y-2">
               <div className="flex items-center justify-between">
                 <h4 className="text-meta font-bold text-ink flex items-center gap-1.5">
-                  <Camera size={16} className="text-primary" />
+                  <Camera size={16} className="text-primary-ink" />
                   <span>{locale === "km" ? "រូបថតហេតុការណ៍" : "Incident Photos"}</span>
                 </h4>
                 <span className="text-caption font-semibold text-reported-ink bg-reported-tint px-2 py-0.5 rounded">
@@ -564,7 +556,7 @@ function IncidentTrackingContent() {
           {incident.additionalDetails && incident.additionalDetails.length > 0 && (
             <div className="mt-6 pt-4 border-t border-line space-y-2">
               <h4 className="text-meta font-bold text-ink flex items-center gap-1.5">
-                <FileText size={16} className="text-primary" />
+                <FileText size={16} className="text-primary-ink" />
                 <span>{locale === "km" ? "ព័ត៌មានបន្ថែមក្រោយមក" : "Updates Added Later"}</span>
               </h4>
               <div className="space-y-2">
@@ -830,9 +822,7 @@ export default function IncidentTrackingPage() {
     <Suspense
       fallback={
         <PageContainer>
-          <div className="flex justify-center py-20">
-            <RefreshCw className="size-8 animate-spin text-primary" />
-          </div>
+          <PageSkeleton variant="detail" rows={2} />
         </PageContainer>
       }
     >

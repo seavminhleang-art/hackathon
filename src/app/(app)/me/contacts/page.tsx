@@ -2,18 +2,20 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Clock, HeartPulse, Phone, Plus, RefreshCw, Send, Shield, Trash2, UserPlus, Users, XCircle, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, Clock, HeartPulse, Phone, Plus, RefreshCw, Send, Trash2, UserPlus, Users, XCircle, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useGuestRedirect } from "@/lib/auth/useRequireAuth";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { fmt } from "@/lib/i18n/dictionary";
-import { Button, Card, EmptyState, PageHeader, Section, SelectField, Sheet, TextField } from "@/components/ui";
+import { PageSkeleton, Button, Card, EmptyState, PageHeader, Section, SelectField, Sheet, TextField } from "@/components/ui";
 import type { EmTrustedContact } from "@/types";
 import { EM_RULES } from "@/types";
 
 export default function EmergencyContactsPage() {
   const { t, locale } = useLocale();
-  const { user, ready, login } = useAuth();
+  const { user, ready } = useAuth();
+  const redirecting = useGuestRedirect();
   const [contacts, setContacts] = useState<EmTrustedContact[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -200,42 +202,10 @@ export default function EmergencyContactsPage() {
     });
   };
 
-  if (!ready || loading) {
+  if (!ready || loading || redirecting || !user) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-8">
-        <div className="flex h-64 items-center justify-center">
-          <RefreshCw className="animate-spin text-primary" size={32} />
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="mx-auto max-w-xl px-4 py-12">
-        <Card className="text-center p-8">
-          <Shield className="mx-auto mb-4 text-primary" size={48} />
-          <h1 className="text-title font-bold">{t.emergencyContactsTitle}</h1>
-          <p className="mt-2 text-body text-ink-muted">
-            {locale === "km"
-              ? "សូមចូលគណនីដើម្បីគ្រប់គ្រងទំនាក់ទំនងសង្គ្រោះបន្ទាន់របស់អ្នក"
-              : "Please sign in to manage your trusted emergency contacts."}
-          </p>
-          <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
-            <Button
-              variant="primary"
-              onClick={() => login({ identifier: "012000001", password: "demo1234" })}
-            >
-              {t.quickDemoLogin}
-            </Button>
-            <Link
-              href="/login?next=/me/contacts"
-              className="inline-flex min-h-12 items-center justify-center rounded-xl border border-line bg-surface px-6 text-body font-bold text-ink shadow-card hover:bg-sand"
-            >
-              {t.login}
-            </Link>
-          </div>
-        </Card>
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+        <PageSkeleton rows={3} />
       </div>
     );
   }
@@ -246,7 +216,7 @@ export default function EmergencyContactsPage() {
       <div className="mb-4">
         <Link
           href="/dashboard/profile"
-          className="inline-flex items-center gap-1.5 text-body font-medium text-ink-muted hover:text-primary transition-colors"
+          className="inline-flex items-center gap-1.5 text-body font-medium text-ink-muted hover:text-primary-ink transition-colors"
         >
           <ArrowLeft size={18} />
           <span>{t.previous}</span>
@@ -379,7 +349,7 @@ export default function EmergencyContactsPage() {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     {/* Left: Contact Info */}
                     <div className="flex items-start gap-3">
-                      <div className="flex size-10 flex-none items-center justify-center rounded-xl bg-primary-tint text-primary font-bold">
+                      <div className="flex size-10 flex-none items-center justify-center rounded-xl bg-primary-tint text-primary-ink font-bold">
                         #{c.priority}
                       </div>
 
@@ -446,7 +416,7 @@ export default function EmergencyContactsPage() {
                           size="sm"
                           onClick={() => handleResendInvite(c.id)}
                           title={t.resendInvite}
-                          className="text-primary hover:bg-primary-tint"
+                          className="text-primary-ink hover:bg-primary-tint"
                         >
                           <RefreshCw size={16} />
                         </Button>
@@ -498,7 +468,7 @@ export default function EmergencyContactsPage() {
                         <button
                           type="button"
                           onClick={() => handleDevExpire(c.id)}
-                          className="rounded bg-ink px-2.5 py-1 text-caption font-bold text-white hover:bg-ink shadow-card transition-colors"
+                          className="rounded bg-night px-2.5 py-1 text-caption font-bold text-white hover:bg-night shadow-card transition-colors"
                         >
                           {t.devSimulateExpire}
                         </button>
@@ -508,7 +478,7 @@ export default function EmergencyContactsPage() {
                         <button
                           type="button"
                           onClick={() => handleDevLeave(c.id)}
-                          className="rounded bg-ink px-2.5 py-1 text-caption font-bold text-white hover:bg-ink shadow-card transition-colors"
+                          className="rounded bg-night px-2.5 py-1 text-caption font-bold text-white hover:bg-night shadow-card transition-colors"
                         >
                           {locale === "km" ? "ក្លែងបន្លំចាកចេញ" : "Simulate Leave (LEFT)"}
                         </button>
@@ -527,7 +497,7 @@ export default function EmergencyContactsPage() {
         <Card className="bg-sand/60 p-4 border border-line">
           <div className="space-y-3 font-mono text-meta">
             <div className="rounded-xl bg-surface p-3 shadow-card ring-1 ring-line">
-              <span className="block text-caption font-bold text-primary mb-1">
+              <span className="block text-caption font-bold text-primary-ink mb-1">
                 [1] Invite SMS ({t.contactStatusPENDING})
               </span>
               <p className="text-ink">
@@ -611,7 +581,7 @@ export default function EmergencyContactsPage() {
                   type="checkbox"
                   checked={shareMedical}
                   onChange={(e) => setShareMedical(e.target.checked)}
-                  className="mt-1 size-4 rounded text-primary focus:ring-primary"
+                  className="mt-1 size-4 rounded text-primary-ink focus:ring-primary"
                 />
                 <div>
                   <span className="block text-body font-bold text-ink">

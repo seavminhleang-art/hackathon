@@ -25,7 +25,7 @@ export function Card({
 export type Accent = "primary" | "gold" | "fixed" | "reported" | "danger" | "neutral";
 
 const ACCENT: Record<Accent, string> = {
-  primary: "bg-primary-tint text-primary",
+  primary: "bg-primary-tint text-primary-ink",
   gold: "bg-gold-tint text-gold-ink",
   fixed: "bg-fixed-tint text-fixed-ink",
   reported: "bg-reported-tint text-reported-ink",

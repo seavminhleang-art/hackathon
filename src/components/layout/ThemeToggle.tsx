@@ -1,36 +1,36 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import sun from "react-useanimations/lib/sun";
+import moon from "react-useanimations/lib/moon";
+import { useSyncExternalStore } from "react";
+import { AnimatedIcon } from "@/components/ui/AnimatedIcon";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { THEME_STORAGE_KEY as STORAGE_KEY } from "@/lib/theme";
 
-const STORAGE_KEY = "cityvoice.theme";
+
+type Theme = "light" | "dark";
+const listeners = new Set<() => void>();
+
+/** The theme lives on <html data-theme>, set before paint by THEME_INIT_SCRIPT (no light flash). */
+function subscribe(onChange: () => void) {
+  listeners.add(onChange);
+  return () => listeners.delete(onChange);
+}
+const readTheme = (): Theme => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
 
 export function ThemeToggle() {
   const { locale } = useLocale();
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    let saved: string | null = null;
-    try {
-      saved = window.localStorage.getItem(STORAGE_KEY);
-    } catch {
-      // Keep the default light theme when browser storage is unavailable.
-    }
-    const isDark = saved === "dark";
-    setDark(isDark);
-    document.documentElement.dataset.theme = isDark ? "dark" : "light";
-  }, []);
+  const dark = useSyncExternalStore(subscribe, readTheme, () => "light" as Theme) === "dark";
 
   function toggle() {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.dataset.theme = next ? "dark" : "light";
+    const next: Theme = dark ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
     try {
-      window.localStorage.setItem(STORAGE_KEY, next ? "dark" : "light");
+      window.localStorage.setItem(STORAGE_KEY, next);
     } catch {
       // The current page still changes theme if storage is disabled.
     }
+    listeners.forEach((l) => l());
   }
 
   const label = dark
@@ -45,7 +45,7 @@ export function ThemeToggle() {
       title={label}
       className="flex size-12 items-center justify-center rounded-xl text-white hover:bg-white/10 focus-visible:outline-white"
     >
-      {dark ? <Sun aria-hidden size={20} /> : <Moon aria-hidden size={20} />}
+      {dark ? <AnimatedIcon key="sun" animation={sun} size={20} /> : <AnimatedIcon key="moon" animation={moon} size={20} />}
     </button>
   );
 }

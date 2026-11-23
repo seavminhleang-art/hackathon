@@ -67,7 +67,7 @@ export function HotlineStrip() {
           <a
             key={h.id}
             href={`tel:${h.number}`}
-            className="flex min-h-18 flex-col items-center justify-center gap-0.5 rounded-2xl bg-danger px-2 py-3 text-white shadow-card hover:bg-danger-ink sm:flex-row sm:gap-3"
+            className="flex min-h-18 flex-col items-center justify-center gap-0.5 rounded-2xl bg-danger px-2 py-3 text-white shadow-card hover:bg-danger-hover sm:flex-row sm:gap-3"
           >
             <Phone aria-hidden size={20} className="hidden sm:block" />
             <span className="text-title font-extrabold tabular-nums">{h.number}</span>

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import loadingIcon from "react-useanimations/lib/loading";
+import { AnimatedIcon, type AnimatedIconData } from "./AnimatedIcon";
 
 /**
  * Button / link-button. One primary per screen.
@@ -17,9 +19,9 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 const VARIANT: Record<ButtonVariant, string> = {
   primary: "bg-primary text-white hover:bg-primary-hover shadow-card",
-  secondary: "bg-surface text-primary ring-1 ring-inset ring-primary/35 hover:bg-primary-tint",
-  ghost: "text-primary hover:bg-primary-tint",
-  danger: "bg-danger text-white hover:bg-danger-ink shadow-card",
+  secondary: "bg-surface text-primary-ink ring-1 ring-inset ring-primary/35 hover:bg-primary-tint",
+  ghost: "text-primary-ink hover:bg-primary-tint",
+  danger: "bg-danger text-white hover:bg-danger-hover shadow-card",
 };
 
 const SIZE: Record<ButtonSize, string> = {
@@ -38,10 +40,15 @@ export function buttonClass(variant: ButtonVariant = "primary", size: ButtonSize
 interface CommonProps {
   variant?: ButtonVariant;
   size?: ButtonSize;
-  icon?: LucideIcon;
+  /** A lucide icon, or an animated one from `react-useanimations/lib/<name>` (plays on hover / click). */
+  icon?: LucideIcon | AnimatedIconData;
+  /** For click-toggle animated icons (thumbUp, star…): true shows the end state. */
+  iconActive?: boolean;
   /** Icon after the label (e.g. chevron). */
   trailingIcon?: LucideIcon;
   block?: boolean;
+  /** Busy: swaps the icon for a spinner, disables the button and sets aria-busy. Keep the label. */
+  loading?: boolean;
   children: ReactNode;
   className?: string;
 }
@@ -49,31 +56,43 @@ interface CommonProps {
 type ButtonProps = CommonProps & Omit<ComponentProps<"button">, "className" | "children">;
 type LinkButtonProps = CommonProps & { href: string } & Omit<ComponentProps<typeof Link>, "className" | "children" | "href">;
 
-function Inner({ icon: Icon, trailingIcon: Trailing, children, size }: CommonProps) {
+function Inner({ icon: Icon, iconActive, trailingIcon: Trailing, children, size, loading }: CommonProps) {
   const s = size === "lg" ? 22 : size === "sm" ? 18 : 20;
   return (
     <>
-      {Icon && <Icon aria-hidden size={s} className="flex-none" />}
+      {loading ? (
+        <AnimatedIcon animation={loadingIcon} size={s} />
+      ) : Icon && "animationData" in Icon ? (
+        <AnimatedIcon animation={Icon} size={s} active={iconActive} />
+      ) : Icon ? (
+        <Icon aria-hidden size={s} className="flex-none" />
+      ) : null}
       <span className="min-w-0">{children}</span>
       {Trailing && <Trailing aria-hidden size={s} className="flex-none" />}
     </>
   );
 }
 
-export function Button({ variant, size, icon, trailingIcon, block, children, className = "", type = "button", ...rest }: ButtonProps) {
+export function Button({ variant, size, icon, iconActive, trailingIcon, block, loading, children, className = "", type = "button", disabled, ...rest }: ButtonProps) {
   return (
-    <button type={type} className={buttonClass(variant, size, `${block ? "w-full" : ""} ${className}`)} {...rest}>
-      <Inner icon={icon} trailingIcon={trailingIcon} size={size}>
+    <button
+      type={type}
+      className={buttonClass(variant, size, `${block ? "w-full" : ""} ${className}`)}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...rest}
+    >
+      <Inner icon={icon} iconActive={iconActive} trailingIcon={trailingIcon} size={size} loading={loading}>
         {children}
       </Inner>
     </button>
   );
 }
 
-export function LinkButton({ variant, size, icon, trailingIcon, block, children, className = "", ...rest }: LinkButtonProps) {
+export function LinkButton({ variant, size, icon, iconActive, trailingIcon, block, loading, children, className = "", ...rest }: LinkButtonProps) {
   return (
     <Link className={buttonClass(variant, size, `${block ? "w-full" : ""} ${className}`)} {...rest}>
-      <Inner icon={icon} trailingIcon={trailingIcon} size={size}>
+      <Inner icon={icon} iconActive={iconActive} trailingIcon={trailingIcon} size={size} loading={loading}>
         {children}
       </Inner>
     </Link>

@@ -24,7 +24,6 @@ import {
   KeyRound,
   Landmark,
   Lightbulb,
-  Lock,
   MapPin,
   Megaphone,
   Navigation,
@@ -72,7 +71,6 @@ export const CATEGORY_ICON: Record<GrCategory, LucideIcon> = {
 export function HomeScreen() {
   const { user, ready } = useAuth();
   const { data, setData } = useHomeData(user, ready);
-  const visitor = ready && !user;
 
   return (
     <>
@@ -81,7 +79,7 @@ export function HomeScreen() {
         <div className="flex flex-col gap-6 lg:gap-10">
           <Greeting />
           <HomeHero news={data?.news} events={data?.events} />
-        <QuickActions visitor={visitor} />
+        <QuickActions />
         <StatsStrip stats={data?.stats} />
 
         <div className="grid gap-6 lg:grid-cols-3 lg:gap-10">
@@ -139,14 +137,14 @@ function Greeting() {
         href="/dashboard/profile"
         className="mt-1 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-surface px-3 text-meta font-medium text-ink-muted shadow-card hover:text-ink"
       >
-        <MapPin aria-hidden size={14} className="text-primary" />
+        <MapPin aria-hidden size={14} className="text-primary-ink" />
         {city ? [user.sangkat, tx(city.name)].filter(Boolean).join(", ") : t.chooseArea}
       </Link>
     </div>
   );
 }
 
-function QuickActions({ visitor }: { visitor: boolean }) {
+function QuickActions() {
   const { t } = useLocale();
   const { openSos } = useSos();
 
@@ -161,7 +159,7 @@ function QuickActions({ visitor }: { visitor: boolean }) {
   return (
     <section aria-label={t.whatToDo} className="grid grid-cols-3 gap-3 lg:grid-cols-5">
       <Link
-        href={visitor ? "/login?next=/report/new" : "/report/new"}
+        href="/report/new"
         className="col-span-3 flex min-h-28 items-center gap-4 rounded-2xl bg-primary p-5 text-white shadow-raised transition-colors hover:bg-primary-hover lg:col-span-2 lg:min-h-28"
       >
         <span className="flex size-14 flex-none items-center justify-center rounded-2xl bg-white/15">
@@ -170,12 +168,6 @@ function QuickActions({ visitor }: { visitor: boolean }) {
         <span className="min-w-0 flex-1">
           <span className="block text-title leading-snug font-bold">{t.reportProblem}</span>
           <span className="block text-meta leading-snug text-white/85">{t.reportProblemHint}</span>
-          {visitor && (
-            <span className="mt-1 flex items-center gap-1 text-meta text-white/85">
-              <Lock aria-hidden size={12} />
-              {t.accountNeeded}
-            </span>
-          )}
         </span>
         <ChevronRight aria-hidden size={22} className="flex-none" />
       </Link>

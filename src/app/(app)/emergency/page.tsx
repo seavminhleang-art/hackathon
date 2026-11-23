@@ -326,7 +326,7 @@ export default function EmergencyHubPage() {
                         ? "ឧទាហរណ៍៖ ក្បែរផ្សារធំថ្មី តូបលេខ ១២ ឬផ្ទះលេខ ៤៥ ផ្លូវ ១១០"
                         : "e.g. Near Central Market stall 12, or #45 St. 110"
                     }
-                    className="w-full rounded-xl border border-reported/30 bg-white px-3.5 py-2 text-body text-ink focus:outline-none focus:ring-2 focus:ring-reported"
+                    className="w-full rounded-xl border border-reported/30 bg-surface px-3.5 py-2 text-body text-ink focus:outline-none focus:ring-2 focus:ring-reported"
                   />
                 </div>
                 <p className="text-caption font-semibold text-reported-ink mt-1">
@@ -400,13 +400,13 @@ export default function EmergencyHubPage() {
                       className="flex items-center justify-between rounded-xl border border-line bg-surface p-3"
                     >
                       <div className="flex items-center gap-2">
-                        <Building2 size={16} className="text-primary" />
+                        <Building2 size={16} className="text-primary-ink" />
                         <div>
                           <span className="font-semibold text-meta block">{tx(d.organizationName)}</span>
                           <span className="text-caption text-ink-muted">{getOrgTypeLabel(d.organizationType)}</span>
                         </div>
                       </div>
-                      <span className="text-caption font-bold text-primary bg-primary-tint px-2 py-0.5 rounded">
+                      <span className="text-caption font-bold text-primary-ink bg-primary-tint px-2 py-0.5 rounded">
                         {getStatusLabel(d.status)}
                       </span>
                     </div>
@@ -493,7 +493,7 @@ export default function EmergencyHubPage() {
                       onMouseLeave={cancelHold}
                       onTouchStart={startHold}
                       onTouchEnd={cancelHold}
-                      className="relative flex size-36 select-none flex-col items-center justify-center rounded-full bg-danger text-white shadow-sos transition-transform active:scale-95 hover:bg-danger-ink cursor-pointer"
+                      className="relative flex size-36 select-none flex-col items-center justify-center rounded-full bg-danger text-white shadow-sos transition-transform active:scale-95 hover:bg-danger-hover cursor-pointer"
                     >
                       <span className="text-display font-black tracking-wider">SOS</span>
                       <span className="text-caption font-bold opacity-90">
@@ -538,7 +538,7 @@ export default function EmergencyHubPage() {
         {/* 3. EMERGENCY CONTACTS LINK CARD */}
         <Card className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5">
           <div className="flex items-center gap-3.5">
-            <div className="flex size-12 flex-none items-center justify-center rounded-xl bg-primary-tint text-primary">
+            <div className="flex size-12 flex-none items-center justify-center rounded-xl bg-primary-tint text-primary-ink">
               <Users size={24} />
             </div>
             <div>
@@ -570,7 +570,7 @@ export default function EmergencyHubPage() {
           {/* Card: Report Incident */}
           <Card className="flex flex-col justify-between p-6 transition-all hover:border-primary/40 hover:shadow-card">
             <div>
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary-tint text-primary mb-3">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary-tint text-primary-ink mb-3">
                 <ShieldAlert size={24} />
               </div>
               <h3 className="text-title font-bold text-ink">{t.reportIncidentTitle}</h3>
@@ -617,7 +617,7 @@ export default function EmergencyHubPage() {
           {/* Card 1: Directory */}
           <Card className="flex flex-col justify-between p-6 transition-all hover:border-primary/40 hover:shadow-card">
             <div>
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary-tint text-primary mb-3">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary-tint text-primary-ink mb-3">
                 <Building2 size={24} />
               </div>
               <h3 className="text-title font-bold text-ink">{t.emergencyDirectoryTitle}</h3>
@@ -650,7 +650,7 @@ export default function EmergencyHubPage() {
             <div className="mt-6 pt-4 border-t border-line">
               <Link
                 href="/emergency/nearby"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-danger py-2.5 text-meta font-bold text-white shadow-card hover:bg-danger-ink transition-colors"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-danger py-2.5 text-meta font-bold text-white shadow-card hover:bg-danger-hover transition-colors"
               >
                 <span>{locale === "km" ? "ស្វែងរកតាមចម្ងាយ GPS" : "Find Nearest via GPS"}</span>
                 <ArrowRight size={16} />

@@ -10,17 +10,16 @@ import {
   ChartColumn,
   ChevronDown,
   ChevronRight,
-  Info,
-  LogIn,
   MapPin,
   MessageCircle,
   MessageCircleQuestion,
   Plus,
   Sun,
-  TriangleAlert,
   Users,
 } from "lucide-react";
+import alertTriangle from "react-useanimations/lib/alertTriangle";
 import { api } from "@/lib/api";
+import { useRequireAuth } from "@/lib/auth/useRequireAuth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { PageContainer } from "@/components/layout/AppShell";
 import {
@@ -28,19 +27,19 @@ import {
   Card,
   EmptyState,
   FilterChips,
-  LinkButton,
   ListRow,
   Section,
   Sheet,
   SkeletonRows,
   buttonClass,
+  AnimatedIcon,
 } from "@/components/ui";
 import { fmt } from "@/lib/i18n/dictionary";
 import { formatDateParts } from "@/lib/i18n/format";
 import type { CsAnnouncementView, CsGroupView, CsPostType, CsPostView } from "@/types/community";
 import { useCs } from "./i18n";
 import { PostCard } from "./PostCard";
-import { CommunityTabs, InfoStrip, useAreas, useCommunityHref, useLoginGate } from "./shared";
+import { CommunityTabs, useAreas, useCommunityHref } from "./shared";
 
 type Filter = "ALL" | CsPostType;
 type AreaMode = "khan" | "city";
@@ -51,7 +50,7 @@ export function BoardScreen() {
   const href = useCommunityHref();
   const { user, ready } = useAuth();
   const areas = useAreas();
-  const { gate, sheet } = useLoginGate();
+  const requireAuth = useRequireAuth();
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("ALL");
   const [mode, setMode] = useState<AreaMode>("khan");
@@ -108,7 +107,7 @@ export function BoardScreen() {
     { value: "DISCUSSION", label: c.discussions, icon: MessageCircle },
   ];
 
-  const newPost = () => gate(c.actPost, () => router.push(href("/community/new")));
+  const newPost = () => requireAuth(() => router.push(href("/community/new")));
 
   return (
     <PageContainer>
@@ -122,14 +121,14 @@ export function BoardScreen() {
             className="mt-1.5 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-surface px-3.5 text-meta font-semibold shadow-card"
             aria-label={`${c.area}: ${areaName}`}
           >
-            <MapPin aria-hidden size={16} className="text-primary" />
+            <MapPin aria-hidden size={16} className="text-primary-ink" />
             {areaName}
             {user && <ChevronDown aria-hidden size={16} className="text-ink-muted" />}
           </button>
         </div>
         <div className="hidden lg:block">
-          <Button icon={user ? Plus : LogIn} onClick={newPost}>
-            {user ? c.newPost : c.loginToPost}
+          <Button icon={Plus} onClick={newPost}>
+            {c.newPost}
           </Button>
         </div>
       </div>
@@ -144,23 +143,10 @@ export function BoardScreen() {
               href={href(`/announcements/${alert.id}`)}
               className="civic-alert-surface flex min-h-13 items-center gap-3 rounded-2xl px-4 py-2.5 shadow-card transition-colors"
             >
-              <TriangleAlert aria-hidden size={20} className="flex-none" />
+              <AnimatedIcon animation={alertTriangle} size={20} />
               <span className="min-w-0 flex-1 truncate text-body font-semibold">{tx(alert.title)}</span>
               <ChevronRight aria-hidden size={20} className="flex-none" />
             </Link>
-          )}
-
-          {ready && !user && (
-            <InfoStrip
-              icon={<Info aria-hidden size={20} />}
-              action={
-                <LinkButton href="/login?next=/community" size="sm" icon={LogIn}>
-                  {c.login}
-                </LinkButton>
-              }
-            >
-              {c.visitorBanner}
-            </InfoStrip>
           )}
 
           <FilterChips label={c.community} options={chips} value={filter} onChange={setFilter} />
@@ -246,8 +232,8 @@ export function BoardScreen() {
         onClick={newPost}
         className={buttonClass("primary", "lg", "fixed right-4 bottom-[156px] z-20 rounded-2xl shadow-raised lg:hidden")}
       >
-        {user ? <Plus aria-hidden size={22} /> : <LogIn aria-hidden size={22} />}
-        {user ? c.newPost : c.loginToPost}
+        <Plus aria-hidden size={22} />
+        {c.newPost}
       </button>
 
       {areaOpen && (
@@ -279,7 +265,6 @@ export function BoardScreen() {
           </div>
         </Sheet>
       )}
-      {sheet}
     </PageContainer>
   );
 }

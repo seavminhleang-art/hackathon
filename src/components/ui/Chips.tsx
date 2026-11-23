@@ -66,7 +66,7 @@ export function SubNav({ items, active }: { items: { href: string; label: string
             href={it.href}
             aria-current={on ? "page" : undefined}
             className={`relative flex min-h-13 flex-1 items-center justify-center px-4 text-body sm:flex-none ${
-              on ? "font-bold text-primary" : "font-semibold text-ink-muted hover:text-ink"
+              on ? "font-bold text-primary-ink" : "font-semibold text-ink-muted hover:text-ink"
             }`}
           >
             {it.label}

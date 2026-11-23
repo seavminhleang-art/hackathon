@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { BadgeCheck, CircleCheck, Flag, LogIn, UserPlus } from "lucide-react";
+import { BadgeCheck, CircleCheck, Flag } from "lucide-react";
 import { api } from "@/lib/api";
-import { useAuth } from "@/lib/auth/AuthProvider";
-import { Button, LinkButton, Sheet, SubNav } from "@/components/ui";
+import { useRequireAuth } from "@/lib/auth/useRequireAuth";
+import { Button, Sheet, SubNav } from "@/components/ui";
 import type { City, Locale, Province } from "@/types";
 import type { CsReportReason, CsScope } from "@/types/community";
 import { fmt } from "@/lib/i18n/dictionary";
@@ -41,7 +41,7 @@ export function CommunityTabs({ active }: { active: "/community" | "/community/g
 export function OfficialBadge() {
   const { c } = useCs();
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-primary-tint px-2 py-0.5 text-caption font-semibold text-primary">
+    <span className="inline-flex items-center gap-1 rounded-full bg-primary-tint px-2 py-0.5 text-caption font-semibold text-primary-ink">
       <BadgeCheck aria-hidden size={14} />
       {c.official}
     </span>
@@ -88,48 +88,6 @@ export function scopeLabel(scope: CsScope, areas: ReturnType<typeof useAreas>, l
   return provName ?? "";
 }
 
-// ---------- Login gate ----------
-
-/**
- * Visitors can read everything; actions open a sheet titled with what they tried.
- * Usage: const { gate, sheet } = useLoginGate(); onClick={() => gate(c.actVote, () => vote())}; {sheet}
- */
-export function useLoginGate() {
-  const { user } = useAuth();
-  const [action, setAction] = useState<string | null>(null);
-  const gate = useCallback(
-    (label: string, run: () => void) => {
-      if (user) run();
-      else setAction(label);
-    },
-    [user],
-  );
-  const close = useCallback(() => setAction(null), []);
-  const sheet = action ? <LoginSheet action={action} onClose={close} /> : null;
-  return { gate, sheet, loggedIn: !!user };
-}
-
-function LoginSheet({ action, onClose }: { action: string; onClose: () => void }) {
-  const { c } = useCs();
-  const next = typeof window !== "undefined" ? window.location.pathname : "/";
-  return (
-    <Sheet title={fmt(c.loginTo, { action })} icon={<LogIn aria-hidden size={22} />} onClose={onClose}>
-      <p className="text-body text-ink-muted">{c.loginBody}</p>
-      <div className="flex flex-col gap-2.5">
-        <LinkButton href={`/login?next=${encodeURIComponent(next)}`} size="lg" icon={LogIn} block>
-          {c.login}
-        </LinkButton>
-        <LinkButton href={`/register?next=${encodeURIComponent(next)}`} variant="secondary" size="lg" icon={UserPlus} block>
-          {c.register}
-        </LinkButton>
-        <Button variant="ghost" onClick={onClose} block>
-          {c.notNow}
-        </Button>
-      </div>
-    </Sheet>
-  );
-}
-
 // ---------- Report ----------
 
 const REASONS: CsReportReason[] = ["SPAM", "FAKE", "PERSONAL_INFO", "OFFENSIVE", "OTHER"];
@@ -137,7 +95,7 @@ const REASONS: CsReportReason[] = ["SPAM", "FAKE", "PERSONAL_INFO", "OFFENSIVE",
 /** Labelled "Report" text button + reason sheet. */
 export function ReportButton({ targetType, targetId }: { targetType: "POST" | "COMMENT"; targetId: string }) {
   const { c } = useCs();
-  const { gate, sheet } = useLoginGate();
+  const requireAuth = useRequireAuth();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<CsReportReason | null>(null);
   const [done, setDone] = useState(false);
@@ -160,13 +118,12 @@ export function ReportButton({ targetType, targetId }: { targetType: "POST" | "C
     <>
       <button
         type="button"
-        onClick={() => gate(c.actReport, () => setOpen(true))}
+        onClick={() => requireAuth(() => setOpen(true))}
         className="flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-meta font-semibold text-ink-muted hover:bg-sand-deep hover:text-ink"
       >
         <Flag aria-hidden size={16} />
         {c.report}
       </button>
-      {sheet}
       {open && (
         <Sheet title={c.reportTitle} icon={<Flag aria-hidden size={22} />} onClose={() => setOpen(false)}>
           {done ? (
@@ -191,7 +148,7 @@ export function ReportButton({ targetType, targetId }: { targetType: "POST" | "C
                     aria-checked={reason === r}
                     onClick={() => setReason(r)}
                     className={`flex min-h-13 items-center gap-3 rounded-xl px-4 text-left text-body font-semibold ring-inset ${
-                      reason === r ? "bg-primary-tint text-primary ring-2 ring-primary" : "bg-surface ring-1 ring-line-strong"
+                      reason === r ? "bg-primary-tint text-primary-ink ring-2 ring-primary" : "bg-surface ring-1 ring-line-strong"
                     }`}
                   >
                     {reason === r && <CircleCheck aria-hidden size={18} />}
@@ -217,7 +174,7 @@ export function InfoStrip({ icon, children, action }: { icon: ReactNode; childre
   return (
     <div className="flex flex-col gap-3 rounded-2xl bg-primary-tint p-4 text-ink sm:flex-row sm:items-center">
       <span className="flex flex-1 items-start gap-3">
-        <span className="mt-0.5 flex-none text-primary">{icon}</span>
+        <span className="mt-0.5 flex-none text-primary-ink">{icon}</span>
         <span className="text-meta">{children}</span>
       </span>
       {action}

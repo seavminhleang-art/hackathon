@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Bell, Check, CheckCheck, FileText, KeyRound, Siren, Users } from "lucide-react";
-import { Button, Card, EmptyState, FilterChips, PageHeader, SkeletonRows } from "@/components/ui";
+import { PageSkeleton, Button, Card, EmptyState, FilterChips, PageHeader, SkeletonRows } from "@/components/ui";
 import { PageContainer } from "@/components/layout/AppShell";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useGuestRedirect } from "@/lib/auth/useRequireAuth";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { formatDateParts } from "@/lib/i18n/format";
 import type { AppNotification } from "@/types";
@@ -36,6 +37,7 @@ function cambodiaDay(iso: string) {
 
 export function NotificationsScreen() {
   const { user, ready } = useAuth();
+  const redirecting = useGuestRedirect();
   const { t, tx, locale } = useLocale();
   const [items, setItems] = useState<AppNotification[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
@@ -44,7 +46,8 @@ export function NotificationsScreen() {
   const [today, setToday] = useState<string | null>(null);
 
   useEffect(() => {
-    setToday(cambodiaDay(new Date().toISOString()));
+    const id = setTimeout(() => setToday(cambodiaDay(new Date().toISOString())));
+    return () => clearTimeout(id);
   }, []);
 
   async function refresh() {
@@ -60,14 +63,17 @@ export function NotificationsScreen() {
 
   useEffect(() => {
     if (!ready || !user) {
-      setLoading(false);
-      return;
+      const id = setTimeout(() => setLoading(false));
+      return () => clearTimeout(id);
     }
-    void refresh();
+    const first = setTimeout(() => void refresh());
     // Refresh the page when a notification changes elsewhere in the app.
     const onChanged = () => void refresh();
     window.addEventListener("cityvoice:notifications", onChanged);
-    return () => window.removeEventListener("cityvoice:notifications", onChanged);
+    return () => {
+      clearTimeout(first);
+      window.removeEventListener("cityvoice:notifications", onChanged);
+    };
     // Auth state is the only trigger; refresh is intentionally stable for this subscription.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, user?.id]);
@@ -94,14 +100,10 @@ export function NotificationsScreen() {
     window.dispatchEvent(new Event("cityvoice:notifications"));
   }
 
-  if (!ready || (ready && !user)) {
+  if (redirecting) {
     return (
       <PageContainer>
-        <PageHeader title={t.notificationCenter} subtitle={t.notificationHint} />
-        <Card className="text-center">
-          <p className="text-body text-ink-muted">{locale === "km" ? "សូមចូលគណនីដើម្បីមើលដំណឹងរបស់អ្នក។" : "Sign in to view your notifications."}</p>
-          <Link href="/login?next=/notifications" className="mt-3 inline-flex min-h-12 items-center rounded-xl bg-primary px-5 font-semibold text-white">{t.login}</Link>
-        </Card>
+        <PageSkeleton rows={5} />
       </PageContainer>
     );
   }
@@ -122,7 +124,7 @@ export function NotificationsScreen() {
 
       <div className="mb-5 flex items-center justify-between gap-3">
         <FilterChips options={options} value={filter} onChange={setFilter} label={t.notificationCenter} />
-        {unread > 0 && <span className="hidden rounded-full bg-primary-tint px-3 py-1.5 text-caption font-semibold text-primary sm:inline-flex">{unread} {t.notificationUnread.toLowerCase()}</span>}
+        {unread > 0 && <span className="hidden rounded-full bg-primary-tint px-3 py-1.5 text-caption font-semibold text-primary-ink sm:inline-flex">{unread} {t.notificationUnread.toLowerCase()}</span>}
       </div>
 
       {loading ? <SkeletonRows rows={5} /> : error ? (
@@ -146,7 +148,7 @@ export function NotificationsScreen() {
                   const when = formatDateParts(item.createdAt, locale);
                   return (
                     <li key={item.id} className={`group flex min-h-20 items-center gap-3 border-b border-line px-4 py-3 last:border-b-0 sm:px-5 ${item.read ? "" : "bg-primary-tint/35"}`}>
-                      <span className={`flex size-11 flex-none items-center justify-center rounded-xl ${item.type.startsWith("EM_") ? "bg-danger-tint text-danger" : item.type.startsWith("LF_") ? "bg-gold-tint text-gold-ink" : item.type.startsWith("CS_") ? "bg-reported-tint text-reported-ink" : "bg-primary-tint text-primary"}`}>
+                      <span className={`flex size-11 flex-none items-center justify-center rounded-xl ${item.type.startsWith("EM_") ? "bg-danger-tint text-danger" : item.type.startsWith("LF_") ? "bg-gold-tint text-gold-ink" : item.type.startsWith("CS_") ? "bg-reported-tint text-reported-ink" : "bg-primary-tint text-primary-ink"}`}>
                         <Icon aria-hidden size={21} />
                       </span>
                       <Link href={targetFor(item)} onClick={() => void markRead(item)} className="flex min-w-0 flex-1 items-start gap-2 rounded-lg py-1 focus-visible:outline-primary">
@@ -159,7 +161,7 @@ export function NotificationsScreen() {
                         </span>
                       </Link>
                       {!item.read && (
-                      <button type="button" onClick={() => void markRead(item)} aria-label={t.notificationMarkRead} title={t.notificationMarkRead} className="flex size-12 flex-none items-center justify-center rounded-xl text-ink-muted hover:bg-sand-deep hover:text-primary">
+                      <button type="button" onClick={() => void markRead(item)} aria-label={t.notificationMarkRead} title={t.notificationMarkRead} className="flex size-12 flex-none items-center justify-center rounded-xl text-ink-muted hover:bg-sand-deep hover:text-primary-ink">
                           <Check aria-hidden size={18} />
                         </button>
                       )}

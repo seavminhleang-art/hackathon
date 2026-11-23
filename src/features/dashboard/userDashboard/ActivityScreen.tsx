@@ -68,7 +68,7 @@ export function ActivityScreen() {
     { label: t.activityComments, value: data?.comments ?? 0, color: "bg-reported" },
     { label: t.activityClaimsSubmitted, value: data?.claimsSubmitted ?? 0, color: "bg-danger" },
     { label: t.activityMatches, value: data?.matchesFound ?? 0, color: "bg-progress" },
-    { label: t.activityReports, value: data?.reportsMade ?? 0, color: "bg-danger-ink" },
+    { label: t.activityReports, value: data?.reportsMade ?? 0, color: "bg-danger" },
   ];
   const peak = Math.max(1, ...monthly.map((month) => month.amount));
   const points = monthly.map((month, index) => `${8 + index * 24},${86 - (month.amount / peak) * 62}`).join(" ");
@@ -84,7 +84,7 @@ export function ActivityScreen() {
       <Card className="min-w-0">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-title font-bold">{t.navMyActivity}</h2><p className="text-caption text-ink-muted">{t.dashActivityHint}</p></div><span className="text-caption text-ink-muted">{data?.events.length ?? 0}</span></div>
         <div className="mb-4 flex gap-1 overflow-x-auto border-b border-line" role="tablist" aria-label={t.navMyActivity}>
-          {(["ALL", "POST", "COMMENT", "CLAIM", "MATCH", "REPORT"] as const).map((key) => <button key={key} type="button" role="tab" aria-selected={filter === key} onClick={() => { setFilter(key); setLimit(8); }} className={`min-h-11 flex-none border-b-2 px-3 text-caption font-semibold ${filter === key ? "border-primary text-primary" : "border-transparent text-ink-muted hover:text-ink"}`}>{key === "ALL" ? t.activityAll : key === "POST" ? t.activityPosts : key === "COMMENT" ? t.activityComments : key === "CLAIM" ? t.dashClaims : key === "MATCH" ? t.activityMatches : t.activityReports}</button>)}
+          {(["ALL", "POST", "COMMENT", "CLAIM", "MATCH", "REPORT"] as const).map((key) => <button key={key} type="button" role="tab" aria-selected={filter === key} onClick={() => { setFilter(key); setLimit(8); }} className={`min-h-11 flex-none border-b-2 px-3 text-caption font-semibold ${filter === key ? "border-primary text-primary-ink" : "border-transparent text-ink-muted hover:text-ink"}`}>{key === "ALL" ? t.activityAll : key === "POST" ? t.activityPosts : key === "COMMENT" ? t.activityComments : key === "CLAIM" ? t.dashClaims : key === "MATCH" ? t.activityMatches : t.activityReports}</button>)}
         </div>
         {!data ? <div className="space-y-3">{Array.from({ length: 5 }, (_, i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-sand" />)}</div> : filtered.length ? <>
           <ul className="space-y-2.5">{filtered.slice(0, limit).map((event) => <ActivityRow key={event.id} event={event} locale={locale} t={t} />)}</ul>
@@ -108,5 +108,5 @@ function ActivityRow({ event, locale, t }: { event: MyActivityEvent; locale: "km
 }
 
 function Contribution({ icon: Icon, title, value }: { icon: LucideIcon; title: string; value: string }) {
-  return <li className="flex items-center gap-2 rounded-xl bg-sand px-3 py-2.5"><Icon aria-hidden size={15} className="text-primary" /><span className="flex-1 text-caption text-ink-muted">{title}</span><b className="text-caption">{value}</b></li>;
+  return <li className="flex items-center gap-2 rounded-xl bg-sand px-3 py-2.5"><Icon aria-hidden size={15} className="text-primary-ink" /><span className="flex-1 text-caption text-ink-muted">{title}</span><b className="text-caption">{value}</b></li>;
 }

@@ -65,7 +65,7 @@ export function Carousel({
   if (count === 0) return null;
 
   const arrow =
-    "absolute top-1/2 z-10 hidden size-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow-raised hover:bg-white lg:flex";
+    "absolute top-1/2 z-10 hidden size-12 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-ink shadow-raised hover:bg-surface lg:flex";
 
   return (
     <section

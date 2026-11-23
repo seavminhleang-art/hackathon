@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Info, MapPin, Plus, Send, ShieldCheck, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
+import { useRequireAuth } from "@/lib/auth/useRequireAuth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { PageContainer } from "@/components/layout/AppShell";
 import { Button, Card, ChoiceCard, IconTile, SelectField, TextArea, TextField } from "@/components/ui";
@@ -12,7 +13,7 @@ import type { CsCreatePostInput, CsGroupView, CsPostType, CsScope } from "@/type
 import { CS_RULES } from "@/types/community";
 import { useCs, type CsDict } from "./i18n";
 import { POST_ICON, typeLabel } from "./PostCard";
-import { scopeLabel, useAreas, useCommunityHref, useLoginGate } from "./shared";
+import { scopeLabel, useAreas, useCommunityHref } from "./shared";
 
 const TYPES: CsPostType[] = ["EVENT", "QUESTION", "POLL", "DISCUSSION"];
 
@@ -26,7 +27,7 @@ export function NewPostScreen() {
   const { user } = useAuth();
   const areas = useAreas();
   const router = useRouter();
-  const { gate, sheet } = useLoginGate();
+  const requireAuth = useRequireAuth();
   const [step, setStep] = useState<1 | 2>(1);
   const [type, setType] = useState<CsPostType | null>(null);
   const [groups, setGroups] = useState<CsGroupView[]>([]);
@@ -109,7 +110,7 @@ export function NewPostScreen() {
 
       {scope && (
         <p className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-full bg-surface px-3.5 text-meta shadow-card">
-          <MapPin aria-hidden size={16} className="text-primary" />
+          <MapPin aria-hidden size={16} className="text-primary-ink" />
           {c.postingIn}: <span className="font-semibold">{scopeLabel(scope, areas, locale, c)}</span>
         </p>
       )}
@@ -129,7 +130,7 @@ export function NewPostScreen() {
               />
             ))}
           </div>
-          <Button size="lg" className="mt-3" disabled={!type} onClick={() => gate(c.actPost, () => setStep(2))} block>
+          <Button size="lg" className="mt-3" disabled={!type} onClick={() => requireAuth(() => setStep(2))} block>
             {c.continue}
           </Button>
         </div>
@@ -177,7 +178,7 @@ export function NewPostScreen() {
                 )}
                 <TextField label={c.closesAt} type="date" value={closes} onChange={(e) => setCloses(e.target.value)} error={errors.closes} />
                 <p className="flex items-start gap-2 rounded-xl bg-primary-tint p-3 text-meta">
-                  <Info aria-hidden size={18} className="mt-0.5 flex-none text-primary" />
+                  <Info aria-hidden size={18} className="mt-0.5 flex-none text-primary-ink" />
                   {c.pollRule}
                 </p>
               </fieldset>
@@ -206,13 +207,12 @@ export function NewPostScreen() {
 
           {/* Sticky publish bar (above bottom tabs on phones). */}
           <div className="sticky bottom-[84px] z-10 -mx-4 bg-sand/95 px-4 py-3 backdrop-blur lg:bottom-0 lg:mx-0 lg:px-0">
-            <Button type="submit" size="lg" icon={Send} disabled={busy} block>
+            <Button type="submit" size="lg" icon={Send} loading={busy} block>
               {c.publish}
             </Button>
           </div>
         </form>
       )}
-      {sheet}
     </PageContainer>
   );
 }

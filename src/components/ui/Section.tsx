@@ -34,7 +34,7 @@ export function Section({
           (href && (
             <Link
               href={href}
-              className="-mr-2 flex min-h-11 flex-none items-center gap-0.5 rounded-lg px-2 text-meta font-semibold text-primary hover:bg-primary-tint"
+              className="-mr-2 flex min-h-11 flex-none items-center gap-0.5 rounded-lg px-2 text-meta font-semibold text-primary-ink hover:bg-primary-tint"
             >
               {t.seeAll}
               <ChevronRight aria-hidden size={16} />
@@ -93,10 +93,11 @@ export function EmptyState({ icon: Icon, title, body, action }: { icon: LucideIc
 
 /** Loading placeholder shaped like a list row. */
 export function SkeletonRows({ rows = 2 }: { rows?: number }) {
+  const { t } = useLocale();
   return (
-    <div className="overflow-hidden rounded-2xl bg-surface shadow-card" aria-busy="true" aria-live="polite">
+    <div className="overflow-hidden rounded-2xl bg-surface shadow-card" role="status" aria-busy="true" aria-label={t.loading}>
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="flex animate-pulse gap-3 border-b border-line px-4 py-3.5 last:border-b-0">
+        <div key={i} className="flex gap-3 border-b border-line px-4 py-3.5 last:border-b-0 motion-safe:animate-pulse">
           <div className="size-10 flex-none rounded-xl bg-sand-deep" />
           <div className="flex flex-1 flex-col gap-2 pt-1">
             <div className="h-3.5 w-2/3 rounded bg-sand-deep" />
@@ -104,6 +105,39 @@ export function SkeletonRows({ rows = 2 }: { rows?: number }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+/** Grey placeholder block for custom skeletons. Size and shape it with className (h-*, w-*, rounded-*). */
+export function Skeleton({ className = "" }: { className?: string }) {
+  return <div aria-hidden className={`rounded-lg bg-sand-deep motion-safe:animate-pulse ${className}`} />;
+}
+
+/**
+ * Whole-screen placeholder: page title, subtitle, then a list (or a photo + text card for detail pages).
+ * Wrap in <PageContainer>. Use for route `loading.tsx`, Suspense fallbacks and auth checks/redirects,
+ * so a screen never flashes blank or shows a lone spinner.
+ */
+export function PageSkeleton({ rows = 4, variant = "list" }: { rows?: number; variant?: "list" | "detail" }) {
+  const { t } = useLocale();
+  return (
+    <div role="status" aria-busy="true" aria-label={t.loading} className="flex flex-col gap-5">
+      <div className="flex flex-col gap-2.5 pb-1">
+        <Skeleton className="h-9 w-1/2 max-w-sm lg:h-10" />
+        <Skeleton className="h-4 w-3/4 max-w-md opacity-70" />
+      </div>
+      {variant === "detail" && (
+        <>
+          <Skeleton className="h-56 w-full rounded-2xl sm:h-72" />
+          <div className="flex flex-col gap-2.5 rounded-2xl bg-surface p-5 shadow-card">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-11/12" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        </>
+      )}
+      <SkeletonRows rows={rows} />
     </div>
   );
 }

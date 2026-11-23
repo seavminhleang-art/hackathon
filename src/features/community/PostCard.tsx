@@ -5,7 +5,6 @@ import { useState } from "react";
 import {
   CalendarDays,
   ChartColumn,
-  Check,
   CircleCheck,
   MapPin,
   MessageCircle,
@@ -15,13 +14,15 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import check from "react-useanimations/lib/check";
 import { api } from "@/lib/api";
+import { useRequireAuth } from "@/lib/auth/useRequireAuth";
 import { Button, IconTile, LinkButton } from "@/components/ui";
 import { fmt } from "@/lib/i18n/dictionary";
 import { formatDateParts, shortDate } from "@/lib/i18n/format";
 import type { CsPostType, CsPostView, CsRsvp } from "@/types/community";
 import { useCs, type CsDict } from "./i18n";
-import { OfficialBadge, ReportButton, timeAgo, useCommunityHref, useLoginGate } from "./shared";
+import { OfficialBadge, ReportButton, timeAgo, useCommunityHref } from "./shared";
 
 export const POST_ICON: Record<CsPostType, LucideIcon> = {
   EVENT: CalendarDays,
@@ -50,14 +51,14 @@ export function RsvpButtons({
   size?: "md" | "lg";
 }) {
   const { c } = useCs();
-  const { gate, sheet } = useLoginGate();
+  const requireAuth = useRequireAuth();
   const [busy, setBusy] = useState(false);
   const ev = post.event;
   if (!ev) return null;
   const mine = ev.myRsvp;
 
   const set = (answer: CsRsvp | null) =>
-    gate(c.actRsvp, async () => {
+    requireAuth(async () => {
       setBusy(true);
       try {
         onChange(await api.cs.rsvp(post.id, answer));
@@ -76,7 +77,6 @@ export function RsvpButtons({
         <Button variant="ghost" size="sm" onClick={() => set(null)} disabled={busy}>
           {c.change}
         </Button>
-        {sheet}
       </div>
     );
   }
@@ -85,13 +85,12 @@ export function RsvpButtons({
   }
   return (
     <div className="grid grid-cols-2 gap-2 sm:flex">
-      <Button size={size} icon={Check} onClick={() => set("GOING")} disabled={busy}>
+      <Button size={size} icon={check} onClick={() => set("GOING")} disabled={busy}>
         {c.going}
       </Button>
       <Button size={size} variant="secondary" icon={Star} onClick={() => set("INTERESTED")} disabled={busy}>
         {c.interested}
       </Button>
-      {sheet}
     </div>
   );
 }
@@ -114,7 +113,7 @@ export function PostCard({ post, onChange }: { post: CsPostView; onChange: (p: C
       className={`flex flex-col gap-3.5 rounded-2xl bg-surface p-4 shadow-card lg:p-5 ${post.pinned ? "ring-2 ring-primary/25" : ""}`}
     >
       {post.pinned && (
-        <p className="-mt-1 flex items-center gap-1.5 text-meta font-semibold text-primary">
+        <p className="-mt-1 flex items-center gap-1.5 text-meta font-semibold text-primary-ink">
           <Pin aria-hidden size={15} />
           {fmt(c.pinnedBy, { name: post.author.name })}
         </p>

@@ -35,7 +35,7 @@ export function Sheet({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 backdrop-blur-[2px] lg:items-center" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-night/50 backdrop-blur-[2px] lg:items-center" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"

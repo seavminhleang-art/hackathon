@@ -490,7 +490,7 @@ function OrgIncidentContent() {
         {/* 3. CALLER & REPORTER CONTACT CARD (Strictly Guarded) */}
         <Card className="p-6 space-y-4">
           <h3 className="text-row font-bold text-ink flex items-center gap-2">
-            <User size={18} className="text-primary" />
+            <User size={18} className="text-primary-ink" />
             <span>{t.callerPhoneAllowed}</span>
           </h3>
 
@@ -536,7 +536,7 @@ function OrgIncidentContent() {
           {/* Details Card */}
           <Card className="p-6 space-y-4">
             <h3 className="text-row font-bold text-ink flex items-center gap-2">
-              <FileText size={18} className="text-primary" />
+              <FileText size={18} className="text-primary-ink" />
               <span>{locale === "km" ? "ព័ត៌មានហេតុការណ៍" : "Incident Overview"}</span>
             </h3>
 
@@ -565,7 +565,7 @@ function OrgIncidentContent() {
           {/* Location Card */}
           <Card className="p-6 space-y-4">
             <h3 className="text-row font-bold text-ink flex items-center gap-2">
-              <MapPin size={18} className="text-primary" />
+              <MapPin size={18} className="text-primary-ink" />
               <span>{locale === "km" ? "ទីតាំងកើតហេតុ" : "Location"}</span>
             </h3>
 
@@ -597,7 +597,7 @@ function OrgIncidentContent() {
                   href={`https://www.google.com/maps?q=${incident.location.lat},${incident.location.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-caption font-bold text-primary hover:underline"
+                  className="inline-flex items-center gap-1.5 text-caption font-bold text-primary-ink hover:underline"
                 >
                   <Navigation size={14} />
                   <span>{locale === "km" ? "បើកមើលក្នុងផែនទី Google Maps" : "Open in Google Maps"}</span>
@@ -630,7 +630,7 @@ function OrgIncidentContent() {
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block rounded-xl overflow-hidden border border-line bg-ink aspect-video hover:opacity-90 transition"
+                  className="block rounded-xl overflow-hidden border border-line bg-night aspect-video hover:opacity-90 transition"
                 >
                   <img
                     src={url}
@@ -647,7 +647,7 @@ function OrgIncidentContent() {
         {incident.otherDispatches && incident.otherDispatches.length > 0 && (
           <Card className="p-6 space-y-4">
             <h3 className="text-row font-bold text-ink flex items-center gap-2">
-              <ShieldAlert size={18} className="text-primary" />
+              <ShieldAlert size={18} className="text-primary-ink" />
               <span>{t.otherOrganizationsDispatched}</span>
             </h3>
 
@@ -1106,7 +1106,7 @@ function OrgIncidentContent() {
 
       {/* 6. UNDO RESPONDING TOAST (10-second countdown window) */}
       {showUndoToast && undoSecondsLeft !== null && undoSecondsLeft > 0 && (
-        <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 rounded-2xl bg-ink text-white p-4 shadow-2xl flex items-center justify-between gap-3 border border-ink-muted">
+        <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 rounded-2xl bg-night text-white p-4 shadow-2xl flex items-center justify-between gap-3 border border-ink-muted">
           <div className="flex items-center gap-2.5">
             <Clock size={18} className="text-reported flex-none animate-pulse" />
             <p className="text-caption font-medium">
@@ -1118,7 +1118,7 @@ function OrgIncidentContent() {
             size="sm"
             onClick={handleUndoResponding}
             disabled={isUndoing}
-            className="bg-ink text-white hover:bg-ink border-ink-muted text-caption font-bold flex-none"
+            className="bg-night text-white hover:bg-night border-ink-muted text-caption font-bold flex-none"
           >
             {isUndoing ? "..." : t.undoRespondingBtn}
           </Button>

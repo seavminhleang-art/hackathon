@@ -95,7 +95,7 @@ function OrgInboxContent() {
       case "FIRE":
         return <Flame size={16} className="text-reported" />;
       case "ROAD_CRASH":
-        return <Car size={16} className="text-primary" />;
+        return <Car size={16} className="text-primary-ink" />;
       case "MEDICAL":
         return <HeartPulse size={16} className="text-danger" />;
       case "CRIME":
@@ -267,7 +267,7 @@ function OrgInboxContent() {
                   {/* Location & Time Row */}
                   <div className="flex flex-wrap items-center justify-between gap-3 text-caption text-ink-muted pt-1 border-t border-line">
                     <div className="flex items-center gap-1.5 max-w-md truncate">
-                      <MapPin size={15} className="flex-none text-primary" />
+                      <MapPin size={15} className="flex-none text-primary-ink" />
                       <span>
                         {item.landmark ? `${item.landmark}, ` : ""}
                         {item.cityId}, {item.provinceId}

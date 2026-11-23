@@ -32,7 +32,7 @@ import { CommunityTabs, OfficialBadge, scopeLabel, useAreas, useCommunityHref } 
 const LEVEL: Record<CsAnnouncementLevel, { icon: LucideIcon; accent: Accent; chip: string }> = {
   ALERT: { icon: TriangleAlert, accent: "danger", chip: "civic-alert-chip" },
   WARNING: { icon: TriangleAlert, accent: "gold", chip: "bg-progress-tint text-progress-ink ring-1 ring-progress/40 ring-inset" },
-  INFO: { icon: Info, accent: "primary", chip: "bg-primary-tint text-primary" },
+  INFO: { icon: Info, accent: "primary", chip: "bg-primary-tint text-primary-ink" },
 };
 
 export function LevelChip({ level }: { level: CsAnnouncementLevel }) {

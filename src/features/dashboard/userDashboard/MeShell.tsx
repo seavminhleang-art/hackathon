@@ -28,7 +28,7 @@ export function MeShell({ children }: { children: ReactNode }) {
             <h1 className="text-page leading-tight font-bold lg:text-display">{user ? fmt(t.hello, { name: user.fullName }) : t.navMe}</h1>
             {user && (
               <p className="mt-1.5 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-surface px-3 text-meta font-medium text-ink-muted shadow-card">
-                <MapPin aria-hidden size={15} className="text-primary" />
+                <MapPin aria-hidden size={15} className="text-primary-ink" />
                 {[user.sangkat, city ? tx(city.name) : null].filter(Boolean).join(", ") || t.chooseArea}
               </p>
             )}

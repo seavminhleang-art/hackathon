@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* `dark:` follows the in-app theme toggle (data-theme on <html>), not only the OS setting. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /*
  * CityVoice "Royal Angkor" palette.
  * - primary: Cambodian flag blue (trust, government)
@@ -12,6 +15,8 @@
   --color-primary: var(--cv-primary);
   --color-primary-hover: var(--cv-primary-hover);
   --color-primary-tint: var(--cv-primary-tint);
+  /* Text/icon blue. `primary` is the fill (white text on it); use `text-primary-ink` for text. */
+  --color-primary-ink: var(--cv-primary-ink);
 
   --color-gold: var(--cv-gold);
   --color-gold-ink: var(--cv-gold-ink);
@@ -20,6 +25,8 @@
   --color-danger: var(--cv-danger);
   --color-danger-ink: var(--cv-danger-ink);
   --color-danger-tint: var(--cv-danger-tint);
+  /* Hover/pressed fill for red buttons (white text). `danger-ink` is for text only. */
+  --color-danger-hover: var(--cv-danger-hover);
 
   --color-reported: var(--cv-reported);
   --color-reported-ink: var(--cv-reported-ink);
@@ -43,6 +50,8 @@
 
   --color-line-strong: var(--cv-line-strong);
   --color-sand-deep: var(--cv-sand-deep);
+  /* Always-dark surface for white text (toasts, photo labels, overlays). Doesn't flip like `ink`. */
+  --color-night: var(--cv-night);
 
   --font-sans: var(--font-khmer), var(--font-latin), system-ui, sans-serif;
 
@@ -67,8 +76,8 @@
   --text-display--line-height: 1.2;
 
   /* Elevation: soft, warm shadows instead of heavy borders. */
-  --shadow-card: 0 1px 2px rgb(28 26 23 / 0.05), 0 1px 3px rgb(28 26 23 / 0.07);
-  --shadow-raised: 0 4px 12px rgb(28 26 23 / 0.08), 0 1px 3px rgb(28 26 23 / 0.06);
+  --shadow-card: var(--cv-shadow-card);
+  --shadow-raised: var(--cv-shadow-raised);
   --shadow-sos: 0 6px 16px rgb(200 16 46 / 0.35);
 }
 
@@ -76,6 +85,7 @@
   --cv-primary: #032ea1;
   --cv-primary-hover: #1e47b5;
   --cv-primary-tint: #eaf0fc;
+  --cv-primary-ink: #032ea1;
   --cv-navbar: #032ea1;
   --cv-gold: #c99a2e;
   --cv-gold-ink: #8a6512;
@@ -84,6 +94,7 @@
   --cv-danger: #c8102e;
   --cv-danger-ink: #8f0b21;
   --cv-danger-tint: #fdecee;
+  --cv-danger-hover: #8f0b21;
   --cv-reported: #c2410c;
   --cv-reported-ink: #9a3412;
   --cv-reported-tint: #fdebe1;
@@ -100,46 +111,66 @@
   --cv-ink-muted: #6b6457;
   --cv-line-strong: #d6cfc2;
   --cv-sand-deep: #f3efe7;
+  --cv-night: #1c1a17;
+  --cv-shadow-card: 0 1px 2px rgb(28 26 23 / 0.05), 0 1px 3px rgb(28 26 23 / 0.07);
+  --cv-shadow-raised: 0 4px 12px rgb(28 26 23 / 0.08), 0 1px 3px rgb(28 26 23 / 0.06);
+  --cv-alert-bg: #c8102e;
+  --cv-alert-bg-hover: #8f0b21;
+  --cv-alert-text: #ffffff;
+  --cv-alert-border: transparent;
+  --cv-alert-chip: #c8102e;
+  --cv-alert-chip-text: #ffffff;
   color-scheme: light;
 }
 
+/*
+ * Dark theme. Rules:
+ * - Surfaces are navy-tinted (keeps the royal-blue identity) and get LIGHTER as they rise:
+ *   sand (page) < surface (card) < sand-deep (hover, inset, chips).
+ * - Shadows don't show on dark, so `shadow-card` adds a faint light hairline instead.
+ * - Accent fills (primary, fixed, reported, danger) stay deep enough for white text;
+ *   the `-ink` tokens are the light text versions.
+ */
 :root[data-theme="dark"] {
-  --cv-primary: #416bd5;
-  --cv-primary-hover: #547ce0;
-  --cv-primary-tint: #202f50;
-  --cv-navbar: #242424;
-  --cv-gold: #e2b951;
+  --cv-primary: #3d63d1;
+  --cv-primary-hover: #4c72de;
+  --cv-primary-tint: #1b2747;
+  --cv-primary-ink: #9db4f7;
+  --cv-navbar: #0b1a46;
+  --cv-gold: #d9ad45;
   --cv-gold-ink: #f0d281;
-  --cv-gold-tint: #403823;
-  --cv-rejected: #c1b9ab;
+  --cv-gold-tint: #2e2818;
+  --cv-rejected: #b3ada3;
   --cv-danger: #c8102e;
-  --cv-danger-ink: #ff8792;
-  --cv-danger-tint: #3d252c;
-  --cv-reported: #f28a56;
+  --cv-danger-ink: #ff8b96;
+  --cv-danger-tint: #3a1a21;
+  --cv-danger-hover: #a50d26;
+  --cv-reported: #c2410c;
   --cv-reported-ink: #ffad83;
-  --cv-reported-tint: #422d25;
-  --cv-progress: #eebd4b;
+  --cv-reported-tint: #35221a;
+  --cv-progress: #e0a21b;
   --cv-progress-ink: #f4cd79;
-  --cv-progress-tint: #413824;
-  --cv-fixed: #56b88b;
-  --cv-fixed-ink: #82d6ad;
-  --cv-fixed-tint: #243a31;
-  --cv-sand: #191919;
-  --cv-surface: #242424;
-  --cv-line: #383838;
-  --cv-ink: #f2f2f2;
-  --cv-ink-muted: #b8b8b8;
-  --cv-line-strong: #4a4a4a;
-  --cv-sand-deep: #303030;
+  --cv-progress-tint: #322916;
+  --cv-fixed: #1a7f50;
+  --cv-fixed-ink: #7fd3aa;
+  --cv-fixed-tint: #15302a;
+  --cv-sand: #0e121b;
+  --cv-surface: #171c28;
+  --cv-line: #2a3242;
+  --cv-ink: #edf0f6;
+  --cv-ink-muted: #a7afc0;
+  --cv-line-strong: #3a4459;
+  --cv-sand-deep: #222a3a;
+  --cv-night: #06080e;
+  --cv-shadow-card: 0 0 0 1px rgb(255 255 255 / 0.07), 0 1px 3px rgb(0 0 0 / 0.5);
+  --cv-shadow-raised: 0 0 0 1px rgb(255 255 255 / 0.09), 0 8px 24px rgb(0 0 0 / 0.55);
+  --cv-alert-bg: #3a1a21;
+  --cv-alert-bg-hover: #47212a;
+  --cv-alert-text: #ffe8ec;
+  --cv-alert-border: #6a2e3a;
+  --cv-alert-chip: #5a2531;
+  --cv-alert-chip-text: #ffdfe4;
   color-scheme: dark;
-}
-
-html[data-theme="dark"] .bg-white {
-  background-color: var(--cv-surface);
-}
-
-html[data-theme="dark"] .text-black {
-  color: var(--cv-ink);
 }
 
 .app-navbar {
@@ -147,37 +178,23 @@ html[data-theme="dark"] .text-black {
 }
 
 html[data-theme="dark"] .navbar-logo {
-  filter: brightness(0.86) saturate(0.92);
+  filter: brightness(0.92) saturate(0.95);
 }
 
+/* Community alert cards: solid red in light, deep red with a border in dark. */
 .civic-alert-surface {
-  background-color: var(--cv-danger);
-  color: #fff;
+  background-color: var(--cv-alert-bg);
+  color: var(--cv-alert-text);
+  box-shadow: inset 0 0 0 1px var(--cv-alert-border), var(--cv-shadow-card);
 }
 
 .civic-alert-surface:hover {
-  background-color: var(--cv-danger-ink);
+  background-color: var(--cv-alert-bg-hover);
 }
 
 .civic-alert-chip {
-  background-color: var(--cv-danger);
-  color: #fff;
-}
-
-html[data-theme="dark"] .civic-alert-surface {
-  background-color: #39252c;
-  color: #ffedf0;
-  border: 1px solid #633944;
-}
-
-html[data-theme="dark"] .civic-alert-surface:hover {
-  background-color: #452a33;
-}
-
-html[data-theme="dark"] .civic-alert-chip {
-  background-color: #542f39;
-  color: #ffdfe4;
-  box-shadow: inset 0 0 0 1px #76424d;
+  background-color: var(--cv-alert-chip);
+  color: var(--cv-alert-chip-text);
 }
 
 html {

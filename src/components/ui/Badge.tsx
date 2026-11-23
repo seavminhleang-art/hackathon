@@ -11,7 +11,7 @@ export function Badge({ children, variant = "default", className = "", ...props 
     warning: "bg-reported-tint text-reported-ink border-reported/30 ",
     danger: "bg-danger-tint text-danger border-danger/30",
     success: "bg-fixed-tint text-fixed-ink border-fixed/30 ",
-    info: "bg-primary-tint text-primary border-primary/30",
+    info: "bg-primary-tint text-primary-ink border-primary/30",
     secondary: "bg-surface text-ink-muted border-line",
   };
 

@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { fmt } from "@/lib/i18n/dictionary";
 import { PageContainer } from "@/components/layout/AppShell";
-import { Button, Card, CountBadge, PageHeader, Section } from "@/components/ui";
+import { SkeletonRows, Button, Card, CountBadge, PageHeader, Section } from "@/components/ui";
 import type { EmOrgType, EmServiceFilter, EmServiceView, LatLng } from "@/types";
 
 export default function NearbyEmergencyPage() {
@@ -198,7 +198,7 @@ export default function NearbyEmergencyPage() {
                   setSelectedProvince(e.target.value);
                   setSelectedCity("");
                 }}
-                className="rounded-xl border border-reported/30 bg-white px-3 py-1.5 text-meta font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-reported"
+                className="rounded-xl border border-reported/30 bg-surface px-3 py-1.5 text-meta font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-reported"
               >
                 {PROVINCES.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -210,7 +210,7 @@ export default function NearbyEmergencyPage() {
               <select
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="rounded-xl border border-reported/30 bg-white px-3 py-1.5 text-meta font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-reported"
+                className="rounded-xl border border-reported/30 bg-surface px-3 py-1.5 text-meta font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-reported"
               >
                 {CITIES.filter((c) => c.provinceId === selectedProvince).map((c) => (
                   <option key={c.id} value={c.id}>
@@ -271,7 +271,7 @@ export default function NearbyEmergencyPage() {
           action={<CountBadge count={filteredServices.length} />}
         >
           {loading ? (
-            <div className="py-12 text-center text-ink-muted">{t.submitting}</div>
+            <SkeletonRows rows={4} />
           ) : filteredServices.length === 0 ? (
             <Card className="py-12 text-center text-ink-muted">
               {locale === "km" ? "រកមិនឃើញសេវាសង្គ្រោះបន្ទាន់ទេ" : "No emergency services found"}
@@ -297,7 +297,7 @@ export default function NearbyEmergencyPage() {
 
                       {/* Distance in KM (Only when GPS is confirmed) */}
                       {s.distanceKm !== undefined && (
-                        <span className="flex-none rounded-xl bg-primary/10 px-2.5 py-1 text-meta font-black text-primary border border-primary/20">
+                        <span className="flex-none rounded-xl bg-primary/10 px-2.5 py-1 text-meta font-black text-primary-ink border border-primary/20">
                           {fmt(t.distanceKm, { dist: s.distanceKm.toFixed(1) })}
                         </span>
                       )}
@@ -305,7 +305,7 @@ export default function NearbyEmergencyPage() {
 
                     {/* Address */}
                     <p className="mt-3 flex items-start gap-1.5 text-meta text-ink-muted">
-                      <MapPin size={15} className="mt-0.5 flex-none text-primary" />
+                      <MapPin size={15} className="mt-0.5 flex-none text-primary-ink" />
                       <span>{s.address}</span>
                     </p>
 
@@ -353,7 +353,7 @@ export default function NearbyEmergencyPage() {
                     <div className="flex items-center gap-2">
                       <a
                         href={`tel:${s.phone}`}
-                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-danger py-2 text-meta font-bold text-white shadow-card hover:bg-danger-ink transition-colors"
+                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-danger py-2 text-meta font-bold text-white shadow-card hover:bg-danger-hover transition-colors"
                       >
                         <Phone size={15} />
                         <span>{t.callNow}</span>
@@ -365,7 +365,7 @@ export default function NearbyEmergencyPage() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-line bg-surface px-3.5 py-2 text-meta font-bold text-ink hover:bg-sand transition-colors"
                       >
-                        <Compass size={15} className="text-primary" />
+                        <Compass size={15} className="text-primary-ink" />
                         <span>{t.directions}</span>
                       </a>
                     </div>

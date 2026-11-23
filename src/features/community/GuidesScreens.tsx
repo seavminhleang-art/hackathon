@@ -22,6 +22,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { useRequireAuth } from "@/lib/auth/useRequireAuth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { PageContainer } from "@/components/layout/AppShell";
 import { Button, Card, EmptyState, FilterChips, IconTile, LinkButton, ListRow, SkeletonRows } from "@/components/ui";
@@ -30,7 +31,7 @@ import type { CsGuideCategory, CsGuideView, CsPlaceView } from "@/types/communit
 import { CommentThread } from "./Comments";
 import { useCs, type CsDict } from "./i18n";
 import { openStatus } from "./ServicesScreens";
-import { useCommunityHref, useLoginGate } from "./shared";
+import { useCommunityHref } from "./shared";
 
 const CAT_ICON: Partial<Record<CsGuideCategory, LucideIcon>> = {
   IDENTITY: IdCard,
@@ -150,7 +151,7 @@ export function GuideScreen() {
   const { c, tx } = useCs();
   const href = useCommunityHref();
   const { ready } = useAuth();
-  const { gate, sheet } = useLoginGate();
+  const requireAuth = useRequireAuth();
   const [g, setG] = useState<CsGuideView | null>(null);
   const [places, setPlaces] = useState<CsPlaceView[]>([]);
   const [error, setError] = useState(false);
@@ -213,7 +214,7 @@ export function GuideScreen() {
     );
 
   const helpful = (yes: boolean) =>
-    gate(c.actHelpful, async () => {
+    requireAuth(async () => {
       setFeedback(yes ? "yes" : "no");
       if (yes !== g.markedHelpful) setG(await api.cs.toggleGuideHelpful(g.id));
     });
@@ -329,7 +330,6 @@ export function GuideScreen() {
       <div className="mt-8">
         <CommentThread target="GUIDE" targetId={g.id} title={c.qa} placeholder={c.askQuestion} limit={1} />
       </div>
-      {sheet}
     </PageContainer>
   );
 }

@@ -3,6 +3,7 @@ import { Inter, Kantumruy_Pro } from "next/font/google";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import { Providers } from "./providers";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 // Khmer first, Inter for Latin text. Both feed --font-sans in globals.css.
 const khmer = Kantumruy_Pro({
@@ -29,7 +30,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="km" className={`${khmer.variable} ${latin.variable} h-full antialiased`}>
+    <html lang="km" className={`${khmer.variable} ${latin.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
       </body>

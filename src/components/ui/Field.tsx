@@ -112,7 +112,7 @@ export function PasswordField(props: FieldProps & Omit<ComponentProps<"input">, 
           onClick={() => setShown((s) => !s)}
           aria-pressed={shown}
           aria-label={shown ? t.hidePassword : t.showPassword}
-          className="flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-meta font-semibold text-primary hover:bg-primary-tint"
+          className="flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-meta font-semibold text-primary-ink hover:bg-primary-tint"
         >
           {shown ? <EyeOff aria-hidden size={18} /> : <Eye aria-hidden size={18} />}
           {shown ? t.hidePasswordShort : t.showPasswordShort}
