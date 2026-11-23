@@ -41,6 +41,11 @@ export function NotificationsScreen() {
   const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [today, setToday] = useState<string | null>(null);
+
+  useEffect(() => {
+    setToday(cambodiaDay(new Date().toISOString()));
+  }, []);
 
   async function refresh() {
     setError(false);
@@ -72,9 +77,8 @@ export function NotificationsScreen() {
     () => items.filter((item) => filter === "all" || (filter === "unread" ? !item.read : item.read)),
     [items, filter],
   );
-  const today = cambodiaDay(new Date().toISOString());
-  const todayItems = visible.filter((item) => cambodiaDay(item.createdAt) === today);
-  const earlierItems = visible.filter((item) => cambodiaDay(item.createdAt) !== today);
+  const todayItems = today ? visible.filter((item) => cambodiaDay(item.createdAt) === today) : [];
+  const earlierItems = today ? visible.filter((item) => cambodiaDay(item.createdAt) !== today) : visible;
 
   async function markRead(item: AppNotification) {
     if (item.read) return;
