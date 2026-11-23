@@ -6,6 +6,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Bell, Check, ChevronRight, CreditCard, LockKeyhole, MapPin, UserRound } from "lucide-react";
 import { toast } from "react-toastify";
 import { PageContainer } from "@/components/layout/AppShell";
+import { EmergencyProfileCard } from "@/features/emergency/EmergencyProfileCard";
 import { Button, Card, SelectField, TextField } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -123,6 +124,7 @@ export function ProfileScreen() {
         <div className="flex justify-end gap-2 border-t border-line pt-4"><Button type="button" variant="secondary" onClick={() => { if (!user) return; setFullName(user.fullName); setPhone(user.phone ?? ""); setEmail(user.email ?? ""); setProvinceId(user.provinceId); setCityId(user.cityId); setSangkat(user.sangkat ?? ""); setPreferredLocale(user.preferredLocale); }}>{t.profileCancel}</Button><Button type="submit" disabled={busy || !provinceId || !cityId} icon={Check}>{busy ? t.submitting : t.profileSave}</Button></div>
       </form>
     </Card>}
+    {tab === "account" && <EmergencyProfileCard />}
 
     {tab === "notifications" && <Card><h2 className="mb-3 text-title font-bold">{t.notifications}</h2>{notifications.length ? <ul className="divide-y divide-line">{notifications.map((item) => <li key={item.id} className="flex items-start gap-3 py-3"><span className={`mt-1 size-2.5 rounded-full ${item.read ? "bg-line-strong" : "bg-primary"}`} /><div className="min-w-0 flex-1"><p className="text-body font-semibold">{tx(item.message)}</p><p className="text-caption text-ink-muted">{new Date(item.createdAt).toLocaleDateString(locale === "km" ? "km-KH" : "en-US")}</p></div></li>)}</ul> : <p className="py-8 text-center text-meta text-ink-muted">{t.emptyActivityTitle}</p>}</Card>}
     {tab === "bills" && <Card><div className="flex flex-col items-center gap-2 py-10 text-center"><CreditCard aria-hidden size={28} className="text-ink-muted" /><h2 className="text-title font-bold">{t.profileBillsTab}</h2><p className="text-meta text-ink-muted">{t.profileBillsEmpty}</p></div></Card>}

@@ -40,26 +40,14 @@ import {
   Waves,
   type LucideIcon,
 } from "lucide-react";
+import { coverPhoto } from "@/features/gov-reporting/meta";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { fmt, type Dictionary } from "@/lib/i18n/dictionary";
 import { formatDateParts, shortDate, weekdayLabel } from "@/lib/i18n/format";
 import { PageContainer, useSos, useUserCity } from "@/components/layout/AppShell";
-import {
-  Button,
-  Card,
-  EmptyState,
-  IconTile,
-  LinkButton,
-  ListRow,
-  Section,
-  SkeletonRows,
-  StatusChip,
-  buttonClass,
-  type Accent,
-  type ChipStatus,
-} from "@/components/ui";
+import { Button, Card, EmptyState, IconTile, LinkButton, ListRow, Section, SkeletonRows, StatusChip, buttonClass, type Accent, type ChipStatus, Thumb } from "@/components/ui";
 import type { EmergencyHotline } from "@/types";
 import type { GrCategory, GrReportView } from "@/types/gov-reporting";
 import type { LfClaimForClaimant, LfPublicPost } from "@/types/lost-found";
@@ -148,7 +136,7 @@ function Greeting() {
     <div>
       <h1 className="text-page leading-snug font-bold lg:text-display">{fmt(t.hello, { name: user.fullName })}</h1>
       <Link
-        href="/me"
+        href="/dashboard/profile"
         className="mt-1 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-surface px-3 text-meta font-medium text-ink-muted shadow-card hover:text-ink"
       >
         <MapPin aria-hidden size={14} className="text-primary" />
@@ -284,6 +272,7 @@ function MyActivity({ items, onChange }: { items?: ActivityItem[]; onChange: (r:
                 key={a.report.id}
                 icon={CATEGORY_ICON[a.report.category]}
                 accent="primary"
+                media={<Thumb src={coverPhoto(a.report)} icon={CATEGORY_ICON[a.report.category]} accent="primary" size="sm" />}
                 href={`/reports/${a.report.code}`}
                 title={a.report.title}
                 subtitle={a.report.code}
@@ -380,6 +369,7 @@ function LatestReports({ reports }: { reports?: GrReportView[] }) {
               key={r.id}
               icon={CATEGORY_ICON[r.category]}
               accent="primary"
+              media={<Thumb src={coverPhoto(r)} icon={CATEGORY_ICON[r.category]} accent="primary" size="sm" />}
               href={`/reports/${r.code}`}
               title={r.title}
               subtitle={[r.addressHint, shortDate(r.updatedAt, locale)].filter(Boolean).join(" · ")}
@@ -419,7 +409,7 @@ function LostFoundGrid({ posts, labels }: { posts?: LfPublicPost[]; labels?: Hom
                 className="flex flex-col gap-3 rounded-2xl bg-surface p-4 shadow-card transition-shadow hover:shadow-raised lg:p-5"
               >
                 <span className="flex items-start gap-3">
-                  <IconTile icon={p.kind === "FOUND" ? KeyRound : Search} accent={p.kind === "FOUND" ? "gold" : "reported"} />
+                  <Thumb src={p.photoUrls[0]} icon={p.kind === "FOUND" ? KeyRound : Search} accent={p.kind === "FOUND" ? "gold" : "reported"} size="md" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-row leading-snug font-semibold">{p.title}</span>
                     <span className="mt-1 block text-meta text-ink-muted">

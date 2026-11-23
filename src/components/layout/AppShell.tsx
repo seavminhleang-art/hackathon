@@ -44,11 +44,19 @@ export function useSos() {
 
 type NavItem = { href: string; icon: LucideIcon; label: keyof Dictionary };
 
+/** Desktop navbar: the 4 features only (the logo goes home). */
+const DESKTOP_NAV: NavItem[] = [
+  { href: "/reports", icon: FileText, label: "navReports" },
+  { href: "/emergency", icon: Siren, label: "navEmergency" },
+  { href: "/lost-found", icon: KeyRound, label: "navLostFound" },
+  { href: "/community", icon: Users, label: "navCommunity" },
+];
+
 /** Bottom tabs on phones (max 5). */
 const TABS: NavItem[] = [
   { href: "/", icon: House, label: "navHome" },
+  { href: "/emergency", icon: Siren, label: "navEmergency" },
   { href: "/reports", icon: FileText, label: "navReports" },
-  { href: "/lost-found", icon: KeyRound, label: "navLostFound" },
   { href: "/community", icon: Users, label: "navCommunity" },
   { href: "/dashboard", icon: UserIcon, label: "navMe" },
 ];
@@ -201,30 +209,22 @@ function Navbar({ onSos, unread }: { onSos: () => void; unread: number }) {
       <div className="mx-auto flex min-h-14 max-w-[1440px] items-center gap-1 py-1.5 pr-2 pl-4 sm:px-6 lg:min-h-16 lg:gap-2 lg:px-12 2xl:px-16">
         <Logo dark />
 
-        <nav
-          className="ml-8 hidden h-16 items-stretch gap-1 lg:flex"
-          aria-label={t.appName}
-        >
+        <nav className="ml-8 hidden h-16 items-stretch gap-1 lg:flex" aria-label={t.appName}>
           <WithPath
             render={(pathname) =>
-              primaryTabs().slice(0, 4).map((n) => {
+              DESKTOP_NAV.map((n) => {
                 const active = isActive(pathname, n.href);
                 return (
                   <Link
                     key={n.href}
                     href={n.href}
                     aria-current={active ? "page" : undefined}
-                    className={`relative flex items-center px-3.5 text-body font-semibold transition-colors ${
+                    className={`relative flex items-center px-3.5 text-body font-semibold whitespace-nowrap transition-colors ${
                       active ? "text-white" : "text-white/75 hover:text-white"
                     }`}
                   >
                     {t[n.label]}
-                    {active && (
-                      <span
-                        className="absolute inset-x-3.5 bottom-0 h-[3px] rounded-t-full bg-gold"
-                        aria-hidden
-                      />
-                    )}
+                    {active && <span className="absolute inset-x-3.5 bottom-0 h-[3px] rounded-t-full bg-gold" aria-hidden />}
                   </Link>
                 );
               })
@@ -406,6 +406,18 @@ function SosSheet({ onClose }: { onClose: () => void }) {
           <span className="block text-meta text-ink-muted">
             {t.sosSendInAppHint}
           </span>
+        </span>
+        <ChevronRight aria-hidden size={20} />
+      </Link>
+
+      <Link
+        href="/me/contacts"
+        onClick={onClose}
+        className="flex min-h-14 items-center justify-between gap-2 rounded-2xl bg-surface px-4 text-primary shadow-card ring-1 ring-primary/20 ring-inset hover:bg-primary-tint"
+      >
+        <span className="flex items-center gap-2.5">
+          <Users size={20} className="text-primary" />
+          <span className="font-bold">{t.emergencyContactsTitle}</span>
         </span>
         <ChevronRight aria-hidden size={20} />
       </Link>

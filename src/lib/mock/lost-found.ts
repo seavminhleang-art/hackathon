@@ -46,7 +46,7 @@ export const LF_POSTS: LfPost[] = [
   post({
     id: "lf-2", kind: "FOUND", category: "KEYS", ownerId: "u-citizen-2",
     title: "Honda moto key with keychain", description: "Moto key left in the parking lot, level 2.",
-    photoUrls: ["/mock/lf-keys-1.jpg"], provinceId: "phnom-penh", cityId: "sen-sok",
+    photoUrls: ["/mock/lf/moto-key.webp"], provinceId: "phnom-penh", cityId: "sen-sok",
     place: "Aeon Mall Sen Sok, parking level 2", approxLocation: { lat: 11.592, lng: 104.874 },
     eventDate: "2026-11-20", status: "POSTED", createdAt: "2026-11-20T18:30:00+07:00",
     secret: { question: "Describe the keychain.", answer: "Red Angkor Wat keychain with a small bell" },
@@ -54,21 +54,21 @@ export const LF_POSTS: LfPost[] = [
   post({
     id: "lf-3", kind: "LOST", category: "KEYS", ownerId: "u-citizen-5",
     title: "Lost my moto key at Aeon Sen Sok", description: "Honda Dream key. Red keychain. Lost in the evening.",
-    photoUrls: [], provinceId: "phnom-penh", cityId: "sen-sok",
+    photoUrls: ["/mock/lf/key-red-keychain.webp"], provinceId: "phnom-penh", cityId: "sen-sok",
     place: "Aeon Mall Sen Sok", approxLocation: { lat: 11.591, lng: 104.873 },
     eventDate: "2026-11-20", status: "POSTED", createdAt: "2026-11-20T21:00:00+07:00",
   }),
   post({
     id: "lf-4", kind: "LOST", category: "WALLET", ownerId: "u-citizen-1",
     title: "Brown leather wallet lost", description: "Brown leather wallet, has a photo of a white cat inside.",
-    photoUrls: [], provinceId: "phnom-penh", cityId: "chamkar-mon",
+    photoUrls: ["/mock/lf/wallet-lost.webp"], provinceId: "phnom-penh", cityId: "chamkar-mon",
     place: "Russian Market (Psar Toul Tompoung)", approxLocation: { lat: 11.538, lng: 104.918 },
     eventDate: "2026-11-18", status: "POSTED", createdAt: "2026-11-18T10:00:00+07:00",
   }),
   post({
     id: "lf-5", kind: "FOUND", category: "PHONE", ownerId: "u-citizen-1",
     title: "Smartphone found in a tuk-tuk", description: "Black phone in a clear case, battery dead.",
-    photoUrls: ["/mock/lf-phone-1.jpg"], provinceId: "phnom-penh", cityId: "tuol-kouk",
+    photoUrls: ["/mock/lf/phone-black.webp"], provinceId: "phnom-penh", cityId: "tuol-kouk",
     place: "Toul Kork, near St. 315", approxLocation: { lat: 11.581, lng: 104.902 },
     eventDate: "2026-11-17", status: "APPROVED", createdAt: "2026-11-17T21:15:00+07:00", updatedAt: "2026-11-18T09:00:00+07:00",
     secret: { question: "What is the lock screen picture?", answer: "A beach at sunset" },
@@ -76,7 +76,7 @@ export const LF_POSTS: LfPost[] = [
   post({
     id: "lf-6", kind: "FOUND", category: "WALLET", ownerId: "u-citizen-3",
     title: "Brown wallet found", description: "Brown wallet found on a market bench. Some cash inside.",
-    photoUrls: ["/mock/lf-wallet-1.jpg"], provinceId: "phnom-penh", cityId: "chamkar-mon",
+    photoUrls: ["/mock/lf/wallet-found.webp"], provinceId: "phnom-penh", cityId: "chamkar-mon",
     place: "Russian Market, food court", approxLocation: { lat: 11.539, lng: 104.918 },
     eventDate: "2026-11-18", status: "POSTED", createdAt: "2026-11-18T15:20:00+07:00",
     secret: { question: "What photo is inside the wallet?", answer: "A white cat" },
@@ -84,7 +84,7 @@ export const LF_POSTS: LfPost[] = [
   post({
     id: "lf-7", kind: "FOUND", category: "BAG", ownerId: "u-citizen-sr",
     title: "Black backpack left at a cafe", description: "Black backpack with a laptop sleeve.",
-    photoUrls: ["/mock/lf-bag-1.jpg"], provinceId: "siem-reap", cityId: "siem-reap-city",
+    photoUrls: ["/mock/lf/backpack-black.webp"], provinceId: "siem-reap", cityId: "siem-reap-city",
     place: "Pub Street, Siem Reap", approxLocation: { lat: 13.355, lng: 103.855 },
     eventDate: "2026-11-16", status: "POSTED", createdAt: "2026-11-16T22:00:00+07:00",
     secret: { question: "What is written on the inside label?", answer: "Initials K.S. in blue marker" },
@@ -99,7 +99,7 @@ export const LF_POSTS: LfPost[] = [
   post({
     id: "lf-9", kind: "FOUND", category: "MOTO_PLATE", ownerId: "u-citizen-2",
     title: "Moto plate found after flood", description: "Plate came off during the flood.",
-    photoUrls: ["/mock/lf-plate-1.jpg"], provinceId: "phnom-penh", cityId: "mean-chey",
+    photoUrls: [], provinceId: "phnom-penh", cityId: "mean-chey",
     place: "Near Stung Meanchey bridge", approxLocation: { lat: 11.521, lng: 104.93 },
     eventDate: "2026-11-12", status: "RETURNED", createdAt: "2026-11-12T07:30:00+07:00", updatedAt: "2026-11-14T17:00:00+07:00",
     secret: { answer: "Phnom Penh 1AB-2345" },
@@ -107,14 +107,14 @@ export const LF_POSTS: LfPost[] = [
   post({
     id: "lf-10", kind: "LOST", category: "PET", ownerId: "u-citizen-sr",
     title: "Lost dog: brown, answers to 'Lucky'", description: "Small brown dog with a red collar. Very friendly.",
-    photoUrls: ["/mock/lf-dog-1.jpg"], provinceId: "preah-sihanouk", cityId: "sihanoukville",
+    photoUrls: ["/mock/lf/dog-brown.webp"], provinceId: "preah-sihanouk", cityId: "sihanoukville",
     place: "Otres Beach road", approxLocation: { lat: 10.574, lng: 103.555 },
     eventDate: "2026-11-14", status: "POSTED", createdAt: "2026-11-14T18:00:00+07:00",
   }),
   post({
     id: "lf-11", kind: "FOUND", category: "PHONE", ownerId: "u-citizen-bb",
     title: "Phone found at the riverside", description: "Old Nokia phone.",
-    photoUrls: [], provinceId: "kampot", cityId: "kampot-city",
+    photoUrls: ["/mock/lf/phone-nokia.webp"], provinceId: "kampot", cityId: "kampot-city",
     place: "Kampot riverside", eventDate: "2026-09-10", status: "EXPIRED", createdAt: "2026-09-10T09:00:00+07:00",
     secret: { answer: "Sticker of a durian on the back" },
   }),

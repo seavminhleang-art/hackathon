@@ -56,9 +56,12 @@ export function ListRow({
   meta,
   href,
   trailing,
+  media,
   children,
 }: {
   icon?: LucideIcon;
+  /** Replaces the icon tile, e.g. a <Thumb> photo. */
+  media?: ReactNode;
   accent?: Accent;
   title: ReactNode;
   subtitle?: ReactNode;
@@ -71,7 +74,7 @@ export function ListRow({
 }) {
   const head = (
     <>
-      {icon && <IconTile icon={icon} accent={accent} />}
+      {media ?? (icon && <IconTile icon={icon} accent={accent} />)}
       <span className="flex min-w-0 flex-1 flex-col gap-1 pt-0.5">
         <span className="text-row leading-snug font-semibold text-ink">{title}</span>
         {subtitle && <span className="text-meta leading-snug text-ink-muted">{subtitle}</span>}
@@ -89,7 +92,7 @@ export function ListRow({
         <div className="flex items-start gap-3">{head}</div>
       )}
       {(meta || children) && (
-        <div className={`mt-2.5 flex flex-col gap-3 ${icon ? "pl-14" : ""}`}>
+        <div className={`mt-2.5 flex flex-col gap-3 ${media ? "pl-15" : icon ? "pl-14" : ""}`}>
           {meta && <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">{meta}</div>}
           {children}
         </div>

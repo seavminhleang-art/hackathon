@@ -32,10 +32,10 @@ Student team; each main feature has a different owner.
 |---|---|---|
 | Design tokens, fonts, i18n, auth session | Done | README.md |
 | 1. Lost & Found | Browse and lost/found post flows built; standalone and dashboard workspace | src/features/lost-found/AGENTS.md |
-| 2. Emergency response | Foundation done | src/features/emergency/AGENTS.md |
+| 2. Emergency response | Citizen + organization screens built (SOS, report, tracking, directory, nearby, trusted contacts, org inbox). Admin/news remain. `/me` redirects to `/dashboard/profile` | src/features/emergency/AGENTS.md |
 | 3. Government reporting | Citizen screens built (static UI) | src/features/gov-reporting/AGENTS.md |
 | 4. Community & Services | P0 screens built (Board, posts, News, Services, Guides) | src/features/community/AGENTS.md |
-| UI kit (Button, Card, ListRow, Section, fields, Sheet, StatusChip…) | Done. Live demo at `/design` (dev only) | src/components/ui/ |
+| UI kit (Button, Card, ListRow, Section, fields, Sheet, StatusChip, Thumb/Photo…) | Done. `Thumb` / `Photo` show a photo with the category icon as fallback; `ListRow media={…}`. Live demo at `/design` (dev only) | src/components/ui/ |
 | App shell (blue navbar on all sizes; bottom tabs + floating SOS on phone; feature links + SOS in navbar on desktop) | Done | src/components/layout/AppShell.tsx, src/app/(app)/layout.tsx |
 | Home `/` dashboard | Done | src/features/home/ |
 | Government Reporting citizen screens | Report form, submitted, My reports, detail, public feed on the mock API + shared shell; admin, staff and map remain | `src/app/(app)/report/`, `reports/`, `me/reports/` |
@@ -63,6 +63,7 @@ src/types/community.ts          Cs*  (feature 4)
 src/lib/mock/data.ts            Users (all roles), hotlines
 src/lib/mock/locations.ts       25 provinces, 38 cities/khans, distanceKm()
 src/lib/mock/{lost-found,emergency,gov-reporting,community}.ts   Feature seed data
+public/mock/                    Demo stock photos (Wikimedia Commons, see CREDITS.md)
 src/lib/api/mock-db.ts          In-memory DB + localStorage, session, ApiError, notify()
 src/lib/api/mock-api.ts         Auth, notifications, provinces/cities, hotlines
 src/lib/api/{lost-found,emergency,gov-reporting,community}-api.ts

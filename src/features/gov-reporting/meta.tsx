@@ -43,3 +43,6 @@ export function statusLine(r: GrReportView, t: Dictionary, dept: string): string
 export function metres(m: number, t: Dictionary) {
   return m < 1000 ? fmt(t.mAway, { n: Math.round(m / 10) * 10 }) : fmt(t.kmAway, { n: (m / 1000).toFixed(1) });
 }
+
+/** First citizen (evidence) photo of a report, for list thumbnails. */
+export const coverPhoto = (r: { photos?: { url: string; kind: string }[] }) => r.photos?.find((p) => p.kind === "EVIDENCE")?.url;

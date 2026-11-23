@@ -1,10 +1,12 @@
 // CityVoice UI kit. Import from "@/components/ui". Live examples: /design.
 export { Button, LinkButton, buttonClass, type ButtonVariant, type ButtonSize } from "./Button";
 export { Card, IconTile, ListRow, type Accent } from "./Card";
+export { Thumb, Photo } from "./Thumb";
 export { Section, PageHeader, EmptyState, SkeletonRows, CountBadge } from "./Section";
 export { TextField, PasswordField, TextArea, SelectField, ChoiceCard } from "./Field";
 export { Sheet } from "./Sheet";
 export { StatusChip, type ChipStatus } from "./StatusChip";
+export { Badge, type BadgeProps } from "./Badge";
 export { Marquee } from "./Marquee";
 export { Carousel } from "./Carousel";
 export { FilterChips, SubNav, Toggle } from "./Chips";
