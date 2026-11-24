@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -19,7 +20,7 @@ import {
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { fmt } from "@/lib/i18n/dictionary";
 import { formatDateParts, shortDate } from "@/lib/i18n/format";
-import { Carousel, Marquee } from "@/components/ui";
+import { Carousel, Marquee, Skeleton } from "@/components/ui";
 import type { CsAnnouncementCategory, CsAnnouncementView, CsPostView } from "@/types/community";
 import { HERO_IMAGES } from "./heroImages";
 
@@ -78,6 +79,47 @@ interface Slide {
   theme: Theme;
 }
 
+/** Photo fades in over the slide's category gradient, which doubles as its placeholder. */
+function HeroPhoto({ src, priority }: { src: string; priority: boolean }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <>
+      {!loaded && <span className="absolute inset-0 bg-white/10 motion-safe:animate-pulse" aria-hidden />}
+      <Image
+        src={src}
+        alt=""
+        fill
+        priority={priority}
+        sizes="(min-width: 1440px) 1344px, 100vw"
+        quality={90}
+        onLoad={() => setLoaded(true)}
+        className={`object-cover transition-opacity duration-500 motion-reduce:transition-none ${loaded ? "opacity-100" : "opacity-0"}`}
+      />
+    </>
+  );
+}
+
+/** Same shape as a slide (kicker, two-line title, body) so nothing jumps when the data arrives. */
+function HeroSkeleton() {
+  const { t } = useLocale();
+  return (
+    <div
+      role="status"
+      aria-busy="true"
+      aria-label={t.loading}
+      className="relative h-72 overflow-hidden rounded-3xl bg-surface shadow-card sm:h-80 lg:h-96"
+    >
+      <div className="absolute inset-x-0 bottom-0 flex max-w-2xl flex-col gap-3 p-6 pb-14 lg:px-24 lg:pb-14">
+        <Skeleton className="h-7 w-28 rounded-full" />
+        <Skeleton className="h-8 w-4/5 lg:h-10" />
+        <Skeleton className="h-8 w-3/5 lg:h-10" />
+        <Skeleton className="mt-1 h-4 w-full opacity-70" />
+        <Skeleton className="h-4 w-2/3 opacity-70" />
+      </div>
+    </div>
+  );
+}
+
 function HeroSlide({ s, priority }: { s: Slide; priority: boolean }) {
   const { t } = useLocale();
   const img = HERO_IMAGES[s.id];
@@ -86,8 +128,10 @@ function HeroSlide({ s, priority }: { s: Slide; priority: boolean }) {
     <Link href={s.href} className={`relative flex h-72 flex-col justify-end overflow-hidden bg-linear-to-br p-6 text-white sm:h-80 lg:h-96 lg:px-24 lg:py-10 ${s.theme.bg}`}>
       {img ? (
         <>
-          <Image src={img} alt="" fill priority={priority} sizes="(min-width: 1440px) 1344px, 100vw" className="object-cover" />
-          <span className="absolute inset-0 bg-linear-to-t from-black/80 via-black/35 to-transparent" aria-hidden />
+          <HeroPhoto src={img} priority={priority} />
+          {/* Shade only where the text sits (bottom-left), so the rest of the photo stays bright. */}
+          <span className="absolute inset-x-0 bottom-0 h-3/4 bg-linear-to-t from-black/80 via-black/35 to-transparent" aria-hidden />
+          <span className="absolute inset-y-0 left-0 w-full bg-linear-to-r from-black/45 via-black/15 to-transparent lg:w-2/3" aria-hidden />
         </>
       ) : (
         <>
@@ -98,7 +142,7 @@ function HeroSlide({ s, priority }: { s: Slide; priority: boolean }) {
           <span className="absolute inset-0 bg-linear-to-t from-black/30 to-transparent" aria-hidden />
         </>
       )}
-      <span className="relative flex max-w-2xl flex-col items-start gap-2.5 pb-8 lg:pb-4">
+      <span className="relative flex max-w-2xl flex-col items-start gap-2.5 pb-8 [text-shadow:0_1px_3px_rgb(0_0_0/0.45)] lg:pb-4">
         <span className="rounded-full bg-white/20 px-3 py-1 text-meta font-semibold backdrop-blur-sm">{s.kicker}</span>
         <span className="text-page leading-tight font-bold text-balance lg:text-display">{s.title}</span>
         <span className="line-clamp-2 text-body text-white/90">{s.body}</span>
@@ -122,7 +166,7 @@ export function HomeHero({ news, events }: { news?: CsAnnouncementView[]; events
   const { t, tx, locale } = useLocale();
 
   if (!news || !events) {
-    return <div className="h-72 animate-pulse rounded-3xl bg-sand-deep sm:h-80 lg:h-96" aria-hidden />;
+    return <HeroSkeleton />;
   }
 
   const eventSlides: Slide[] = events.slice(0, 2).map((e) => {
